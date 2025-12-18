@@ -10,3 +10,4 @@ class AIHealthCheckView(APIView):
             return Response({"status": "ok", "reply": reply})
         except Exception as e:
             return Response({"status": "error", "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
