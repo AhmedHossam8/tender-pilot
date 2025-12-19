@@ -33,11 +33,20 @@ class LoginSerializer(TokenObtainPairSerializer):
 class UserProfileSeralizer(serializers.ModelSerializer):
     class Meta:
         model = User
-
         fields = (
             'email',
             'full_name',
-            'is_admin',
-            'is_proposal_manager',
-            'is_reviewer'
+            'role',
+        )
+
+
+class AdminUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            "id",
+            "email",
+            "full_name",
+            "role",
+            "is_active",
         )

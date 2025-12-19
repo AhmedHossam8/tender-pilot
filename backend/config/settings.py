@@ -18,7 +18,6 @@ from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-sys.path.append(str(BASE_DIR / "apps"))
 
 dotenv_path = BASE_DIR / ".env"
 load_dotenv(dotenv_path)
@@ -50,12 +49,12 @@ INSTALLED_APPS = [
     'corsheaders',
 
     # Local apps
-    'apps.users',
-    'apps.tenders',
-    'apps.documents',
-    'apps.proposals',
-    'apps.ai_engine',
-    'apps.core',
+    'apps.users.apps.UsersConfig',
+    'apps.tenders.apps.TendersConfig',
+    'apps.documents.apps.DocumentsConfig',
+    'apps.proposals.apps.ProposalsConfig',
+    'apps.ai_engine.apps.AiEngineConfig',
+    'apps.core.apps.CoreConfig',
 
 
     # JWT Auth app
