@@ -1,27 +1,39 @@
+"""
+AI Engine Views
+
+API views for AI-powered features.
+"""
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .services.ai_base import test_ai
+
 
 class AIHealthCheckView(APIView):
-    def get(self, request):
-        try:
-            reply = test_ai("Say hello")
-            return Response({"status": "ok", "reply": reply})
-        except Exception as e:
-            return Response({"status": "error", "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-<<<<<<< HEAD
-=======
-# Create your views here.
-from django.http import JsonResponse
-from .services import ask_gemini
-
-def ai_chat_view(request):
-    if request.method == "POST":
-        user_message = request.POST.get("message")
-        answer = ask_gemini(user_message)
-        return JsonResponse({"reply": answer})
+    """
+    Health check endpoint for the AI engine.
     
-    return render(request, "chat.html")
->>>>>>> 5b52b1fdea9bbbd9341d131a7ec4c31cb6b4309c
+    GET /api/ai/health/
+    """
+    
+    def get(self, request):
+        """Check if the AI engine is operational."""
+        try:
+            from .services import get_ai_provider
+            
+            provider = get_ai_provider()
+            is_available = provider.is_available()
+            
+            return Response({
+                "status": "ok" if is_available else "degraded",
+                "provider": "openai",
+                "available": is_available,
+            })
+        except Exception as e:
+            return Response(
+                {
+                    "status": "error",
+                    "message": str(e)
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
