@@ -18,3 +18,21 @@ class Tender(models.Model):
     def __str__(self):
         return self.title
 
+
+class TenderDocument(models.Model):
+    DOCUMENT_TYPE_CHOICES = [
+        ("pdf", "PDF"),
+        ("word", "Word"),
+        ("excel", "Excel"),
+        ("other", "Other"),
+    ]
+
+    tender = models.ForeignKey(Tender, on_delete=models.CASCADE, related_name="documents")
+    file_url = models.URLField(max_length=500)  # Supabase Storage path / URL
+    document_type = models.CharField(max_length=20, choices=DOCUMENT_TYPE_CHOICES, default="pdf")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.tender.title} - {self.document_type}"
