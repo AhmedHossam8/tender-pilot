@@ -1,0 +1,43 @@
+from rest_framework.permissions import BasePermission
+from .models import User
+
+class IsAdmin(BasePermission):
+    def has_permission(self, request, view):
+        return (
+            request.user.is_authenticated
+            and request.user.role == User.Role.ADMIN
+        )
+    
+
+class IsProposalManger(BasePermission):
+    def has_permission(self, request, view):
+        return(
+            request.user.is_authenticated
+            and request.user.role == User.Role.PROPOSAL_MANAGER
+        )
+    
+
+class IsReviwer(BasePermission):
+    def has_permission(self, request, view):
+        return (
+            request.user.is_authenticated
+            and request.user.role == User.Role.REVIEWER
+        )
+    
+
+class IsAdminOrProposalManger(BasePermission):
+    def has_permission(self, request, view):
+        return (
+            request.user.is_authenticated
+            and request.use.role in (
+                User.Role.ADMIN ,
+                User.Role.PROPOSAL_MANAGER
+            )
+        )
+    
+
+class IsOwnerorAdmin(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.user.role == User.Role.ADMIN:
+            return True
+        return obj.id == request.user.id

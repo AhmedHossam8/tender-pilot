@@ -2,4 +2,5 @@ from django.apps import AppConfig
 
 
 class ProposalsConfig(AppConfig):
-    name = 'proposals'
+    name = 'apps.proposals'
+    label = 'proposals'

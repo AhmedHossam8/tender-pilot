@@ -14,10 +14,10 @@ from pathlib import Path
 import os
 import sys
 from dotenv import load_dotenv
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-sys.path.append(str(BASE_DIR / "apps"))
 
 dotenv_path = BASE_DIR / ".env"
 load_dotenv(dotenv_path)
@@ -51,12 +51,17 @@ INSTALLED_APPS = [
     'corsheaders',
 
     # Local apps
-    'apps.users',
-    'apps.tenders',
-    'apps.documents',
-    'apps.proposals',
-    'apps.ai_engine',
-    'apps.core',
+    'apps.users.apps.UsersConfig',
+    'apps.tenders.apps.TendersConfig',
+    'apps.documents.apps.DocumentsConfig',
+    'apps.proposals.apps.ProposalsConfig',
+    'apps.ai_engine.apps.AiEngineConfig',
+    'apps.core.apps.CoreConfig',
+
+
+    # JWT Auth app
+
+    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
@@ -107,6 +112,14 @@ DATABASES = {
 }
 
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+# Add Authentication classes 
+
+
+
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
@@ -125,6 +138,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'users.User'
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
@@ -137,11 +152,24 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+# Adjust the the LifeTime for Access Token and for REfresh token
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'AUTH_HEADER_TYPES': ('Bearer',),
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
