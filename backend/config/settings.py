@@ -31,8 +31,10 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
+# OpenAI API Key
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # Application definition
 
@@ -97,11 +99,15 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST')
+        'ENGINE': os.getenv("DB_ENGINE"),
+        'NAME': os.getenv("DB_NAME"),
+        'USER': os.getenv("DB_USER"),
+        'PASSWORD': os.getenv("DB_PASSWORD"),
+        'HOST': os.getenv("DB_HOST"),
+        'PORT': os.getenv("DB_PORT"),
+        'OPTIONS': {
+            'sslmode': os.getenv("DB_SSLMODE", "require")
+        }
     }
 }
 
@@ -164,4 +170,80 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'AUTH_HEADER_TYPES': ('Bearer',),
+
+# Default primary key field type
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# =============================================================================
+# AI ENGINE CONFIGURATION
+# =============================================================================
+
+# Default AI provider to use
+AI_DEFAULT_PROVIDER = os.getenv('AI_DEFAULT_PROVIDER', 'openai')
+
+# Default model for AI operations
+AI_DEFAULT_MODEL = os.getenv('AI_DEFAULT_MODEL', 'gpt-4o-mini')
+
+# AI Provider configurations
+AI_PROVIDERS = {
+    'openai': {
+        'api_key': os.getenv('OPENAI_API_KEY'),
+        'default_model': os.getenv('AI_DEFAULT_MODEL', 'gpt-4o-mini'),
+        'organization_id': os.getenv('OPENAI_ORGANIZATION_ID'),
+        'timeout': float(os.getenv('OPENAI_TIMEOUT', '60.0')),
+    },
+    'gemini': {
+        'api_key': os.getenv('GEMINI_API_KEY'),
+        'default_model': os.getenv('GEMINI_DEFAULT_MODEL', 'gemini-2.5-flash'),
+        'timeout': float(os.getenv('GEMINI_TIMEOUT', '60.0')),
+    },
+    # Add more providers here as needed
+    # 'anthropic': {
+    #     'api_key': os.getenv('ANTHROPIC_API_KEY'),
+    #     'default_model': 'claude-3-sonnet-20240229',
+    # },
+}
+
+# AI Rate limits
+AI_RATE_LIMITS = {
+    'requests_per_hour': int(os.getenv('AI_REQUESTS_PER_HOUR', '50')),
+    'tokens_per_day': int(os.getenv('AI_TOKENS_PER_DAY', '100000')),
+    'cost_per_day': float(os.getenv('AI_COST_PER_DAY', '10.0')),
+}
+
+# Model pricing (USD per 1K tokens)
+AI_MODEL_PRICING = {
+    # OpenAI models
+    'gpt-4': {'input': 0.03, 'output': 0.06},
+    'gpt-4-turbo': {'input': 0.01, 'output': 0.03},
+    'gpt-4o': {'input': 0.005, 'output': 0.015},
+    'gpt-4o-mini': {'input': 0.00015, 'output': 0.0006},
+    'gpt-3.5-turbo': {'input': 0.0005, 'output': 0.0015},
+    # Google Gemini models
+    'gemini-2.5-flash': {'input': 0.0, 'output': 0.0},  # Free tier
+    'gemini-1.5-pro': {'input': 0.00125, 'output': 0.005},
+    'gemini-1.5-flash': {'input': 0.000075, 'output': 0.0003},
+    'gemini-1.0-pro': {'input': 0.0005, 'output': 0.0015},
+    # Anthropic models
+    'claude-3-opus': {'input': 0.015, 'output': 0.075},
+    'claude-3-sonnet': {'input': 0.003, 'output': 0.015},
+    'claude-3-haiku': {'input': 0.00025, 'output': 0.00125},
+}
+
+# AI feature flags
+AI_FEATURES = {
+    'enabled': os.getenv('AI_ENABLED', 'True').lower() == 'true',
+    'tender_analysis': True,
+    'compliance_check': True,
+    'proposal_generation': True,
+    'allow_caching': True,
+    'cache_ttl': 3600,  # 1 hour
+}
+
+# Circuit breaker settings
+AI_CIRCUIT_BREAKER = {
+    'failure_threshold': 5,
+    'success_threshold': 2,
+    'timeout': 60.0,
 }
