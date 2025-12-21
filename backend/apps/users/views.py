@@ -19,8 +19,6 @@ class LoginAPIView(TokenObtainPairView):
 
 class ProfileAPIView(APIView):
     permission_classes = [IsAuthenticated]
-
-
     def get(self,request):
         serializer = UserProfileSeralizer(request.user)
         return Response(serializer.data)
@@ -44,4 +42,3 @@ class AdminUserDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = AdminUserSerializer
     permission_classes = [IsAdmin]
-    lookup_field = 'id'
