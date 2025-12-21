@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'apps.proposals.apps.ProposalsConfig',
     'apps.ai_engine.apps.AiEngineConfig',
     'apps.core.apps.CoreConfig',
+    'common',
 
 
     # JWT Auth app
