@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'apps.proposals',
     'apps.ai_engine',
     'apps.core',
+    'common',
 ]
 
 MIDDLEWARE = [
