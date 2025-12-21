@@ -2,4 +2,5 @@ from django.apps import AppConfig
 
 
 class AiEngineConfig(AppConfig):
-    name = 'ai_engine'
+    name = 'apps.ai_engine'
+    label = 'ai_engine'

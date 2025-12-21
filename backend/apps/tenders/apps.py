@@ -2,4 +2,5 @@ from django.apps import AppConfig
 
 
 class TendersConfig(AppConfig):
-    name = 'tenders'
+    name = 'apps.tenders'
+    label = 'tenders'
