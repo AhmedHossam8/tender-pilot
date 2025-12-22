@@ -1,25 +1,26 @@
-from django.shortcuts import render
-from rest_framework import viewsets
-from rest_framework.filters import OrderingFilter, SearchFilter
-from django_filters.rest_framework import DjangoFilterBackend
-from .models import Tender, TenderDocument, TenderRequirement
-from .serializers import TenderSerializer, TenderDocumentSerializer, TenderRequirementSerializer
+
+from rest_framework import viewsets, status
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+
+from .models import Tender
+from .serializers import TenderSerializer
+
 
 class TenderViewSet(viewsets.ModelViewSet):
-    queryset = Tender.objects.all()
+    """
+    Tender CRUD API
+    """
     serializer_class = TenderSerializer
+    permission_classes = [IsAuthenticated]
 
-    # Enable filtering, ordering, search
-    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
-    filterset_fields = ['status', 'issuing_entity']
-    search_fields = ['title']
-    ordering_fields = ['deadline']
-    ordering = ['deadline']
-    
-class TenderDocumentViewSet(viewsets.ModelViewSet):
-    queryset = TenderDocument.objects.all()
-    serializer_class = TenderDocumentSerializer
+    def get_queryset(self):
+        # Only active tenders
+        return Tender.objects.filter(is_active=True)
 
-class TenderRequirementViewSet(viewsets.ModelViewSet):
-    queryset = TenderRequirement.objects.all()
-    serializer_class = TenderRequirementSerializer
+    def perform_destroy(self, instance):
+        """
+        Soft delete instead of DB delete
+        """
+        instance.is_active = False
+        instance.save()

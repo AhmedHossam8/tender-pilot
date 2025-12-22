@@ -1,12 +1,7 @@
-from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from apps.tenders.views import TenderViewSet, TenderDocumentViewSet, TenderRequirementViewSet
+from .views import TenderViewSet
 
 router = DefaultRouter()
-router.register(r'tenders', TenderViewSet, basename='tender')
-router.register(r'documents', TenderDocumentViewSet, basename='document')
-router.register(r'requirements', TenderRequirementViewSet, basename='requirement')
+router.register(r"tenders", TenderViewSet, basename="tender")
 
-urlpatterns = [
-    path('api/v1/', include(router.urls)),
-]
+urlpatterns = router.urls
