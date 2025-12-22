@@ -27,10 +27,15 @@ class LoginSerializer(TokenObtainPairSerializer):
 
     def validate(self, attrs):
         data = super().validate(attrs)
+        data["user"] = {
+            "email": self.user.email,
+            "full_name": self.user.full_name,
+            "role": self.user.role,
+        }
         return data
     
 
-class UserProfileSeralizer(serializers.ModelSerializer):
+class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
