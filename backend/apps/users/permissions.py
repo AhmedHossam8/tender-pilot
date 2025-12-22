@@ -9,7 +9,7 @@ class IsAdmin(BasePermission):
         )
     
 
-class IsProposalManger(BasePermission):
+class IsProposalManager(BasePermission):
     def has_permission(self, request, view):
         return(
             request.user.is_authenticated
@@ -17,7 +17,7 @@ class IsProposalManger(BasePermission):
         )
     
 
-class IsReviwer(BasePermission):
+class IsReviewer(BasePermission):
     def has_permission(self, request, view):
         return (
             request.user.is_authenticated
@@ -29,14 +29,18 @@ class IsAdminOrProposalManger(BasePermission):
     def has_permission(self, request, view):
         return (
             request.user.is_authenticated
-            and request.use.role in (
+            and request.user.role in (
                 User.Role.ADMIN ,
                 User.Role.PROPOSAL_MANAGER
             )
         )
     
 
-class IsOwnerorAdmin(BasePermission):
+class IsOwnerOrAdmin(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated
+    
+
     def has_object_permission(self, request, view, obj):
         if request.user.role == User.Role.ADMIN:
             return True

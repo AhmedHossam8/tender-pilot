@@ -1,5 +1,12 @@
 from django.db import models
 from django.db.models import Q
+from django.conf import settings
+from django.db import models
+
+User = settings.AUTH_USER_MODEL
+
+
+
 
 
 ########### Tender Table ###############3
@@ -124,3 +131,37 @@ class TenderRequirement(models.Model):
 
     def __str__(self):
         return f"{self.tender.title} - {self.title}"
+    
+class TenderUser(models.Model):
+    class TenderRole(models.TextChoices):
+        MANAGER = "MANAGER", "Proposal Manager"
+        REVIEWER = "REVIEWER", "Reviewer"
+
+    tender = models.ForeignKey(
+        "Tender",
+        on_delete=models.CASCADE,
+        related_name="assignments"
+    )
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="tender_assignments"
+    )
+
+    role = models.CharField(
+        max_length=20,
+        choices=TenderRole.choices
+    )
+
+    is_active = models.BooleanField(default=True)
+    assigned_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("tender", "user")
+        indexes = [
+            models.Index(fields=["tender", "role"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user} => {self.tender} ({self.role})"
