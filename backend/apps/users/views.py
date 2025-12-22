@@ -5,7 +5,7 @@ from rest_framework import generics, permissions
 from .serializers import LoginSerializer , RegisterSerializer , UserProfileSerializer , AdminUserSerializer
 from rest_framework.permissions import AllowAny , IsAuthenticated 
 from rest_framework.response import Response
-from .permissions import IsAdmin , IsOwnerorAdmin
+from .permissions import IsAdmin , IsOwnerOrAdmin
 from .models import User
 
 class RegisterAPIView(generics.CreateAPIView):
@@ -14,6 +14,7 @@ class RegisterAPIView(generics.CreateAPIView):
 
 
 class LoginAPIView(TokenObtainPairView):
+    permission_classes = [AllowAny]
     serializer_class = LoginSerializer
 
 
@@ -42,3 +43,12 @@ class AdminUserDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = AdminUserSerializer
     permission_classes = [IsAdmin]
+
+    def destroy(self, request, *args, **kwargs):
+         user = self.get_object()
+         user.is_active = False
+         user.save()
+         return Response(
+        {"detail": "User deactivated successfully"},
+        status=204
+    )

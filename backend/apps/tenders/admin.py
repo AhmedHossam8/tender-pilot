@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Tender, TenderDocument, TenderRequirement
+from .models import Tender, TenderDocument, TenderRequirement , TenderUser
 
 
 ############# Tender admin Table ###############################
@@ -46,3 +46,9 @@ class TenderRequirementAdmin(admin.ModelAdmin):
     list_display = ("tender", "title", "is_mandatory", "created_at")
     list_filter = ("is_mandatory", "tender")
     search_fields = ("title", "tender__title")
+
+
+
+@admin.register(TenderUser)
+class TenderUserAdmin(admin.ModelAdmin):
+    list_display = ('tender','user','assigned_at')

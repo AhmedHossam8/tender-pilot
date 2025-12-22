@@ -9,4 +9,6 @@ router.register(r'requirements', TenderRequirementViewSet, basename='requirement
 
 urlpatterns = [
     path('api/v1/', include(router.urls)),
+    path("tenders/<int:tender_id>/assign-user/",AssignUserToTenderAPIView.as_view()),
+    path("tenders/<int:tender_id>/users/",TenderUsersListAPIView.as_view())
 ]
