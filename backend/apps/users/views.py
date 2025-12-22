@@ -2,7 +2,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.views import APIView 
 from rest_framework.generics import RetrieveUpdateAPIView , ListAPIView , RetrieveUpdateDestroyAPIView
 from rest_framework import generics, permissions
-from .serializers import LoginSerializer , RegisterSerializer , UserProfileSeralizer , AdminUserSerializer
+from .serializers import LoginSerializer , RegisterSerializer , UserProfileSerializer , AdminUserSerializer
 from rest_framework.permissions import AllowAny , IsAuthenticated 
 from rest_framework.response import Response
 from .permissions import IsAdmin , IsOwnerorAdmin
@@ -20,12 +20,12 @@ class LoginAPIView(TokenObtainPairView):
 class ProfileAPIView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self,request):
-        serializer = UserProfileSeralizer(request.user)
+        serializer = UserProfileSerializer(request.user)
         return Response(serializer.data)
     
 class UpdateReadApiView(generics.RetrieveUpdateAPIView):
 
-        serializer_class = UserProfileSeralizer
+        serializer_class = UserProfileSerializer
         permission_classes = [IsAuthenticated , IsOwnerorAdmin ]
 
         def get_object(self):
