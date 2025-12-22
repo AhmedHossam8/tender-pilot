@@ -24,6 +24,8 @@ from .proposal_generation import (
     SECTION_CONTENT_PROMPT,
     EXECUTIVE_SUMMARY_PROMPT,
 )
+from .text_generation import TEXT_GENERATION_PROMPT
+from .summarization import SUMMARIZATION_PROMPT
 
 
 class PromptRegistry:
@@ -159,6 +161,10 @@ def _register_all_prompts():
     PromptRegistry.register(PROPOSAL_OUTLINE_PROMPT)
     PromptRegistry.register(SECTION_CONTENT_PROMPT)
     PromptRegistry.register(EXECUTIVE_SUMMARY_PROMPT)
+    
+    # Text Generation and Summarization Prompts
+    PromptRegistry.register(TEXT_GENERATION_PROMPT)
+    PromptRegistry.register(SUMMARIZATION_PROMPT)
 
 
 # Auto-register on module import
