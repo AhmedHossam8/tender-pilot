@@ -107,35 +107,43 @@ class ProposalViewSet(BaseModelViewSet):
             raise ValidationError({"detail": f"An unexpected error occurred: {str(e)}"})
 
     @action(detail=True, methods=["post"])
-    def submit(self, request, pk=None):
-        """Mark proposal as final/submitted"""
+    def submit_for_review(self, request, pk=None):
+        """Proposal writer moves draft → in_review"""
         proposal = self.get_object()
+        if not request.user.has_role('proposal_writer'):
+            raise ValidationError({"detail": "Only proposal writers can submit proposals for review"})
+        if proposal.status != 'draft':
+            raise ValidationError({"detail": "Only draft proposals can be submitted for review"})
         
-        if proposal.status == 'final':
-            raise ValidationError({"detail": "Proposal is already submitted"})
-        
-        proposal.status = 'final'
+        proposal.status = 'in_review'
         proposal.save()
-        
-        logger.info(f"Proposal {proposal.id} submitted by user {request.user.id}")
-        
-        return Response({
-            "status": "Proposal submitted",
-            "proposal_id": proposal.id,
-            "status": proposal.status
-        }, status=status.HTTP_200_OK)
+        return Response({"status": "Proposal submitted for review", "proposal_id": proposal.id}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["post"])
     def approve(self, request, pk=None):
-        """Approve a proposal (placeholder for future approval workflow)"""
+        """Reviewer approves proposal (in_review → approved)"""
         proposal = self.get_object()
+        if not request.user.has_role('reviewer'):
+            raise ValidationError({"detail": "Only reviewers can approve proposals"})
+        if proposal.status != 'in_review':
+            raise ValidationError({"detail": "Proposal must be in review state to approve"})
         
-        logger.info(f"Proposal {proposal.id} approved by user {request.user.id}")
+        proposal.status = 'approved'
+        proposal.save()
+        return Response({"status": "Proposal approved", "proposal_id": proposal.id}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"])
+    def submit(self, request, pk=None):
+        """Proposal manager submits proposal (approved → submitted)"""
+        proposal = self.get_object()
+        if not request.user.has_role('proposal_manager') and not request.user.has_role('admin'):
+            raise ValidationError({"detail": "Only proposal managers can submit proposals"})
+        if proposal.status != 'approved':
+            raise ValidationError({"detail": "Proposal must be approved before final submission"})
         
-        return Response({
-            "status": "Proposal approved",
-            "proposal_id": proposal.id
-        }, status=status.HTTP_200_OK)
+        proposal.status = 'submitted'
+        proposal.save()
+        return Response({"status": "Proposal submitted", "proposal_id": proposal.id}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["post"], url_path="sections/(?P<section_id>[^/.]+)/regenerate")
     def regenerate_section(self, request, pk=None, section_id=None):

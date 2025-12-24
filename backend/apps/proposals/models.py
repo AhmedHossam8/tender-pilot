@@ -5,17 +5,25 @@ from apps.tenders.models import Tender
 User = get_user_model()
 
 class Proposal(models.Model):
+    STATUS_CHOICES = [
+        ("draft", "Draft"),
+        ("in_review", "In Review"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+        ("submitted", "Submitted"),
+    ]
     tender = models.ForeignKey(Tender, on_delete=models.CASCADE)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     title = models.CharField(max_length=255)
     status = models.CharField(
         max_length=50,
-        choices=[('draft', 'Draft'), ('final', 'Final')],
+        choices=STATUS_CHOICES,
         default='draft'
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    ai_feedback = models.TextField(blank=True)
+    
     def __str__(self):
         return f"{self.title} ({self.tender.title})"
 
