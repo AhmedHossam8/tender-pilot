@@ -1,10 +1,11 @@
-from common.serializers import BaseModelSerializer
-from .models import Document
+from rest_framework import serializers
+from .models import TenderDocument
 
-class DocumentSerializer(BaseModelSerializer):
-    class Meta(BaseModelSerializer.Meta):
-        model = Document
+class TenderDocumentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TenderDocument
         fields = "__all__"
+        read_only_fields = ("id", "ai_processed", "ai_processed_at", "created_at", "updated_at")
 
 class DocumentUploadSerializer(serializers.Serializer):
     file = serializers.FileField()

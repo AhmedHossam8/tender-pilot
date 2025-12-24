@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Tender
+from .models import Tender, TenderRequirement
 
 
 class TenderSerializer(serializers.ModelSerializer):
@@ -42,3 +42,17 @@ class TenderSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Invalid status transition.")
 
         return value
+
+class TenderRequirementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TenderRequirement
+        fields = [
+            "id",
+            "tender",
+            "title",
+            "description",
+            "is_mandatory",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ("id", "created_at", "updated_at")
