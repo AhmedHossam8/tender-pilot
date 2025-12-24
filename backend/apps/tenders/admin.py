@@ -14,5 +14,6 @@ class TenderDocumentTenderAdmin(admin.ModelAdmin):
 
 @admin.register(TenderRequirement)
 class TenderRequirementAdmin(admin.ModelAdmin):
-    list_display = ("tender", "title", "is_mandatory")
-    search_fields = ("tender__title", "title")
+    list_display = ("tender", "title", "is_mandatory", "created_at")
+    list_filter = ("is_mandatory", "tender")
+    search_fields = ("title", "tender__title")
