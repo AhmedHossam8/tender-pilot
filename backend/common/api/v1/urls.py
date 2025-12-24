@@ -7,4 +7,5 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('ai/', include('apps.ai_engine.api.v1.urls')),
     path('tenders/', include('apps.tenders.api.v1.urls')),
+    path('documents/', include('apps.documents.api.v1.urls')),
 ]
