@@ -1,70 +1,86 @@
-from django.shortcuts import render
-from rest_framework import viewsets, status
-from rest_framework.views import APIView
+from rest_framework import serializers
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.filters import OrderingFilter, SearchFilter
-from django_filters.rest_framework import DjangoFilterBackend
-from .models import (
-    Tender,
-    TenderDocument,
-    TenderRequirement,
-    TenderUser,
-)
-from .serializers import (
-    TenderSerializer,
-    TenderDocumentSerializer,
-    TenderRequirementSerializer,
-    TenderUserAssignSerializer,
-)
-from .permissions import IsTenderManager
-from apps.users.permissions import IsAdmin
+from common.viewsets import BaseModelViewSet
+from .models import Tender, TenderRequirement
+from apps.documents.models import TenderDocument
+from .serializers import TenderSerializer, TenderRequirementSerializer
+from apps.documents.serializers import TenderDocumentSerializer
 
-class TenderViewSet(viewsets.ModelViewSet):
-    queryset = Tender.objects.all()
+
+class TenderViewSet(BaseModelViewSet):
+    """
+    Tender CRUD + AI readiness
+    """
+    queryset = Tender.objects.filter(is_active=True)
     serializer_class = TenderSerializer
+    filterset_fields = ["status", "deadline"]
+    ordering_fields = ["created_at", "deadline"]
 
-    # Enable filtering, ordering, search
-    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
-    filterset_fields = ['status', 'issuing_entity']
-    search_fields = ['title']
-    ordering_fields = ['deadline']
-    ordering = ['deadline']
-    
-class TenderDocumentViewSet(viewsets.ModelViewSet):
+    def perform_update(self, serializer):
+        """
+        Enforce tender lifecycle
+        """
+        instance = self.get_object()
+        if instance.status == "closed":
+            raise serializers.ValidationError("Closed tenders cannot be modified.")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        """
+        Soft delete
+        """
+        instance.is_active = False
+        instance.save()
+
+    @action(detail=True, methods=["post"])
+    def analyze(self, request, pk=None):
+        """
+        AI analysis readiness endpoint
+        """
+        tender = self.get_object()
+
+        if tender.status != "open":
+            return Response(
+                {"error": "Tender must be open for analysis"},
+                status=400
+            )
+
+        if not TenderDocument.objects.filter(tender=tender, ai_processed=True).exists():
+            return Response(
+                {"error": "No AI-processed documents available"},
+                status=400
+            )
+
+        return Response({"status": "READY_FOR_AI", "tender_id": tender.id})
+
+    @action(detail=True, methods=["post"])
+    def bulk_requirements(self, request, pk=None):
+        """
+        Bulk create requirements (AI-prepared)
+        """
+        tender = self.get_object()
+        serializer = TenderRequirementSerializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(tender=tender)
+        return Response(serializer.data)
+
+
+class TenderDocumentViewSet(BaseModelViewSet):
+    """
+    Document CRUD
+    """
     queryset = TenderDocument.objects.all()
     serializer_class = TenderDocumentSerializer
+    filterset_fields = ["tender"]
+    ordering_fields = ["created_at"]
 
-class TenderRequirementViewSet(viewsets.ModelViewSet):
+
+class TenderRequirementViewSet(BaseModelViewSet):
+    """
+    Tender requirements CRUD
+    """
     queryset = TenderRequirement.objects.all()
     serializer_class = TenderRequirementSerializer
-
-class AssignUserToTenderAPIView(APIView):
-    permission_classes = [IsAuthenticated, IsAdmin | IsTenderManager]
-
-
-    def post(self, request, tender_id):
-        serializer = TenderUserAssignSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        TenderUser.objects.create(
-            tender_id=tender_id,
-            user=serializer.validated_data["user"],
-            role=serializer.validated_data["role"]
-        )
-
-        return Response(
-            {"detail": "User assigned successfully"},
-            status=status.HTTP_201_CREATED
-        )
-    
-class TenderUsersListAPIView(APIView):
-    permission_classes = [IsAuthenticated, IsTenderManager]
-
-    def get(self, request, tender_id):
-        users = TenderUser.objects.filter(
-            tender_id=tender_id,
-            is_active=True
-        )
-        serializer = TenderUserAssignSerializer(users, many=True)
-        return Response(serializer.data)
+    filterset_fields = ["tender"]
+    ordering_fields = ["created_at"]

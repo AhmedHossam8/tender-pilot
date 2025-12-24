@@ -26,14 +26,15 @@ class RegisterSerializer(serializers.ModelSerializer):
 class LoginSerializer(TokenObtainPairSerializer):
     username_field = 'email'
 
-    def validate(self, attrs):
-        data = super().validate(attrs)
-        data["user"] = {
-            "email": self.user.email,
-            "full_name": self.user.full_name,
-            "role": self.user.role,
-        }
-        return data
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        # Add custom claims
+        token['role'] = user.role
+        token['full_name'] = user.full_name
+
+        return token
     
 
 class UserProfileSerializer(serializers.ModelSerializer):

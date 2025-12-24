@@ -5,7 +5,7 @@ from rest_framework import generics, permissions
 from .serializers import LoginSerializer , RegisterSerializer , UserProfileSerializer , AdminUserSerializer
 from rest_framework.permissions import AllowAny , IsAuthenticated 
 from rest_framework.response import Response
-from .permissions import IsAdmin , IsOwnerOrAdmin
+from .permissions import IsAdmin, IsOwnerOrAdmin
 from .models import User
 
 class RegisterAPIView(generics.CreateAPIView):
@@ -27,7 +27,7 @@ class ProfileAPIView(APIView):
 class UpdateReadApiView(generics.RetrieveUpdateAPIView):
 
         serializer_class = UserProfileSerializer
-        permission_classes = [IsAuthenticated , IsOwnerorAdmin ]
+        permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
 
         def get_object(self):
             return self.request.user
