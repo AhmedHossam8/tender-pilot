@@ -25,7 +25,7 @@ class TenderSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ("id", "created_at", "updated_at")
+        read_only_fields = ("id", "created_at", "updated_at", "created_by")
 
     def validate_status(self, value):
         instance = self.instance

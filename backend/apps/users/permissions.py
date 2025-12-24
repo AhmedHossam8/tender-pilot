@@ -5,39 +5,38 @@ class IsAdmin(BasePermission):
     def has_permission(self, request, view):
         return (
             request.user.is_authenticated
-            and request.user.role == User.Role.ADMIN
+            and str(request.user.role).upper() == "ADMIN"
         )
-    
 
-class IsProposalManger(BasePermission):
-    def has_permission(self, request, view):
-        return(
-            request.user.is_authenticated
-            and request.user.role == User.Role.PROPOSAL_MANAGER
-        )
-    
-
-class IsReviwer(BasePermission):
+class IsProposalManager(BasePermission):
     def has_permission(self, request, view):
         return (
             request.user.is_authenticated
-            and request.user.role == User.Role.REVIEWER
+            and str(request.user.role).upper() == "PROPOSAL_MANAGER"
         )
-    
 
-class IsAdminOrProposalManger(BasePermission):
+class IsReviewer(BasePermission):
     def has_permission(self, request, view):
         return (
             request.user.is_authenticated
-            and request.user.role in (
-                User.Role.ADMIN ,
-                User.Role.PROPOSAL_MANAGER
-            )
+            and str(request.user.role).upper() == "REVIEWER"
         )
-    
 
-class IsOwnerorAdmin(BasePermission):
+class IsAdminOrProposalManager(BasePermission):
+    def has_permission(self, request, view):
+        return (
+            request.user.is_authenticated
+            and str(request.user.role).upper() in ("ADMIN", "PROPOSAL_MANAGER")
+        )
+
+class IsOwnerOrAdmin(BasePermission):
+    """
+    Object-level permission: allow admins full access,
+    otherwise only the object owner can access.
+    """
     def has_object_permission(self, request, view, obj):
-        if request.user.role == User.Role.ADMIN:
+        if not request.user.is_authenticated:
+            return False
+        if str(request.user.role).upper() == "ADMIN":
             return True
         return obj.id == request.user.id

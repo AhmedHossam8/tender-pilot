@@ -1,5 +1,8 @@
 from django.db import models
 from django.db.models import Q
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class Tender(models.Model):
     STATUS_CHOICES = [
@@ -13,6 +16,7 @@ class Tender(models.Model):
     deadline = models.DateTimeField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="draft", db_index=True)
     is_active = models.BooleanField(default=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_tenders', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -47,6 +51,7 @@ class TenderDocument(models.Model):
     ai_processed = models.BooleanField(default=False)
     ai_processed_at = models.DateTimeField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_tender_documents', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -71,6 +76,7 @@ class TenderRequirement(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     is_mandatory = models.BooleanField(default=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_tender_requirements', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
