@@ -6,6 +6,7 @@ from .prompts.tender_analysis import (
     REQUIREMENT_EXTRACTION_PROMPT,
     QUICK_SUMMARY_PROMPT
 )
+from .prompts.registry import PromptRegistry
 import json
 import logging
 from django.utils import timezone
@@ -20,6 +21,7 @@ class AIRequestHandler:
         "text-generation": "handle_text_generation",
         "summarization": "handle_summarization",
         "tender-preprocessing": "handle_tender_preprocessing",
+        "proposal-section-generation": "handle_proposal_section_generation",
         # Add more tasks here
     }
 
@@ -303,4 +305,157 @@ class AIRequestHandler:
                 "summary": summary_text,
                 "key_requirements": key_requirements,
                 "recommended_actions": recommended_actions,
+            }
+    
+    def handle_proposal_section_generation(self, data):
+        """
+        Generate proposal sections from context.
+        
+        Expected data format:
+        {
+            "task": "proposal-section-generation",
+            "context": {
+                "project_summary": {...},
+                "key_requirements": {...},
+                "recommended_actions": [...]
+            }
+        }
+        
+        Returns:
+            Dict with section names as keys and content as values
+        """
+        context = data.get("context", {})
+        if not context:
+            raise ValueError("context is required for proposal-section-generation")
+        
+        project_summary = context.get("project_summary", {})
+        key_requirements = context.get("key_requirements", {})
+        recommended_actions = context.get("recommended_actions", [])
+        
+        # Format the context for the prompt
+        # Convert dict/object to string representation
+        def format_context_item(item):
+            if isinstance(item, dict):
+                # Handle different dict structures
+                if "summary" in item:
+                    # Summary dict from tender preprocessing
+                    summary = item.get("summary", "")
+                    if summary:
+                        return summary
+                    # Fallback to raw_text if summary is empty
+                    return item.get("raw_text", "")
+                elif "requirements" in item:
+                    # Requirements dict from tender preprocessing
+                    reqs = item.get("requirements", [])
+                    if isinstance(reqs, list):
+                        formatted = []
+                        for req in reqs:
+                            if isinstance(req, str):
+                                formatted.append(f"- {req}")
+                            elif isinstance(req, dict):
+                                title = req.get("title", req.get("requirement", str(req)))
+                                desc = req.get("description", req.get("desc", ""))
+                                if desc:
+                                    formatted.append(f"- {title}: {desc}")
+                                else:
+                                    formatted.append(f"- {title}")
+                            else:
+                                formatted.append(f"- {str(req)}")
+                        return "\n".join(formatted) if formatted else "No specific requirements"
+                    return str(reqs) if reqs else "No specific requirements"
+                elif "raw_text" in item:
+                    # Fallback for parsing errors
+                    return item.get("raw_text", "")
+                else:
+                    # Generic dict - format key-value pairs
+                    formatted = []
+                    for k, v in item.items():
+                        if isinstance(v, (dict, list)):
+                            formatted.append(f"{k}: {str(v)}")
+                        else:
+                            formatted.append(f"{k}: {v}")
+                    return "\n".join(formatted) if formatted else ""
+            elif isinstance(item, list):
+                # Format list of actions or requirements
+                formatted = []
+                for action in item:
+                    if isinstance(action, str):
+                        formatted.append(f"- {action}")
+                    elif isinstance(action, dict):
+                        action_text = action.get("action", action.get("title", str(action)))
+                        priority = action.get("priority", "")
+                        reason = action.get("reason", "")
+                        if priority and reason:
+                            formatted.append(f"- {action_text} (Priority: {priority}, Reason: {reason})")
+                        elif priority:
+                            formatted.append(f"- {action_text} (Priority: {priority})")
+                        else:
+                            formatted.append(f"- {action_text}")
+                    else:
+                        formatted.append(f"- {str(action)}")
+                return "\n".join(formatted) if formatted else "No items"
+            else:
+                return str(item) if item else ""
+        
+        summary_text = format_context_item(project_summary)
+        requirements_text = format_context_item(key_requirements)
+        actions_text = format_context_item(recommended_actions) if recommended_actions else "No specific actions recommended"
+        
+        # Get the prompt template
+        try:
+            prompt_template = PromptRegistry.get("proposal_section_generation")
+        except KeyError:
+            # Fallback if prompt not registered
+            logger.warning("proposal_section_generation prompt not found, using default")
+            from .prompts.proposal_generation import PROPOSAL_SECTION_GENERATION_PROMPT
+            prompt_template = PROPOSAL_SECTION_GENERATION_PROMPT
+        
+        # Render the prompt
+        prompt = prompt_template.render(
+            project_summary=summary_text,
+            key_requirements=requirements_text,
+            recommended_actions=actions_text
+        )
+        
+        # Configure generation parameters
+        config = AIGenerationConfig(
+            model="gpt-4o-mini",
+            temperature=0.7,
+            max_tokens=4000  # Higher token limit for multiple sections
+        )
+        
+        # Call the AI provider
+        response = self.provider.generate(
+            prompt=prompt,
+            system_prompt=prompt_template.system_prompt,
+            config=config
+        )
+        
+        # Parse the JSON response
+        content = response.content
+        
+        # Clean content - remove markdown code blocks if present
+        import re
+        json_match = re.search(r'```(?:json)?\s*(\{.*\})\s*```', content, re.DOTALL)
+        if json_match:
+            content = json_match.group(1).strip()
+        else:
+            # Try to find JSON object directly
+            json_match = re.search(r'\{.*\}', content, re.DOTALL)
+            if json_match:
+                content = json_match.group(0).strip()
+        
+        try:
+            sections_dict = json.loads(content)
+            if not isinstance(sections_dict, dict):
+                raise ValueError("Response is not a dictionary")
+            
+            # Return the sections dictionary directly (section_name: content)
+            return sections_dict
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse proposal sections JSON: {e}. Content: {content[:500]}")
+            # Return a fallback structure
+            return {
+                "Executive Summary": "Unable to generate sections. Please try again or generate manually.",
+                "Error": f"JSON parsing failed: {str(e)}"
             }

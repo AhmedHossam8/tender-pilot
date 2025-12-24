@@ -8,4 +8,5 @@ urlpatterns = [
     path('ai/', include('apps.ai_engine.api.v1.urls')),
     path('tenders/', include('apps.tenders.api.v1.urls')),
     path('documents/', include('apps.documents.api.v1.urls')),
+    path('proposals/', include('apps.proposals.api.v1.urls')),
 ]
