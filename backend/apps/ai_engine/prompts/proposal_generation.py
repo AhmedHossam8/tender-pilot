@@ -214,3 +214,58 @@ EXECUTIVE_SUMMARY_PROMPT = (PromptBuilder()
     ])
     .build()
 )
+
+
+# =============================================================================
+# PROPOSAL SECTION GENERATION
+# =============================================================================
+
+PROPOSAL_SECTION_GENERATION_SYSTEM_PROMPT = """You are an expert proposal writer specializing in creating comprehensive technical and business proposals for government and corporate tenders. Your role is to generate complete, well-written proposal sections that address all requirements and evaluation criteria."""
+
+PROPOSAL_SECTION_GENERATION_TEMPLATE = """Generate complete proposal sections based on the following project information.
+
+## PROJECT SUMMARY
+${project_summary}
+
+## KEY REQUIREMENTS
+${key_requirements}
+
+## RECOMMENDED ACTIONS
+${recommended_actions}
+
+## TASK
+Generate complete proposal sections that:
+1. Address all key requirements
+2. Follow recommended actions
+3. Are professional and compelling
+4. Include sufficient detail to demonstrate capability
+
+Respond with a JSON object where each key is a section name and each value is the complete content for that section:
+```json
+{
+    "Executive Summary": "Complete executive summary content (300-500 words)...",
+    "Background": "Complete background section content...",
+    "Methodology": "Complete methodology section content...",
+    "Technical Approach": "Complete technical approach section content...",
+    "Project Management": "Complete project management section content...",
+    "Team and Qualifications": "Complete team and qualifications section content...",
+    "Timeline": "Complete timeline section content...",
+    "Budget": "Complete budget section content..."
+}
+```
+
+Generate at least 5-7 key sections. Each section should be comprehensive (200-500 words) and directly address the requirements."""
+
+PROPOSAL_SECTION_GENERATION_PROMPT = (PromptBuilder()
+    .name("proposal_section_generation")
+    .version("1.0.0")
+    .description("Generate complete proposal sections from tender context")
+    .system(PROPOSAL_SECTION_GENERATION_SYSTEM_PROMPT)
+    .template(PROPOSAL_SECTION_GENERATION_TEMPLATE)
+    .add_variables([
+        "project_summary",
+        "key_requirements",
+        "recommended_actions",
+    ])
+    .build()
+)
