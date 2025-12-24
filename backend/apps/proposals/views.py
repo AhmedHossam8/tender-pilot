@@ -117,6 +117,13 @@ class ProposalViewSet(BaseModelViewSet):
         
         proposal.status = 'in_review'
         proposal.save()
+
+        ProposalAuditLog.objects.create(
+            proposal=proposal,
+            user=request.user,
+            action="submit_for_review"
+        )
+
         return Response({"status": "Proposal submitted for review", "proposal_id": proposal.id}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["post"])
@@ -130,6 +137,13 @@ class ProposalViewSet(BaseModelViewSet):
         
         proposal.status = 'approved'
         proposal.save()
+        
+        ProposalAuditLog.objects.create(
+        proposal=proposal,
+        user=request.user,
+        action="approve"
+        )
+        
         return Response({"status": "Proposal approved", "proposal_id": proposal.id}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["post"])
@@ -143,6 +157,13 @@ class ProposalViewSet(BaseModelViewSet):
         
         proposal.status = 'submitted'
         proposal.save()
+        
+        proposal_AuditLog.objects.create(
+        proposal=proposal,
+        user=request.user,
+        action="submit"
+        )
+        
         return Response({"status": "Proposal submitted", "proposal_id": proposal.id}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["post"], url_path="sections/(?P<section_id>[^/.]+)/regenerate")
@@ -167,6 +188,13 @@ class ProposalViewSet(BaseModelViewSet):
                 section.content = str(ai_sections[section.name]) if ai_sections[section.name] else ""
                 section.ai_generated = True
                 section.save()
+                
+                proposal_AuditLog.objects.create(
+                    proposal=proposal,
+                    user=request.user,
+                    action="regenerate_section",
+                    section_name=section.name
+                )
                 
                 return Response({
                     "status": "Section regenerated",
@@ -198,6 +226,12 @@ class ProposalViewSet(BaseModelViewSet):
                 proposal=proposal,
                 file=document_file,
                 type='docx'
+            )
+            
+            proposal_AuditLog.objects.create(
+                proposal=proposal,
+                user=request.user,
+                action="generate_document"
             )
             
             return Response({
