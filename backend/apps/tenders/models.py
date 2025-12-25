@@ -91,3 +91,10 @@ class TenderRequirement(models.Model):
 
     def __str__(self):
         return f"{self.tender.title} - {self.title}"
+
+class Tag(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    
+class TenderTag(models.Model):
+    tender = models.ForeignKey(Tender, on_delete=models.CASCADE, related_name="tags")
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)

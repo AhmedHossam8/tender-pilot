@@ -7,7 +7,7 @@ from apps.documents.models import TenderDocument
 from .serializers import TenderSerializer, TenderRequirementSerializer
 from apps.documents.serializers import TenderDocumentSerializer
 from django.db.models import Q
-
+from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 
 class TenderViewSet(BaseModelViewSet):
     """
@@ -21,14 +21,32 @@ class TenderViewSet(BaseModelViewSet):
     
     def get_queryset(self):
         queryset = super().get_queryset()
-        search_query = self.request.query_params.get('search', None)
+
+        # Full-text search
+        search_query = self.request.query_params.get("search")
         if search_query:
+            vector = (
+                SearchVector("title", weight="A")
+                + SearchVector("issuing_entity", weight="A")
+                + SearchVector("tender_documents_tenders__extracted_text", weight="B")
+            )
+            query = SearchQuery(search_query)
+            queryset = (
+                queryset
+                .annotate(rank=SearchRank(vector, query))
+                .filter(rank__gte=0.1)
+                .order_by("-rank")
+            )
+
+        # Tag filter
+        tag_name = self.request.query_params.get("tag")
+        if tag_name:
             queryset = queryset.filter(
-                Q(title__icontains=search_query) |
-                Q(issuing_entity__icontains=search_query) |
-                Q(tender_documents_docs__extracted_text__icontains=search_query)
+                tags__tag__name__iexact=tag_name
             ).distinct()
-        return queryset
+    
+        return queryset.distinct()
+
 
     def perform_update(self, serializer):
         """
