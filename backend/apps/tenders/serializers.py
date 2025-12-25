@@ -11,7 +11,7 @@ class TenderSerializer(serializers.ModelSerializer):
         source="requirements.count",
         read_only=True
     )
-
+    tags = serializers.StringRelatedField(many=True)
     class Meta:
         model = Tender
         fields = [
@@ -22,6 +22,7 @@ class TenderSerializer(serializers.ModelSerializer):
             "status",
             "documents_count",
             "requirements_count",
+            "tags",
             "created_at",
             "updated_at",
         ]
