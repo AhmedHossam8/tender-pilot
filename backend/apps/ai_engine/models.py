@@ -279,6 +279,10 @@ class AIResponse(models.Model):
     class Meta:
         db_table = 'ai_responses'
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['request']),
+            models.Index(fields=['created_at']),
+        ]
     
     def __str__(self):
         return f"AIResponse {self.id} for Request {self.request_id}"
@@ -457,6 +461,7 @@ class PromptVersion(models.Model):
         ordering = ['name', '-version']
         indexes = [
             models.Index(fields=['name', 'is_active']),
+            models.Index(fields=['usage_count']),
         ]
     
     def __str__(self):

@@ -26,6 +26,7 @@ class Tender(models.Model):
             models.Index(fields=["status", "deadline"]),
             models.Index(fields=["is_active", "status"]),
             models.Index(fields=["created_by"]),
+            models.Index(fields=["deadline"]),
         ]
 
     def __str__(self):
@@ -67,6 +68,7 @@ class TenderDocument(models.Model):
         ]
         indexes = [
             models.Index(fields=["ai_processed"]),
+            models.Index(fields=["tender"]),
         ]
 
     def __str__(self):
@@ -90,6 +92,9 @@ class TenderRequirement(models.Model):
                 name="unique_requirement_per_tender"
             ),
         ]
+        indexes = [
+            models.Index(fields=["tender"]),
+        ]
 
     def __str__(self):
         return f"{self.tender.title} - {self.title}"
@@ -97,6 +102,17 @@ class TenderRequirement(models.Model):
 class Tag(models.Model):
     name = models.CharField(max_length=50, unique=True)
     
+    class Meta:
+        indexes = [
+            models.Index(fields=["name"]),
+        ]
+    
 class TenderTag(models.Model):
     tender = models.ForeignKey(Tender, on_delete=models.CASCADE, related_name="tags")
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["tender"]),
+            models.Index(fields=["tag"]),
+        ]
