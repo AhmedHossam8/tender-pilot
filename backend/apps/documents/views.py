@@ -14,7 +14,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class TenderDocumentViewSet(BaseModelViewSet):
-    queryset = TenderDocument.objects.filter(is_active=True)
+    queryset = TenderDocument.objects.filter(is_active=True).select_related('tender', 'created_by')
     serializer_class = TenderDocumentSerializer
     filterset_fields = ["tender"]
     ordering_fields = ["created_at"]
@@ -37,7 +37,7 @@ class TenderDocumentViewSet(BaseModelViewSet):
             # Get the tender
             tender_id = serializer.validated_data.get("tender_id")
             try:
-                tender = Tender.objects.get(id=tender_id)
+                tender = Tender.objects.select_related('created_by').get(id=tender_id)
             except Tender.DoesNotExist:
                 return Response({"error": "Tender not found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -113,11 +113,11 @@ class TenderDocumentViewSet(BaseModelViewSet):
     def list_by_tender(self, request, pk=None):
         """List all documents for a specific tender"""
         try:
-            tender = Tender.objects.get(id=pk)
+            tender = Tender.objects.select_related('created_by').get(id=pk)
         except Tender.DoesNotExist:
             return Response({"error": "Tender not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        documents = TenderDocument.objects.filter(tender=tender, is_active=True)
+        documents = TenderDocument.objects.filter(tender=tender, is_active=True).select_related('tender', 'created_by')
         serializer = self.get_serializer(documents, many=True)
         return Response(serializer.data)
 

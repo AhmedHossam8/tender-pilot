@@ -7,6 +7,9 @@ supporting GPT-4, GPT-3.5-turbo, and other OpenAI models.
 
 import logging
 from typing import Optional, Dict, Any, List
+import json
+import hashlib
+from django.core.cache import cache
 
 from openai import OpenAI, APIError, RateLimitError, APIConnectionError
 import tiktoken
@@ -178,6 +181,16 @@ class OpenAIProvider(AIProvider):
             # Add any extra kwargs
             request_params.update(kwargs)
             
+            # Create cache key
+            params_str = json.dumps(request_params, sort_keys=True)
+            cache_key = f"ai_response:{hashlib.sha256(params_str.encode()).hexdigest()}"
+            
+            # Check cache
+            cached_response = cache.get(cache_key)
+            if cached_response:
+                logger.info("AI response served from cache")
+                return AIResponse(**cached_response)
+            
             # Make API call
             response = self.client.chat.completions.create(**request_params)
             
@@ -185,7 +198,7 @@ class OpenAIProvider(AIProvider):
             choice = response.choices[0]
             usage = response.usage
             
-            return AIResponse(
+            ai_response = AIResponse(
                 content=choice.message.content or "",
                 model=response.model,
                 input_tokens=usage.prompt_tokens,
@@ -194,6 +207,11 @@ class OpenAIProvider(AIProvider):
                 finish_reason=choice.finish_reason,
                 raw_response=response.model_dump(),
             )
+            
+            # Cache the response
+            cache.set(cache_key, ai_response.__dict__, timeout=3600)  # Cache for 1 hour
+            
+            return ai_response
             
         except RateLimitError as e:
             logger.error(f"OpenAI rate limit exceeded: {e}")

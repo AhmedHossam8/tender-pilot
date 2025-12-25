@@ -24,14 +24,24 @@ class Proposal(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
-    def __str__(self):
-        return f"{self.title} ({self.tender.title})"
+    class Meta:
+        indexes = [
+            models.Index(fields=['status']),
+            models.Index(fields=['created_by', 'status']),
+            models.Index(fields=['tender']),
+            models.Index(fields=['created_at']),
+        ]
 
 class ProposalSection(models.Model):
     proposal = models.ForeignKey(Proposal, on_delete=models.CASCADE, related_name='sections')
     name = models.CharField(max_length=100)  # e.g., Background, Methodology
     content = models.TextField(blank=True)
     ai_generated = models.BooleanField(default=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['proposal']),
+        ]
 
     def __str__(self):
         return f"{self.name} - {self.proposal.title}"
@@ -41,6 +51,11 @@ class ProposalDocument(models.Model):
     file = models.FileField(upload_to='proposals/')
     type = models.CharField(max_length=10, choices=[('docx','DOCX'),('pdf','PDF')])
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['proposal']),
+        ]
 
 class ProposalAuditLog(models.Model):
     ACTION_CHOICES = [
@@ -60,6 +75,9 @@ class ProposalAuditLog(models.Model):
     extra_info = models.TextField(blank=True, null=True)  # optional for any notes
 
     class Meta:
+        indexes = [
+            models.Index(fields=['proposal', 'timestamp']),
+        ]
         ordering = ["-timestamp"]
 
     def __str__(self):

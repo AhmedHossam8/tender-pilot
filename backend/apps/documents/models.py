@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from apps.tenders.models import Tender
+from django.contrib.postgres.indexes import GinIndex
 import pdfplumber
 import docx
 import os
@@ -35,6 +36,8 @@ class TenderDocument(models.Model):
     class Meta:
         indexes = [
             models.Index(fields=["ai_processed"]),
+            models.Index(fields=["tender", "is_active"]),
+            models.Index(fields=["created_by"]),
         ]
         constraints = [
             models.UniqueConstraint(fields=["tender", "file"], name="unique_document_per_tender_docs")
