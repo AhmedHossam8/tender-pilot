@@ -60,13 +60,23 @@ class TenderAnalysisRequestSerializer(serializers.Serializer):
         Detailed analysis requires higher permissions.
         """
         if value == 'detailed':
-            # TODO: Check user quota/permissions when governance APIs ready
-            # user = self.context.get('user')
-            # if not user.has_ai_quota_for_detailed():
-            #     raise serializers.ValidationError(
-            #         "Insufficient quota for detailed analysis"
-            #     )
-            pass
+            # Check user quota and permissions
+            user = self.context.get('user')
+            if user:
+                # Import here to avoid circular imports
+                from .permissions import check_ai_quota, check_feature_access
+                
+                # Check if user has access to detailed analysis
+                if not check_feature_access(user, 'analysis'):
+                    raise serializers.ValidationError(
+                        "Your role does not have access to AI analysis features"
+                    )
+                
+                # Check quota (currently returns True, ready for future integration)
+                has_quota, message = check_ai_quota(user)
+                if not has_quota:
+                    raise serializers.ValidationError(message)
+        
         return value
 
 
@@ -456,4 +466,139 @@ class AIErrorResponseSerializer(serializers.Serializer):
     retry_after = serializers.IntegerField(
         required=False,
         help_text="Seconds to wait before retrying (for rate limits)"
+    )
+
+
+# ============================================================================
+# REGENERATION SERIALIZERS
+# ============================================================================
+
+class RegenerateRequestSerializer(serializers.Serializer):
+    """
+    Validates input for regenerating AI responses.
+    
+    Example:
+        {
+            "feedback": "Make it more concise and focus on key risks",
+            "temperature": 0.7,
+            "max_tokens": 2000,
+            "style": "concise"
+        }
+    """
+    feedback = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        max_length=1000,
+        help_text="Feedback on what to improve in the regenerated response"
+    )
+    
+    temperature = serializers.FloatField(
+        required=False,
+        min_value=0.0,
+        max_value=2.0,
+        help_text="Creativity level (0.0 = focused, 2.0 = very creative)"
+    )
+    
+    max_tokens = serializers.IntegerField(
+        required=False,
+        min_value=100,
+        max_value=8000,
+        help_text="Maximum tokens in the response"
+    )
+    
+    style = serializers.ChoiceField(
+        choices=['concise', 'detailed', 'formal', 'casual'],
+        required=False,
+        help_text="Desired style for the regenerated response"
+    )
+    
+    def validate(self, data):
+        """Ensure at least one parameter is provided."""
+        if not any([
+            data.get('feedback'),
+            data.get('temperature') is not None,
+            data.get('max_tokens') is not None,
+            data.get('style')
+        ]):
+            raise serializers.ValidationError(
+                "Please provide at least one of: feedback, temperature, max_tokens, or style"
+            )
+        return data
+
+
+class RegenerateResponseSerializer(serializers.Serializer):
+    """
+    Formats output for regeneration responses.
+    
+    Example:
+        {
+            "new_response_id": "uuid",
+            "new_request_id": "uuid",
+            "content": "...",
+            "parsed_content": {...},
+            "improvements": ["Applied feedback: ...", "Adjusted creativity"],
+            "confidence": {...},
+            "parent_response_id": "uuid",
+            "tokens_used": 1234,
+            "model": "gpt-4",
+            "regeneration_count": 2
+        }
+    """
+    new_response_id = serializers.UUIDField(
+        help_text="ID of the newly generated response"
+    )
+    new_request_id = serializers.UUIDField(
+        help_text="ID of the new AI request"
+    )
+    content = serializers.CharField(
+        help_text="Raw content of the regenerated response"
+    )
+    parsed_content = serializers.JSONField(
+        help_text="Structured/parsed content (if applicable)"
+    )
+    improvements = serializers.ListField(
+        child=serializers.CharField(),
+        help_text="List of improvements applied"
+    )
+    confidence = serializers.JSONField(
+        help_text="Confidence score and details for the new response"
+    )
+    parent_response_id = serializers.UUIDField(
+        help_text="ID of the original response that was regenerated"
+    )
+    tokens_used = serializers.IntegerField(
+        help_text="Total tokens used for regeneration"
+    )
+    model = serializers.CharField(
+        help_text="AI model used for regeneration"
+    )
+    regeneration_count = serializers.IntegerField(
+        help_text="Number of times this response has been regenerated (depth in chain)"
+    )
+
+
+class RegenerationHistorySerializer(serializers.Serializer):
+    """
+    Formats regeneration history output.
+    
+    Example:
+        {
+            "root": {...},
+            "chain": [{...}, {...}],
+            "current": {...},
+            "total_regenerations": 3
+        }
+    """
+    root = serializers.JSONField(
+        help_text="Original response (root of the regeneration chain)"
+    )
+    chain = serializers.ListField(
+        child=serializers.JSONField(),
+        help_text="Full chain of responses from original to latest"
+    )
+    current = serializers.JSONField(
+        help_text="The specific response that was requested"
+    )
+    total_regenerations = serializers.IntegerField(
+        help_text="Total number of regenerations in the chain"
     )

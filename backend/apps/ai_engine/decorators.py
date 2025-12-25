@@ -190,17 +190,48 @@ class TokenBudgetEnforcer:
         
         return True
     
+    def check_token_budget(self, request):
+        """
+        Check if user has remaining token budget.
+        
+        Returns:
+            (allowed: bool, remaining: int)
+        """
+        if not request.user.is_authenticated:
+            return False, 0
+        
+        # Get user's limits from permission system
+        from .permissions import get_user_ai_limits
+        limits = get_user_ai_limits(request.user)
+        tokens_per_day = limits.get('tokens_per_day', 50000)
+        
+        # Get usage tracker
+        from .tracking.usage import AIUsageTracker
+        tracker = AIUsageTracker()
+        
+        # Get today's usage
+        from datetime import date
+        usage = tracker.get_user_usage(
+            request.user,
+            period='day',
+            start_date=date.today()
+        )
+        
+        tokens_used_today = usage.get('total_tokens', 0)
+        remaining = tokens_per_day - tokens_used_today
+        
+        return remaining > 0, remaining
+    
     def _get_user_tier(self, user) -> str:
         """
         Determine user's subscription tier.
         
-        TODO: Integrate with actual subscription system
+        Returns user role as tier until subscription system is ready.
         """
-        # For now, default to free tier
-        # In production, check user.subscription.tier
-        if hasattr(user, 'subscription'):
-            return user.subscription.tier
-        return 'free_tier'
+        # Use role as tier until subscription system is ready
+        if hasattr(user, 'role'):
+            return str(user.role).upper()
+        return 'REVIEWER'  # Default tier
 
 
 class BudgetExceededError(Exception):
@@ -240,14 +271,17 @@ def get_rate_limit_for_user(user) -> str:
     """
     limits = getattr(settings, 'AI_RATE_LIMITS', DEFAULT_RATE_LIMITS)
     
-    # Determine tier
-    if hasattr(user, 'subscription'):
+    # Determine tier (use role until subscription system is ready)
+    if hasattr(user, 'role'):
+        tier = str(user.role).upper()
+    elif hasattr(user, 'subscription'):
         tier = user.subscription.tier
     else:
-        tier = 'free_tier'
+        tier = 'REVIEWER'
     
     # Get requests per hour for this tier
-    requests_per_hour = limits.get(tier, {}).get('requests_per_hour', 10)
+    tier_limits = limits.get(tier, {})
+    requests_per_hour = tier_limits.get('requests_per_hour', 10)
     
     if requests_per_hour is None:
         return '10000/h'  # Effectively unlimited
