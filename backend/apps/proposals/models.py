@@ -23,7 +23,6 @@ class Proposal(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    ai_feedback = models.TextField(blank=True)
     
     def __str__(self):
         return f"{self.title} ({self.tender.title})"
@@ -47,6 +46,7 @@ class ProposalAuditLog(models.Model):
     ACTION_CHOICES = [
         ("submit_for_review", "Submit for Review"),
         ("approve", "Approve"),
+        ("reject", "Reject"),
         ("submit", "Submit Proposal"),
         ("regenerate_section", "Regenerate Section"),
         ("generate_document", "Generate Document"),

@@ -22,6 +22,7 @@ class AIRequestHandler:
         "summarization": "handle_summarization",
         "tender-preprocessing": "handle_tender_preprocessing",
         "proposal-section-generation": "handle_proposal_section_generation",
+        "proposal-review": "handle_proposal_review",
         # Add more tasks here
     }
 
@@ -458,4 +459,145 @@ class AIRequestHandler:
             return {
                 "Executive Summary": "Unable to generate sections. Please try again or generate manually.",
                 "Error": f"JSON parsing failed: {str(e)}"
+            }
+
+    def handle_proposal_review(self, data):
+        """Handle proposal review task"""
+        context = data.get("context", {})
+        proposal_sections = data.get("proposal_sections", {})
+        
+        logger.info(f"Handling proposal review with context keys: {list(context.keys())}, sections: {len(proposal_sections)}")
+        
+        if not context:
+            raise ValueError("context is required for proposal-review")
+        
+        # Format context items for the prompt
+        def format_context_item(item):
+            if isinstance(item, str):
+                return item
+            elif isinstance(item, dict):
+                if "summary" in item:
+                    # Handle summary dict
+                    return item.get("summary", "")
+                elif "requirements" in item:
+                    # Handle requirements dict
+                    reqs = item.get("requirements", [])
+                    if isinstance(reqs, list):
+                        formatted = []
+                        for req in reqs:
+                            if isinstance(req, str):
+                                formatted.append(f"- {req}")
+                            elif isinstance(req, dict):
+                                title = req.get("title", req.get("requirement", str(req)))
+                                desc = req.get("description", req.get("desc", ""))
+                                if desc:
+                                    formatted.append(f"- {title}: {desc}")
+                                else:
+                                    formatted.append(f"- {title}")
+                            else:
+                                formatted.append(f"- {str(req)}")
+                        return "\n".join(formatted) if formatted else "No specific requirements"
+                    return str(reqs) if reqs else "No specific requirements"
+                else:
+                    # Generic dict - format key-value pairs
+                    formatted = []
+                    for k, v in item.items():
+                        if isinstance(v, (dict, list)):
+                            formatted.append(f"{k}: {str(v)}")
+                        else:
+                            formatted.append(f"{k}: {v}")
+                    return "\n".join(formatted) if formatted else ""
+            elif isinstance(item, list):
+                # Format list of actions or requirements
+                formatted = []
+                for action in item:
+                    if isinstance(action, str):
+                        formatted.append(f"- {action}")
+                    elif isinstance(action, dict):
+                        action_text = action.get("action", action.get("title", str(action)))
+                        priority = action.get("priority", "")
+                        reason = action.get("reason", "")
+                        if priority and reason:
+                            formatted.append(f"- {action_text} (Priority: {priority}, Reason: {reason})")
+                        elif priority:
+                            formatted.append(f"- {action_text} (Priority: {priority})")
+                        else:
+                            formatted.append(f"- {action_text}")
+                    else:
+                        formatted.append(f"- {str(action)}")
+                return "\n".join(formatted) if formatted else "No items"
+            else:
+                return str(item) if item else ""
+        
+        project_summary = format_context_item(context.get("summary", ""))
+        key_requirements = format_context_item(context.get("requirements", ""))
+        
+        # Format proposal sections
+        sections_text = ""
+        if proposal_sections:
+            for section_name, section_content in proposal_sections.items():
+                sections_text += f"## {section_name}\n{section_content}\n\n"
+        else:
+            sections_text = "No proposal sections provided for review."
+        
+        # Get the prompt template
+        try:
+            prompt_template = PromptRegistry.get("proposal_review")
+        except KeyError:
+            logger.warning("proposal_review prompt not found")
+            raise ValueError("Proposal review prompt not configured")
+        
+        # Render the prompt
+        prompt = prompt_template.render(
+            project_summary=project_summary,
+            key_requirements=key_requirements,
+            proposal_sections=sections_text
+        )
+        
+        # Configure generation parameters
+        config = AIGenerationConfig(
+            model="gpt-4o-mini",
+            temperature=0.3,  # Lower temperature for more consistent reviews
+            max_tokens=2000
+        )
+        
+        # Call the AI provider
+        response = self.provider.generate(
+            prompt=prompt,
+            system_prompt=prompt_template.system_prompt,
+            config=config
+        )
+        
+        # Parse the JSON response
+        content = response.content
+        
+        # Clean content - remove markdown code blocks if present
+        import re
+        json_match = re.search(r'```(?:json)?\s*(\{.*\})\s*```', content, re.DOTALL)
+        if json_match:
+            content = json_match.group(1).strip()
+        else:
+            # Try to find JSON object directly
+            json_match = re.search(r'\{.*\}', content, re.DOTALL)
+            if json_match:
+                content = json_match.group(0).strip()
+        
+        try:
+            review_dict = json.loads(content)
+            if not isinstance(review_dict, dict):
+                raise ValueError("Response is not a dictionary")
+            
+            logger.info(f"Proposal review generated successfully: {review_dict}")
+            # Return the review dictionary
+            return review_dict
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse proposal review JSON: {e}. Content: {content[:500]}")
+            # Return a fallback structure
+            return {
+                "overall_rating": "Unable to determine",
+                "strengths": [],
+                "weaknesses": ["AI review failed"],
+                "missing_elements": [],
+                "recommendations": ["Please review manually"],
+                "summary": f"Review generation failed: {str(e)}"
             }

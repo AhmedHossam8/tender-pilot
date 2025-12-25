@@ -220,7 +220,20 @@ EXECUTIVE_SUMMARY_PROMPT = (PromptBuilder()
 # PROPOSAL SECTION GENERATION
 # =============================================================================
 
-PROPOSAL_SECTION_GENERATION_SYSTEM_PROMPT = """You are an expert proposal writer specializing in creating comprehensive technical and business proposals for government and corporate tenders. Your role is to generate complete, well-written proposal sections that address all requirements and evaluation criteria."""
+PROPOSAL_SECTION_GENERATION_SYSTEM_PROMPT = """
+You are an expert proposal writer for enterprise and government tenders.
+
+CRITICAL RULES (MUST FOLLOW):
+- Generate FINAL, READY-TO-USE proposal content ONLY.
+- Do NOT include feedback, suggestions, comments, or review notes.
+- Do NOT explain your reasoning.
+- Do NOT include meta text (e.g., "this section covers").
+- Each section value MUST be a plain text string.
+- Do NOT return nested objects.
+- Do NOT add extra keys beyond section titles.
+
+Failure to follow these rules is considered an invalid response.
+"""
 
 PROPOSAL_SECTION_GENERATION_TEMPLATE = """Generate complete proposal sections based on the following project information.
 
@@ -235,22 +248,27 @@ ${recommended_actions}
 
 ## TASK
 Generate complete proposal sections that:
-1. Address all key requirements
-2. Follow recommended actions
-3. Are professional and compelling
-4. Include sufficient detail to demonstrate capability
+1. Fully address all key requirements
+2. Follow the recommended actions
+3. Are professional, persuasive, and submission-ready
+4. Contain NO feedback, NO explanations, and NO comments
 
-Respond with a JSON object where each key is a section name and each value is the complete content for that section:
+## OUTPUT FORMAT (STRICT)
+Return a VALID JSON object where:
+- Each key is a section title
+- Each value is the FINAL written content for that section as a STRING
+
+DO NOT:
+- Include feedback or suggestions
+- Nest objects
+- Include markdown
+- Explain anything
+
+## VALID EXAMPLE
 ```json
 {
-    "Executive Summary": "Complete executive summary content (300-500 words)...",
-    "Background": "Complete background section content...",
-    "Methodology": "Complete methodology section content...",
-    "Technical Approach": "Complete technical approach section content...",
-    "Project Management": "Complete project management section content...",
-    "Team and Qualifications": "Complete team and qualifications section content...",
-    "Timeline": "Complete timeline section content...",
-    "Budget": "Complete budget section content..."
+    "Executive Summary": "Full executive summary text...",
+    "Technical Approach": "Complete technical approach text..."
 }
 ```
 
@@ -266,6 +284,58 @@ PROPOSAL_SECTION_GENERATION_PROMPT = (PromptBuilder()
         "project_summary",
         "key_requirements",
         "recommended_actions",
+    ])
+    .build()
+)
+
+
+# =============================================================================
+# PROPOSAL REVIEW
+# =============================================================================
+
+PROPOSAL_REVIEW_SYSTEM_PROMPT = """You are an expert proposal reviewer with extensive experience evaluating technical and business proposals for government and corporate tenders. Your role is to provide constructive feedback that helps improve proposal quality and win probability."""
+
+PROPOSAL_REVIEW_TEMPLATE = """Review the following proposal sections and provide detailed feedback.
+
+## PROJECT SUMMARY
+${project_summary}
+
+## KEY REQUIREMENTS
+${key_requirements}
+
+## PROPOSAL SECTIONS
+${proposal_sections}
+
+## TASK
+Provide comprehensive review feedback that includes:
+1. Strengths of the current proposal
+2. Areas for improvement
+3. Missing elements that should be addressed
+4. Suggestions for strengthening weak sections
+5. Overall assessment of competitiveness
+
+Respond with a JSON object:
+```json
+{
+    "overall_rating": "Excellent/Good/Fair/Poor",
+    "strengths": ["List of key strengths"],
+    "weaknesses": ["List of areas needing improvement"],
+    "missing_elements": ["Elements not addressed"],
+    "recommendations": ["Specific improvement suggestions"],
+    "summary": "Brief overall assessment"
+}
+```"""
+
+PROPOSAL_REVIEW_PROMPT = (PromptBuilder()
+    .name("proposal_review")
+    .version("1.0.0")
+    .description("Review proposal content and provide feedback")
+    .system(PROPOSAL_REVIEW_SYSTEM_PROMPT)
+    .template(PROPOSAL_REVIEW_TEMPLATE)
+    .add_variables([
+        "project_summary",
+        "key_requirements",
+        "proposal_sections",
     ])
     .build()
 )
