@@ -47,7 +47,7 @@ class ProposalViewSet(BaseModelViewSet):
             
             # Get tender
             try:
-                tender = Tender.objects.get(id=tender_id)
+                tender = Tender.objects.select_related('created_by').get(id=tender_id)
             except (ObjectDoesNotExist, ValueError):
                 raise NotFound({"detail": f"Tender with id {tender_id} not found"})
             

@@ -23,7 +23,7 @@ class TenderViewSet(BaseModelViewSet):
     """
     Tender CRUD + AI readiness
     """
-    queryset = Tender.objects.filter(is_active=True).select_related('created_by').prefetch_related('tags')
+    queryset = Tender.objects.filter(is_active=True).select_related('created_by').prefetch_related('tags', 'tender_documents_tenders')
     serializer_class = TenderSerializer
     filterset_class = TenderFilter
     ordering_fields = ["created_at", "deadline"]
