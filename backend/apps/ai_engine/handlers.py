@@ -23,8 +23,9 @@ class AIRequestHandler:
         "tender-preprocessing": "handle_tender_preprocessing",
         "proposal-section-generation": "handle_proposal_section_generation",
         "proposal-review": "handle_proposal_review",
+        "proposal-checklist": "handle_proposal_checklist",
         # Add more tasks here
-    }
+    };
 
     def __init__(self):
         self.provider = get_ai_provider()  # Get the configured AI provider
@@ -601,3 +602,84 @@ class AIRequestHandler:
                 "recommendations": ["Please review manually"],
                 "summary": f"Review generation failed: {str(e)}"
             }
+            
+    def handle_proposal_checklist(self, data):
+        """
+        Generate AI-powered checklist for missing sections or improvements in a proposal
+        """
+        context = data.get("context", {})
+        proposal_sections = data.get("proposal_sections", {})
+    
+        if not context:
+            raise ValueError("context is required for proposal-checklist")
+    
+        # Format context for prompt
+        def format_item(item):
+            if isinstance(item, dict):
+                if "summary" in item:
+                    return item.get("summary", "")
+                elif "requirements" in item:
+                    return "\n".join([f"- {r}" if isinstance(r, str) else str(r) for r in item.get("requirements", [])])
+                else:
+                    return json.dumps(item)
+            elif isinstance(item, list):
+                return "\n".join([str(i) for i in item])
+            else:
+                return str(item)
+    
+        summary_text = format_item(context.get("summary", ""))
+        key_requirements_text = format_item(context.get("requirements", []))
+        actions_text = format_item(context.get("analysis", {}).get("recommended_actions", []))
+    
+        # Render prompt
+        try:
+            prompt_template = PromptRegistry.get("proposal_checklist")
+        except KeyError:
+            logger.warning("proposal_checklist prompt not found, using fallback")
+            from .prompts.proposal_generation import PROPOSAL_CHECKLIST_PROMPT
+            prompt_template = PROPOSAL_CHECKLIST_PROMPT
+    
+        prompt = prompt_template.render(
+            project_summary=summary_text,
+            key_requirements=key_requirements_text,
+            proposal_sections=proposal_sections,
+            recommended_actions=actions_text
+        )
+    
+        # Configure generation parameters
+        config = AIGenerationConfig(
+            model="gpt-4o-mini",
+            temperature=0.3,
+            max_tokens=1000
+        )
+    
+        # Call AI provider
+        response = self.provider.generate(
+            prompt=prompt,
+            system_prompt=getattr(prompt_template, "system_prompt", ""),
+            config=config
+        )
+    
+        # Parse JSON
+        import re
+        content = response.content
+        json_match = re.search(r'```(?:json)?\s*(\{.*\})\s*```', content, re.DOTALL)
+        if json_match:
+            content = json_match.group(1).strip()
+        else:
+            json_match = re.search(r'\{.*\}', content, re.DOTALL)
+            if json_match:
+                content = json_match.group(0).strip()
+    
+        try:
+            checklist_dict = json.loads(content)
+            if not isinstance(checklist_dict, dict):
+                raise ValueError("Response is not a dictionary")
+            return checklist_dict
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse checklist JSON: {e}. Content: {content[:500]}")
+            return {
+                "checklist": [],
+                "message": f"Checklist generation failed: {str(e)}"
+            }
+    

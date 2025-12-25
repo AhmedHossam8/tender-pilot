@@ -17,7 +17,6 @@ def generate_proposal_sections(context):
 
     return ai_handler.execute(payload)
 
-
 def generate_proposal_review(context, proposal_sections=None):
     """
     Generate AI review feedback for a proposal
@@ -30,6 +29,24 @@ def generate_proposal_review(context, proposal_sections=None):
             "summary": context.get("summary", ""),
             "requirements": context.get("requirements", []),
             "analysis": context.get("analysis", {})
+        },
+        "proposal_sections": proposal_sections or {}
+    }
+
+    return ai_handler.execute(payload)
+
+def generate_proposal_checklist(context, proposal_sections=None):
+    """
+    Generate AI-powered checklist for missing sections or improvements.
+    """
+    ai_handler = AIRequestHandler()
+
+    payload = {
+        "task": "proposal-checklist",
+        "context": {
+            "summary": context.get("summary", ""),
+            "requirements": context.get("requirements", []),
+            "analysis": context.get("analysis", {}),
         },
         "proposal_sections": proposal_sections or {}
     }

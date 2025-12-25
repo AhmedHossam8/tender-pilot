@@ -339,3 +339,59 @@ PROPOSAL_REVIEW_PROMPT = (PromptBuilder()
     ])
     .build()
 )
+
+
+# =============================================================================
+# PROPOSAL CHECKLIST GENERATION
+# =============================================================================
+
+PROPOSAL_CHECKLIST_SYSTEM_PROMPT = """You are an expert proposal assistant. Your role is to generate a checklist of items that are missing, incomplete, or need improvement in a proposal based on the provided context and sections. The checklist should be actionable and prioritized."""
+
+PROPOSAL_CHECKLIST_TEMPLATE = """Generate a checklist for the proposal.
+
+## PROJECT SUMMARY
+${project_summary}
+
+## KEY REQUIREMENTS
+${key_requirements}
+
+## PROPOSAL SECTIONS
+${proposal_sections}
+
+## RECOMMENDED ACTIONS
+${recommended_actions}
+
+## TASK
+Identify missing or incomplete sections, areas not aligned with requirements, and suggestions to improve proposal completeness. Respond with a JSON object:
+
+```json
+{
+    "checklist": [
+        {
+            "item": "Missing executive summary",
+            "priority": "high",
+            "reason": "Executive summary is required for evaluation"
+        },
+        {
+            "item": "Technical approach incomplete",
+            "priority": "medium",
+            "reason": "Key requirements not fully addressed"
+        }
+    ]
+}
+```"""
+
+PROPOSAL_CHECKLIST_PROMPT = (PromptBuilder()
+    .name("proposal_checklist")
+    .version("1.0.0")
+    .description("Generate actionable checklist for proposal completeness and quality")
+    .system(PROPOSAL_CHECKLIST_SYSTEM_PROMPT)
+    .template(PROPOSAL_CHECKLIST_TEMPLATE)
+    .add_variables([
+        "project_summary",
+        "key_requirements",
+        "proposal_sections",
+        "recommended_actions",
+    ])
+    .build()
+)

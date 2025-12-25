@@ -6,7 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from .models import Proposal, ProposalSection, ProposalDocument, ProposalAuditLog
 from apps.tenders.models import Tender
 from .services.context_builder import build_proposal_context
-from .services.writer import generate_proposal_sections, generate_proposal_review
+from .services.writer import generate_proposal_sections, generate_proposal_review, generate_proposal_checklist
 from .services.document_generator import generate_proposal_document
 from common.viewsets import BaseModelViewSet
 from .serializers import ProposalSerializer
@@ -300,6 +300,15 @@ class ProposalViewSet(BaseModelViewSet):
         proposal.ai_feedback = generate_proposal_review(context, sections)
         proposal.save()
         return Response({"status": "AI feedback generated", "ai_feedback": proposal.ai_feedback}, status=status.HTTP_200_OK)
+    
+    @action(detail=True, methods=["post"], url_path="generate-checklist")
+    def generate_checklist(self, request, pk=None):
+        proposal = self.get_object()
+        context = build_proposal_context(proposal.tender)
+        sections = {s.name: s.content for s in proposal.sections.all()}
+
+        checklist_data = generate_proposal_checklist(context, sections)
+        return Response({"checklist": checklist_data})
     
     @action(detail=True, methods=["get"])
     def preview(self, request, pk=None):
