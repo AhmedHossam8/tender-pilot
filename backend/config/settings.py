@@ -185,8 +185,11 @@ REST_FRAMEWORK = {
         'login': '10/hour',
         "register": "5/hour",
 
-        
+
         'admin':"100/hour",
+
+        'proposal_write':'5/hour',
+        'proposal_read':'60/hour',
 
         #custom Throttle
         "document_upload":'5/hour',

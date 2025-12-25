@@ -1,13 +1,27 @@
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.views import APIView 
-from rest_framework.generics import RetrieveUpdateAPIView , ListAPIView , RetrieveUpdateDestroyAPIView
+from rest_framework.generics import (
+     RetrieveUpdateAPIView ,
+       ListAPIView , 
+       RetrieveUpdateDestroyAPIView
+)
 from rest_framework import generics, permissions
-from .serializers import LoginSerializer , RegisterSerializer , UserProfileSerializer , AdminUserSerializer
+from .serializers import (
+    LoginSerializer , 
+    RegisterSerializer ,
+    UserProfileSerializer ,
+    AdminUserSerializer
+)
+
 from rest_framework.permissions import AllowAny , IsAuthenticated 
 from rest_framework.response import Response
 from .permissions import IsAdmin, IsOwnerOrAdmin
 from .models import User
-from .throttles import LoginThrottle , RegisterThrottle , AdminThrottle
+from .throttles import (
+    LoginThrottle
+    ,RegisterThrottle 
+    ,AdminThrottle
+)
 
 class RegisterAPIView(generics.CreateAPIView):
     permission_classes = [AllowAny]

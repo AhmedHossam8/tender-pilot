@@ -6,3 +6,12 @@ class DocumentUploadThrottling(UserRateThrottle):
 
 class DocumentReadThrottling(UserRateThrottle):
     scope = 'document_read'
+
+
+
+class ProposalWriteThrottle(UserRateThrottle):
+    scope = 'proposal_write'
+
+
+class ProposalReadTrhottle(UserRateThrottle):
+    scope = 'proposal_read'
