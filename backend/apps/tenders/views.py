@@ -8,6 +8,16 @@ from .serializers import TenderSerializer, TenderRequirementSerializer
 from apps.documents.serializers import TenderDocumentSerializer
 from django.db.models import Q
 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
+from django_filters import rest_framework as filters
+
+class TenderFilter(filters.FilterSet):
+    status = filters.CharFilter(field_name="status", lookup_expr="iexact")
+    deadline_before = filters.DateTimeFilter(field_name="deadline", lookup_expr="lte")
+    deadline_after = filters.DateTimeFilter(field_name="deadline", lookup_expr="gte")
+
+    class Meta:
+        model = Tender
+        fields = ["status", "deadline_before", "deadline_after"]
 
 class TenderViewSet(BaseModelViewSet):
     """
@@ -15,7 +25,7 @@ class TenderViewSet(BaseModelViewSet):
     """
     queryset = Tender.objects.filter(is_active=True)
     serializer_class = TenderSerializer
-    filterset_fields = ["status", "deadline"]
+    filterset_class = TenderFilter
     ordering_fields = ["created_at", "deadline"]
     search_fields = ['title', 'issuing_entity', 'tender_documents_tenders__extracted_text']
     
