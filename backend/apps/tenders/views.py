@@ -6,7 +6,18 @@ from .models import Tender, TenderRequirement
 from apps.documents.models import TenderDocument
 from .serializers import TenderSerializer, TenderRequirementSerializer
 from apps.documents.serializers import TenderDocumentSerializer
+from django.db.models import Q
+from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
+from django_filters import rest_framework as filters
 
+class TenderFilter(filters.FilterSet):
+    status = filters.CharFilter(field_name="status", lookup_expr="iexact")
+    deadline_before = filters.DateTimeFilter(field_name="deadline", lookup_expr="lte")
+    deadline_after = filters.DateTimeFilter(field_name="deadline", lookup_expr="gte")
+
+    class Meta:
+        model = Tender
+        fields = ["status", "deadline_before", "deadline_after"]
 
 class TenderViewSet(BaseModelViewSet):
     """
@@ -14,8 +25,38 @@ class TenderViewSet(BaseModelViewSet):
     """
     queryset = Tender.objects.filter(is_active=True)
     serializer_class = TenderSerializer
-    filterset_fields = ["status", "deadline"]
+    filterset_class = TenderFilter
     ordering_fields = ["created_at", "deadline"]
+    search_fields = ['title', 'issuing_entity', 'tender_documents_tenders__extracted_text']
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        # Full-text search
+        search_query = self.request.query_params.get("search")
+        if search_query:
+            vector = (
+                SearchVector("title", weight="A")
+                + SearchVector("issuing_entity", weight="A")
+                + SearchVector("tender_documents_tenders__extracted_text", weight="B")
+            )
+            query = SearchQuery(search_query)
+            queryset = (
+                queryset
+                .annotate(rank=SearchRank(vector, query))
+                .filter(rank__gte=0.1)
+                .order_by("-rank")
+            )
+
+        # Tag filter
+        tag_name = self.request.query_params.get("tag")
+        if tag_name:
+            queryset = queryset.filter(
+                tags__tag__name__iexact=tag_name
+            ).distinct()
+    
+        return queryset.distinct()
+
 
     def perform_update(self, serializer):
         """
