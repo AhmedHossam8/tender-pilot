@@ -34,6 +34,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         ADMIN = "ADMIN", "Admin"
         PROPOSAL_MANAGER = "PROPOSAL_MANAGER", "Proposal Manager"
         REVIEWER = "REVIEWER", "Reviewer"
+        WRITER = "WRITER", "Writer"
 
     role = models.CharField(
         max_length=30,

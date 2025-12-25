@@ -3,20 +3,31 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import NotFound, ValidationError
 from django.core.exceptions import ObjectDoesNotExist
-from .models import Proposal, ProposalSection, ProposalDocument
+from .models import Proposal, ProposalSection, ProposalDocument, ProposalAuditLog
 from apps.tenders.models import Tender
 from .services.context_builder import build_proposal_context
-from .services.writer import generate_proposal_sections
+from .services.writer import generate_proposal_sections, generate_proposal_review
 from .services.document_generator import generate_proposal_document
 from common.viewsets import BaseModelViewSet
 from .serializers import ProposalSerializer
 from rest_framework.permissions import IsAuthenticated
 import logging
+import json
 
 logger = logging.getLogger(__name__)
 
 class ProposalViewSet(BaseModelViewSet):
-    queryset = Proposal.objects.all()
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.role == user.Role.ADMIN:
+            return Proposal.objects.all()
+
+        if user.role == user.Role.REVIEWER:
+            return Proposal.objects.filter(status="in_review")
+
+        return Proposal.objects.filter(created_by=user)
+    
     serializer_class = ProposalSerializer
     permission_classes = [IsAuthenticated]
     filterset_fields = ["tender", "status"]
@@ -37,6 +48,17 @@ class ProposalViewSet(BaseModelViewSet):
             
             # Create proposal
             try:
+                existing = Proposal.objects.filter(
+                    tender=tender,
+                    created_by=request.user,
+                    status="draft"
+                ).first()
+                if existing:
+                    return Response({
+                        "detail": "Draft proposal already exists",
+                        "proposal_id": existing.id
+                    }, status=status.HTTP_200_OK)
+
                 proposal = Proposal.objects.create(
                     tender=tender,
                     created_by=request.user,
@@ -65,18 +87,15 @@ class ProposalViewSet(BaseModelViewSet):
             # Generate sections
             try:
                 ai_sections = generate_proposal_sections(context)
-                
+                logger.debug("AI sections generated: %s", list(ai_sections.keys()))
                 # Validate that ai_sections is a dictionary
                 if not isinstance(ai_sections, dict):
                     logger.error(f"AI sections is not a dictionary: {type(ai_sections)}")
                     raise ValidationError({"detail": "Invalid response from AI service"})
                 
+
             except ValueError as e:
                 logger.error(f"Error generating proposal sections: {e}", exc_info=True)
-                proposal.delete()
-                raise ValidationError({"detail": f"Failed to generate proposal sections: {str(e)}"})
-            except Exception as e:
-                logger.error(f"Unexpected error generating sections: {e}", exc_info=True)
                 proposal.delete()
                 raise ValidationError({"detail": f"Failed to generate proposal sections: {str(e)}"})
             
@@ -87,11 +106,9 @@ class ProposalViewSet(BaseModelViewSet):
                         proposal=proposal,
                         name=name,
                         content=str(content) if content else "",
-                        ai_generated=True
                     )
             except Exception as e:
                 logger.error(f"Error creating proposal sections: {e}", exc_info=True)
-                # Don't delete proposal, but log the error
                 raise ValidationError({"detail": f"Failed to create proposal sections: {str(e)}"})
             
             return Response(
@@ -107,40 +124,95 @@ class ProposalViewSet(BaseModelViewSet):
             raise ValidationError({"detail": f"An unexpected error occurred: {str(e)}"})
 
     @action(detail=True, methods=["post"])
-    def submit(self, request, pk=None):
-        """Mark proposal as final/submitted"""
+    def submit_for_review(self, request, pk=None):
+        """Proposal writer moves draft → in_review"""
         proposal = self.get_object()
-        
-        if proposal.status == 'final':
-            raise ValidationError({"detail": "Proposal is already submitted"})
-        
-        proposal.status = 'final'
+        if request.user.role != request.user.Role.WRITER or request.user != proposal.created_by:
+            raise ValidationError({"detail": "Only proposal writers can submit proposals for review"})
+
+        if proposal.status != 'draft':
+            raise ValidationError({"detail": "Only draft proposals can be submitted for review"})
+
+        proposal.status = 'in_review'
         proposal.save()
-        
-        logger.info(f"Proposal {proposal.id} submitted by user {request.user.id}")
-        
-        return Response({
-            "status": "Proposal submitted",
-            "proposal_id": proposal.id,
-            "status": proposal.status
-        }, status=status.HTTP_200_OK)
+
+        ProposalAuditLog.objects.create(
+            proposal=proposal,
+            user=request.user,
+            action="submit_for_review"
+        )
+
+        return Response({"status": "Proposal submitted for review", "proposal_id": proposal.id}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["post"])
     def approve(self, request, pk=None):
-        """Approve a proposal (placeholder for future approval workflow)"""
+        """Reviewer approves proposal (in_review → approved)"""
         proposal = self.get_object()
+        if request.user.role != request.user.Role.REVIEWER:
+            raise ValidationError({"detail": "Only reviewers can approve proposals"})
+        if proposal.status != 'in_review':
+            raise ValidationError({"detail": "Proposal must be in review state to approve"})
         
-        logger.info(f"Proposal {proposal.id} approved by user {request.user.id}")
+        proposal.status = 'approved'
+        proposal.save()
         
-        return Response({
-            "status": "Proposal approved",
-            "proposal_id": proposal.id
-        }, status=status.HTTP_200_OK)
+        ProposalAuditLog.objects.create(
+        proposal=proposal,
+        user=request.user,
+        action="approve"
+        )
+        
+        return Response({"status": "Proposal approved", "proposal_id": proposal.id}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"])
+    def reject(self, request, pk=None):
+        """Reviewer reject proposal (in_review → draft)"""
+        proposal = self.get_object()
+        if request.user.role != request.user.Role.REVIEWER:
+            raise ValidationError({"detail": "Only reviewers can approve proposals"})
+        if proposal.status != 'in_review':
+            raise ValidationError({"detail": "Proposal must be in review state to approve"})
+        
+        proposal.status = 'draft'
+        proposal.save()
+        
+        ProposalAuditLog.objects.create(
+            proposal=proposal,
+            user=request.user,
+            action="reject"
+        )
+        
+        return Response({"status": "Proposal rejected", "proposal_id": proposal.id}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"])
+    def submit(self, request, pk=None):
+        """Proposal manager submits proposal (approved → submitted)"""
+        proposal = self.get_object()
+        if request.user.role not in [request.user.Role.PROPOSAL_MANAGER, request.user.Role.ADMIN]:
+            raise ValidationError({"detail": "Only proposal managers can submit proposals"})
+        if proposal.status != 'approved':
+            raise ValidationError({"detail": "Proposal must be approved before final submission"})
+        
+        proposal.status = 'submitted'
+        proposal.save()
+
+        ProposalAuditLog.objects.create(
+        proposal=proposal,
+        user=request.user,
+        action="submit"
+        )
+        
+        return Response({"status": "Proposal submitted", "proposal_id": proposal.id}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["post"], url_path="sections/(?P<section_id>[^/.]+)/regenerate")
     def regenerate_section(self, request, pk=None, section_id=None):
         """Regenerate a specific section using AI"""
         proposal = self.get_object()
+        
+        if proposal.status not in ["draft", "in_review"]:
+            raise ValidationError({
+                "detail": "Cannot regenerate sections after approval"
+            })
         
         try:
             section = ProposalSection.objects.get(id=section_id, proposal=proposal)
@@ -159,6 +231,13 @@ class ProposalViewSet(BaseModelViewSet):
                 section.content = str(ai_sections[section.name]) if ai_sections[section.name] else ""
                 section.ai_generated = True
                 section.save()
+                
+                ProposalAuditLog.objects.create(
+                    proposal=proposal,
+                    user=request.user,
+                    action="regenerate_section",
+                    section_name=section.name
+                )
                 
                 return Response({
                     "status": "Section regenerated",
@@ -182,6 +261,11 @@ class ProposalViewSet(BaseModelViewSet):
         """Generate DOCX document from proposal"""
         proposal = self.get_object()
         
+        if proposal.status not in ["approved", "submitted"]:
+            raise ValidationError({
+                "detail": "Proposal must be approved before document generation"
+            })
+        
         try:
             document_file = generate_proposal_document(proposal)
             
@@ -190,6 +274,12 @@ class ProposalViewSet(BaseModelViewSet):
                 proposal=proposal,
                 file=document_file,
                 type='docx'
+            )
+            
+            ProposalAuditLog.objects.create(
+                proposal=proposal,
+                user=request.user,
+                action="generate_document"
             )
             
             return Response({
@@ -201,3 +291,32 @@ class ProposalViewSet(BaseModelViewSet):
         except Exception as e:
             logger.error(f"Error generating document: {e}", exc_info=True)
             raise ValidationError({"detail": f"Failed to generate document: {str(e)}"})
+    
+    @action(detail=True, methods=["post"])
+    def generate_feedback(self, request, pk=None):
+        proposal = self.get_object()
+        context = build_proposal_context(proposal.tender)
+        sections = {s.name: s.content for s in proposal.sections.all()}
+        proposal.ai_feedback = generate_proposal_review(context, sections)
+        proposal.save()
+        return Response({"status": "AI feedback generated", "ai_feedback": proposal.ai_feedback}, status=status.HTTP_200_OK)
+    
+    @action(detail=True, methods=["get"])
+    def preview(self, request, pk=None):
+        proposal = self.get_object()
+
+        return Response({
+            "id": proposal.id,
+            "title": proposal.title,
+            "status": proposal.status,
+            "ai_feedback": proposal.ai_feedback,
+            "sections": [
+                {
+                    "id": s.id,
+                    "name": s.name,
+                    "content": s.content,
+                    "ai_generated": s.ai_generated
+                }
+                for s in proposal.sections.all()
+            ]
+        })
