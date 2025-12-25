@@ -29,6 +29,7 @@ from .services.analysis_service import (
     ComplianceCheckService,
     ProposalOutlineService,
 )
+from .services.regeneration import AIRegenerationService
 from .serializers import (
     TenderAnalysisRequestSerializer,
     TenderAnalysisResponseSerializer,
@@ -37,12 +38,17 @@ from .serializers import (
     ProposalOutlineRequestSerializer,
     ProposalOutlineResponseSerializer,
     AIErrorResponseSerializer,
+    RegenerateRequestSerializer,
+    RegenerateResponseSerializer,
+    RegenerationHistorySerializer,
 )
 from .exceptions import (
     AIProviderError,
     AIRateLimitError,
     AIInvalidResponseError,
 )
+from .decorators import ai_rate_limit
+from .permissions import CanUseAI, CanRegenerateAI, check_ai_quota, get_user_ai_limits
 
 logger = logging.getLogger(__name__)
 
@@ -84,10 +90,9 @@ class TenderAnalysisView(APIView):
     Rate Limit: 10 requests per hour per user
     """
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CanUseAI]
     
-    # TODO: Add rate limiting decorator when django-ratelimit is installed
-    # @ai_rate_limit(rate='10/h')
+    @ai_rate_limit(rate='10/h')
     def post(self, request, tender_id):
         """Handle tender analysis request."""
         try:
@@ -208,10 +213,9 @@ class ComplianceCheckView(APIView):
     Rate Limit: 20 requests per hour per user
     """
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CanUseAI]
     
-    # TODO: Add rate limiting
-    # @ai_rate_limit(rate='20/h')
+    @ai_rate_limit(rate='20/h')
     def post(self, request, tender_id):
         """Handle compliance check request."""
         try:
@@ -330,10 +334,9 @@ class ProposalOutlineView(APIView):
     Rate Limit: 15 requests per hour per user
     """
     
-    permission_classes = [IsAuthenticated]
+    permission_classes = [CanUseAI]
     
-    # TODO: Add rate limiting
-    # @ai_rate_limit(rate='15/h')
+    @ai_rate_limit(rate='15/h')
     def post(self, request, tender_id):
         """Handle proposal outline generation request."""
         try:
@@ -457,4 +460,198 @@ class AIHealthCheckView(APIView):
                     "message": str(e)
                 },
                 status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
+
+
+class RegenerateResponseView(APIView):
+    """
+    Regenerate an AI response with improvements.
+    
+    POST /api/v1/ai/response/{response_id}/regenerate
+    
+    Request:
+        {
+            "feedback": "Make it more concise",
+            "temperature": 0.7,
+            "style": "concise"
+        }
+    
+    Response:
+        {
+            "new_response_id": "uuid",
+            "content": "...",
+            "improvements": ["Applied feedback", "..."],
+            "confidence": {...},
+            "parent_response_id": "uuid",
+            "regeneration_count": 2
+        }
+    
+    This endpoint allows users to:
+    - Request improved versions of AI outputs
+    - Provide feedback on what to change
+    - Adjust generation parameters
+    - Track regeneration history
+    
+    Permissions:
+    - Requires CanRegenerateAI permission (costly operation)
+    - Users can only regenerate their own responses (unless admin)
+    
+    Rate Limits:
+    - More restrictive than standard AI operations
+    - Limited to prevent abuse
+    """
+    
+    permission_classes = [CanRegenerateAI]
+    
+    @ai_rate_limit(group='regenerate', rate='5/hour')
+    def post(self, request, response_id):
+        """
+        Regenerate an AI response.
+        
+        Args:
+            request: HTTP request with regeneration parameters
+            response_id: UUID of response to regenerate
+        
+        Returns:
+            Response with new generated content
+        """
+        logger.info(
+            f"Regenerate request from user {request.user.id} "
+            f"for response {response_id}"
+        )
+        
+        # Validate input
+        serializer = RegenerateRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        try:
+            # Execute regeneration
+            service = AIRegenerationService()
+            result = service.regenerate_response(
+                response_id=response_id,
+                user=request.user,
+                **serializer.validated_data
+            )
+            
+            # Format response
+            response_serializer = RegenerateResponseSerializer(data=result)
+            response_serializer.is_valid(raise_exception=True)
+            
+            return Response(
+                response_serializer.data,
+                status=status.HTTP_201_CREATED
+            )
+            
+        except DjangoValidationError as e:
+            logger.warning(f"Regeneration validation failed: {e}")
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        except AIProviderError as e:
+            logger.error(f"AI provider error during regeneration: {e}")
+            error_serializer = AIErrorResponseSerializer(data={
+                "error": e.message,
+                "code": "provider_error",
+                "details": {"provider": e.provider}
+            })
+            error_serializer.is_valid(raise_exception=True)
+            return Response(
+                error_serializer.data,
+                status=status.HTTP_503_SERVICE_UNAVAILABLE
+            )
+            
+        except AIRateLimitError as e:
+            logger.warning(f"Rate limit hit during regeneration: {e}")
+            error_serializer = AIErrorResponseSerializer(data={
+                "error": e.message,
+                "code": "rate_limit",
+                "retry_after": e.retry_after
+            })
+            error_serializer.is_valid(raise_exception=True)
+            return Response(
+                error_serializer.data,
+                status=status.HTTP_429_TOO_MANY_REQUESTS
+            )
+            
+        except Exception as e:
+            logger.error(f"Unexpected error in regeneration: {e}", exc_info=True)
+            return Response(
+                {"error": "An unexpected error occurred"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class RegenerationHistoryView(APIView):
+    """
+    Get the full regeneration history for a response.
+    
+    GET /api/v1/ai/response/{response_id}/history
+    
+    Response:
+        {
+            "root": {
+                "id": "uuid",
+                "created_at": "...",
+                "confidence_score": 0.85,
+                ...
+            },
+            "chain": [{...}, {...}],
+            "current": {...},
+            "total_regenerations": 3
+        }
+    
+    This endpoint provides:
+    - Complete regeneration chain
+    - Root (original) response
+    - All intermediate versions
+    - Current response details
+    
+    Useful for:
+    - Comparing different versions
+    - Understanding improvement progression
+    - Debugging response quality issues
+    """
+    
+    permission_classes = [CanUseAI]
+    
+    def get(self, request, response_id):
+        """
+        Retrieve regeneration history.
+        
+        Args:
+            request: HTTP request
+            response_id: UUID of any response in the chain
+        
+        Returns:
+            Response with complete history
+        """
+        logger.info(
+            f"History request from user {request.user.id} "
+            f"for response {response_id}"
+        )
+        
+        try:
+            service = AIRegenerationService()
+            history = service.get_regeneration_history(response_id)
+            
+            # Format response
+            serializer = RegenerationHistorySerializer(data=history)
+            serializer.is_valid(raise_exception=True)
+            
+            return Response(serializer.data)
+            
+        except DjangoValidationError as e:
+            logger.warning(f"History validation failed: {e}")
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_404_NOT_FOUND
+            )
+            
+        except Exception as e:
+            logger.error(f"Unexpected error in history: {e}", exc_info=True)
+            return Response(
+                {"error": "An unexpected error occurred"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
