@@ -35,6 +35,8 @@ class TenderDocument(models.Model):
     class Meta:
         indexes = [
             models.Index(fields=["ai_processed"]),
+            models.Index(fields=["tender", "is_active"]),
+            models.Index(fields=["created_by"]),
         ]
         constraints = [
             models.UniqueConstraint(fields=["tender", "file"], name="unique_document_per_tender_docs")
