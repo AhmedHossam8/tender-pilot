@@ -82,3 +82,27 @@ class ProposalSectionViewSet(BaseModelViewSet):
         
         serializer = self.get_serializer(section)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["get"])
+    def ai_feedback(self, request, pk=None):
+        """Get AI-assisted suggestions for the proposal (reviewer only)"""
+        proposal = self.get_object()
+    
+        # Only reviewers can access AI feedback
+        check_user_role(request.user, ["reviewer"])
+    
+        if proposal.status != "in_review":
+            return Response(
+                {"detail": "AI feedback is only available while proposal is in review"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    
+        feedback = proposal.ai_feedback or "No AI suggestions available yet."
+    
+        return Response(
+            {
+                "proposal_id": proposal.id,
+                "ai_feedback": feedback
+            },
+            status=status.HTTP_200_OK
+        )

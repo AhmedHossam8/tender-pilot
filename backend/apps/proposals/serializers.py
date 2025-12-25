@@ -6,7 +6,13 @@ class ProposalSectionSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = ProposalSection
-        fields = ['id', 'proposal_id', 'name', 'content', 'ai_generated']
+        fields = [
+            'id',
+            'proposal_id',
+            'name',
+            'content',
+            'ai_generated',
+        ]
         read_only_fields = ['id', 'proposal_id', 'name']
 
 class ProposalDocumentSerializer(serializers.ModelSerializer):
