@@ -22,13 +22,15 @@ class ProposalViewSet(BaseModelViewSet):
     def get_queryset(self):
         user = self.request.user
 
+        queryset = Proposal.objects.select_related('tender', 'created_by').prefetch_related('sections', 'documents')
+
         if user.role == user.Role.ADMIN:
-            return Proposal.objects.all()
+            return queryset
 
         if user.role == user.Role.REVIEWER:
-            return Proposal.objects.filter(status="in_review")
+            return queryset.filter(status="in_review")
 
-        return Proposal.objects.filter(created_by=user)
+        return queryset.filter(created_by=user)
     
     serializer_class = ProposalSerializer
     permission_classes = [IsAuthenticated]

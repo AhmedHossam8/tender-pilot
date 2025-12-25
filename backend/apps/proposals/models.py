@@ -24,8 +24,11 @@ class Proposal(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
-    def __str__(self):
-        return f"{self.title} ({self.tender.title})"
+    class Meta:
+        indexes = [
+            models.Index(fields=['status']),
+            models.Index(fields=['created_by', 'status']),
+        ]
 
 class ProposalSection(models.Model):
     proposal = models.ForeignKey(Proposal, on_delete=models.CASCADE, related_name='sections')

@@ -14,7 +14,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class TenderDocumentViewSet(BaseModelViewSet):
-    queryset = TenderDocument.objects.filter(is_active=True)
+    queryset = TenderDocument.objects.filter(is_active=True).select_related('tender', 'created_by')
     serializer_class = TenderDocumentSerializer
     filterset_fields = ["tender"]
     ordering_fields = ["created_at"]

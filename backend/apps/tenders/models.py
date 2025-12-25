@@ -24,6 +24,8 @@ class Tender(models.Model):
     class Meta:
         indexes = [
             models.Index(fields=["status", "deadline"]),
+            models.Index(fields=["is_active", "status"]),
+            models.Index(fields=["created_by"]),
         ]
 
     def __str__(self):
