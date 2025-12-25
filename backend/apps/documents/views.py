@@ -10,6 +10,7 @@ from .permissions import DocumentPermission
 from django.utils import timezone
 import json
 import logging
+from common.throttles import DocumentUploadThrottling , DocumentReadThrottling
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,9 @@ class TenderDocumentViewSet(BaseModelViewSet):
         instance.is_active = False
         instance.save()
 
-    @action(detail=False, methods=["post"])
+    @action(detail=False,
+            methods=["post"],
+            throttle_classes = [DocumentUploadThrottling])
     def upload(self, request):
         """Upload a tender document and trigger AI preprocessing"""
         ai_result = None
@@ -109,7 +112,10 @@ class TenderDocumentViewSet(BaseModelViewSet):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @action(detail=True, methods=["get"], url_path="nested")
+    @action(detail=True,
+             methods=["get"],
+             url_path="nested",
+             throttle_classes = [DocumentReadThrottling])
     def list_by_tender(self, request, pk=None):
         """List all documents for a specific tender"""
         try:

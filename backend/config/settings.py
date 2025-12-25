@@ -173,6 +173,25 @@ REST_FRAMEWORK = {
         'rest_framework.filters.OrderingFilter',
         'rest_framework.filters.SearchFilter'
     ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '50/hour',      
+        'user': '50/hour',    
+
+        'login': '10/hour',
+        "register": "5/hour",
+
+        
+        'admin':"100/hour",
+
+        #custom Throttle
+        "document_upload":'5/hour',
+        "document_read":'60/hour'
+    },
 }
 
 # Adjust the the LifeTime for Access Token and for REfresh token
