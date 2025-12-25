@@ -6,6 +6,7 @@ from .models import Tender, TenderRequirement
 from apps.documents.models import TenderDocument
 from .serializers import TenderSerializer, TenderRequirementSerializer
 from apps.documents.serializers import TenderDocumentSerializer
+from django.db.models import Q
 
 
 class TenderViewSet(BaseModelViewSet):
@@ -16,6 +17,18 @@ class TenderViewSet(BaseModelViewSet):
     serializer_class = TenderSerializer
     filterset_fields = ["status", "deadline"]
     ordering_fields = ["created_at", "deadline"]
+    search_fields = ['title', 'issuing_entity', 'tender_documents_tenders__extracted_text']
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        search_query = self.request.query_params.get('search', None)
+        if search_query:
+            queryset = queryset.filter(
+                Q(title__icontains=search_query) |
+                Q(issuing_entity__icontains=search_query) |
+                Q(tender_documents_docs__extracted_text__icontains=search_query)
+            ).distinct()
+        return queryset
 
     def perform_update(self, serializer):
         """

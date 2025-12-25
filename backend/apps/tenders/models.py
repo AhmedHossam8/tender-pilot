@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models import Q
 from django.contrib.auth import get_user_model
+from django.contrib.postgres.indexes import GinIndex
 
 User = get_user_model()
 
