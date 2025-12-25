@@ -13,8 +13,10 @@ from .serializers import ProposalSerializer
 from rest_framework.permissions import IsAuthenticated
 import logging
 import json
+from .services.ai_request_handler import AIRequestHandler
 
 logger = logging.getLogger(__name__)
+ai_handler = AIRequestHandler()
 
 class ProposalViewSet(BaseModelViewSet):
     def get_queryset(self):
@@ -35,6 +37,7 @@ class ProposalViewSet(BaseModelViewSet):
 
     @action(detail=False, methods=["post"], url_path="generate-from-tender/(?P<tender_id>[^/.]+)")
     def generate_from_tender(self, request, tender_id=None):
+        ai_handler = AIRequestHandler()
         try:
             # Validate tender_id
             if not tender_id:
@@ -43,84 +46,77 @@ class ProposalViewSet(BaseModelViewSet):
             # Get tender
             try:
                 tender = Tender.objects.get(id=tender_id)
-            except (ObjectDoesNotExist, ValueError) as e:
+            except (ObjectDoesNotExist, ValueError):
                 raise NotFound({"detail": f"Tender with id {tender_id} not found"})
             
-            # Create proposal
-            try:
-                existing = Proposal.objects.filter(
-                    tender=tender,
-                    created_by=request.user,
-                    status="draft"
-                ).first()
-                if existing:
-                    return Response({
-                        "detail": "Draft proposal already exists",
-                        "proposal_id": existing.id
-                    }, status=status.HTTP_200_OK)
-
-                proposal = Proposal.objects.create(
-                    tender=tender,
-                    created_by=request.user,
-                    title=f"Technical Proposal – {tender.title}"
-                )
-            except Exception as e:
-                logger.error(f"Error creating proposal: {e}", exc_info=True)
-                raise ValidationError({"detail": f"Failed to create proposal: {str(e)}"})
+            # Check existing draft
+            existing = Proposal.objects.filter(
+                tender=tender,
+                created_by=request.user,
+                status="draft"
+            ).first()
+            if existing:
+                return Response({
+                    "detail": "Draft proposal already exists",
+                    "proposal_id": existing.id
+                }, status=status.HTTP_200_OK)
+    
+            # Create new proposal
+            proposal = Proposal.objects.create(
+                tender=tender,
+                created_by=request.user,
+                title=f"Technical Proposal – {tender.title}"
+            )
             
-            # Build context from AI-extracted document
+            # Build context from tender
             try:
                 context = build_proposal_context(tender)
-            except ValueError as e:
+            except Exception as e:
                 logger.error(f"Error building proposal context: {e}", exc_info=True)
-                # Delete the proposal if context building fails
                 proposal.delete()
                 raise ValidationError({
                     "detail": str(e),
-                    "hint": "Make sure the tender has an AI-processed document. You may need to analyze the tender first."
+                    "hint": "Ensure the tender has an AI-processed document first."
                 })
-            except Exception as e:
-                logger.error(f"Unexpected error building context: {e}", exc_info=True)
-                proposal.delete()
-                raise ValidationError({"detail": f"Failed to build proposal context: {str(e)}"})
-            
-            # Generate sections
-            try:
-                ai_sections = generate_proposal_sections(context)
-                logger.debug("AI sections generated: %s", list(ai_sections.keys()))
-                # Validate that ai_sections is a dictionary
-                if not isinstance(ai_sections, dict):
-                    logger.error(f"AI sections is not a dictionary: {type(ai_sections)}")
-                    raise ValidationError({"detail": "Invalid response from AI service"})
-                
-
-            except ValueError as e:
-                logger.error(f"Error generating proposal sections: {e}", exc_info=True)
-                proposal.delete()
-                raise ValidationError({"detail": f"Failed to generate proposal sections: {str(e)}"})
+    
+            # --- RAG integration ---
+            key_requirements = context.get("requirements", [])
+            rag_results = ai_handler.execute({
+                "task": "proposal-rag",
+                "key_requirements": key_requirements
+            })
+            logger.debug("RAG retrieved sections: %s", json.dumps(rag_results.get("retrieved_sections", {})))
+    
+            # Generate proposal sections using AI + RAG
+            ai_sections = ai_handler.execute({
+                "task": "proposal-section-generation",
+                "context": context,
+                "rag_results": rag_results.get("retrieved_sections", {})
+            })
+    
+            if not isinstance(ai_sections, dict):
+                raise ValidationError({"detail": "Invalid response from AI service"})
             
             # Create proposal sections
-            try:
-                for name, content in ai_sections.items():
-                    ProposalSection.objects.create(
-                        proposal=proposal,
-                        name=name,
-                        content=str(content) if content else "",
-                    )
-            except Exception as e:
-                logger.error(f"Error creating proposal sections: {e}", exc_info=True)
-                raise ValidationError({"detail": f"Failed to create proposal sections: {str(e)}"})
-            
+            for name, content in ai_sections.items():
+                ProposalSection.objects.create(
+                    proposal=proposal,
+                    name=name,
+                    content=str(content) if content else "",
+                )
+    
             return Response(
                 {"proposal_id": proposal.id, "sections_created": len(ai_sections)},
                 status=status.HTTP_201_CREATED
             )
-            
+        
         except (NotFound, ValidationError):
-            # Re-raise DRF exceptions
             raise
         except Exception as e:
             logger.error(f"Unexpected error in generate_from_tender: {e}", exc_info=True)
+            # Clean up partially created proposal
+            if 'proposal' in locals():
+                proposal.delete()
             raise ValidationError({"detail": f"An unexpected error occurred: {str(e)}"})
 
     @action(detail=True, methods=["post"])
