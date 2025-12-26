@@ -10,7 +10,7 @@ const illustrations = {
   error: AlertCircle,
 }
 
-function EmptyState({
+export function EmptyState({
   icon,
   title = "No data found",
   description,
@@ -47,4 +47,4 @@ function EmptyState({
   )
 }
 
-export { EmptyState }
+export default EmptyState;

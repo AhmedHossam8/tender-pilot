@@ -36,9 +36,14 @@ from django.db.models import Sum, Avg, Count, Q, F
 from django.utils import timezone
 from django.core.cache import cache
 
-from ..models import AIRequest, AIResponse, AIUsage, AIRequestStatus
-from ..permissions import CanViewAIAnalytics
-from ..decorators import ai_rate_limit
+from apps.ai_engine.models import (
+    AIRequest,
+    AIResponse,
+    AIUsage,
+    AIRequestStatus,
+)
+from apps.ai_engine.permissions import CanViewAIAnalytics
+from apps.ai_engine.decorators import ai_rate_limit
 
 logger = logging.getLogger(__name__)
 

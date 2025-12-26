@@ -6,18 +6,11 @@ Provides admin interfaces for managing:
 2. Prompt Versions (A/B testing, version management)
 3. AI Usage Tracking
 4. Performance Metrics
-
-Features:
-- Read-only views for AI requests/responses
-- Full CRUD for prompt versions
-- Bulk actions for activating/deactivating prompts
-- Usage analytics summaries
 """
 
 from django.contrib import admin
 from django.utils.html import format_html
-from django.utils import timezone
-from django.db.models import Count, Sum, Avg
+from django.db.models import Avg
 from .models import AIRequest, AIResponse, AIUsage, PromptVersion
 from .prompts.registry import PromptRegistry
 
@@ -73,9 +66,8 @@ class AIRequestAdmin(admin.ModelAdmin):
         'error_message',
         'metadata',
         'created_at',
-        'updated_at',
         'completed_at',
-        'processing_time',
+        'processing_time_ms',
     ]
     
     date_hierarchy = 'created_at'
@@ -88,11 +80,9 @@ class AIRequestAdmin(admin.ModelAdmin):
     token_usage.short_description = "Tokens"
     
     def has_add_permission(self, request):
-        """Disable manual creation."""
         return False
     
     def has_delete_permission(self, request, obj=None):
-        """Allow deletion for cleanup."""
         return request.user.is_superuser
 
 
@@ -136,37 +126,30 @@ class AIResponseAdmin(admin.ModelAdmin):
         'model_used',
         'finish_reason',
         'confidence_score',
-        'metadata',
         'created_at',
         'regeneration_count',
     ]
     
     def request_user(self, obj):
-        """Show user who made the request."""
         return obj.request.user.email
     request_user.short_description = "User"
     
     def token_count(self, obj):
-        """Display token count."""
         return f"{obj.total_tokens}"
     token_count.short_description = "Tokens"
     
     def has_parent(self, obj):
-        """Show if this is a regeneration."""
         return "Yes" if obj.parent_response else "No"
     has_parent.short_description = "Regenerated"
     
     def regeneration_count(self, obj):
-        """Count how many times this was regenerated."""
         return obj.regenerations.count()
     regeneration_count.short_description = "# Regenerations"
     
     def has_add_permission(self, request):
-        """Disable manual creation."""
         return False
     
     def has_delete_permission(self, request, obj=None):
-        """Allow deletion for cleanup."""
         return request.user.is_superuser
 
 
@@ -231,76 +214,43 @@ class PromptVersionAdmin(admin.ModelAdmin):
     ]
     
     def is_active_badge(self, obj):
-        """Show active status as badge."""
         if obj.is_active:
-            return format_html(
-                '<span style="color: green; font-weight: bold;">✓ Active</span>'
-            )
-        return format_html(
-            '<span style="color: gray;">○ Inactive</span>'
-        )
+            return format_html('<span style="color: green; font-weight: bold;">✓ Active</span>')
+        return format_html('<span style="color: gray;">○ Inactive</span>')
     is_active_badge.short_description = "Status"
     
     def usage_count_display(self, obj):
-        """Show how many times this prompt was used."""
-        count = AIRequest.objects.filter(
-            prompt_name=obj.name,
-            prompt_version=obj.version
-        ).count()
+        count = AIRequest.objects.filter(prompt_name=obj.name, prompt_version=obj.version).count()
         return count
     usage_count_display.short_description = "Usage Count"
     
     def avg_confidence_display(self, obj):
-        """Show average confidence score."""
         avg = AIResponse.objects.filter(
             request__prompt_name=obj.name,
             request__prompt_version=obj.version,
             confidence_score__isnull=False
         ).aggregate(Avg('confidence_score'))['confidence_score__avg']
-        
-        if avg:
-            return f"{avg:.2f}"
-        return "N/A"
+        return f"{avg:.2f}" if avg else "N/A"
     avg_confidence_display.short_description = "Avg Confidence"
     
     def actions_column(self, obj):
-        """Quick action buttons."""
         buttons = []
-        
         if not obj.is_active:
-            buttons.append(
-                f'<a class="button" href="?action=activate&id={obj.id}">Activate</a>'
-            )
-        
-        buttons.append(
-            f'<a class="button" href="?action=duplicate&id={obj.id}">Duplicate</a>'
-        )
-        
+            buttons.append(f'<a class="button" href="?action=activate&id={obj.id}">Activate</a>')
+        buttons.append(f'<a class="button" href="?action=duplicate&id={obj.id}">Duplicate</a>')
         return format_html(' '.join(buttons))
     actions_column.short_description = "Actions"
     
     def usage_stats(self, obj):
-        """Detailed usage statistics."""
         if not obj.id:
             return "N/A (save first)"
-        
-        requests = AIRequest.objects.filter(
-            prompt_name=obj.name,
-            prompt_version=obj.version
-        )
-        
+        requests = AIRequest.objects.filter(prompt_name=obj.name, prompt_version=obj.version)
         total_requests = requests.count()
         successful = requests.filter(status='completed').count()
         failed = requests.filter(status='failed').count()
-        
-        responses = AIResponse.objects.filter(
-            request__prompt_name=obj.name,
-            request__prompt_version=obj.version
-        )
-        
+        responses = AIResponse.objects.filter(request__prompt_name=obj.name, request__prompt_version=obj.version)
         avg_tokens = responses.aggregate(Avg('total_tokens'))['total_tokens__avg'] or 0
         avg_confidence = responses.aggregate(Avg('confidence_score'))['confidence_score__avg'] or 0
-        
         return format_html(
             '<div style="line-height: 1.8;">'
             '<strong>Total Requests:</strong> {}<br>'
@@ -320,33 +270,24 @@ class PromptVersionAdmin(admin.ModelAdmin):
     usage_stats.short_description = "Usage Statistics"
     
     def activate_prompts(self, request, queryset):
-        """Activate selected prompts."""
         for prompt in queryset:
-            # Deactivate other versions with same name
             PromptVersion.objects.filter(name=prompt.name).update(is_active=False)
-            # Activate this one
             prompt.is_active = True
             prompt.save()
-            # Clear cache
             PromptRegistry.clear_cache(prompt.name)
-        
         self.message_user(request, f"Activated {queryset.count()} prompt(s)")
     activate_prompts.short_description = "Activate selected prompts"
     
     def deactivate_prompts(self, request, queryset):
-        """Deactivate selected prompts."""
         queryset.update(is_active=False)
         for prompt in queryset:
             PromptRegistry.clear_cache(prompt.name)
-        
         self.message_user(request, f"Deactivated {queryset.count()} prompt(s)")
     deactivate_prompts.short_description = "Deactivate selected prompts"
     
     def duplicate_prompt(self, request, queryset):
-        """Duplicate selected prompts."""
         count = 0
         for prompt in queryset:
-            # Create new version
             new_version = f"{prompt.version}.copy"
             prompt.pk = None
             prompt.version = new_version
@@ -354,22 +295,15 @@ class PromptVersionAdmin(admin.ModelAdmin):
             prompt.created_by = request.user
             prompt.save()
             count += 1
-        
         self.message_user(request, f"Duplicated {count} prompt(s)")
     duplicate_prompt.short_description = "Duplicate selected prompts"
     
     def save_model(self, request, obj, form, change):
-        """Auto-set created_by on new prompts."""
-        if not change:  # New object
+        if not change:
             obj.created_by = request.user
-        
-        # If activating, deactivate others
         if obj.is_active:
             PromptVersion.objects.filter(name=obj.name).exclude(id=obj.id).update(is_active=False)
-        
         super().save_model(request, obj, form, change)
-        
-        # Clear cache for this prompt
         PromptRegistry.clear_cache(obj.name)
 
 
@@ -386,13 +320,13 @@ class AIUsageAdmin(admin.ModelAdmin):
         'provider',
         'model',
         'token_display',
-        'created_at',
+        'timestamp',
     ]
     
     list_filter = [
         'provider',
         'model',
-        'created_at',
+        'timestamp',
     ]
     
     search_fields = [
@@ -408,21 +342,17 @@ class AIUsageAdmin(admin.ModelAdmin):
         'total_tokens',
         'provider',
         'model',
-        'created_at',
+        'timestamp',
     ]
     
-    date_hierarchy = 'created_at'
+    date_hierarchy = 'timestamp'
     
     def token_display(self, obj):
-        """Display token breakdown."""
         return f"{obj.total_tokens} ({obj.input_tokens} in + {obj.output_tokens} out)"
     token_display.short_description = "Tokens"
     
     def has_add_permission(self, request):
-        """Disable manual creation."""
         return False
     
     def has_delete_permission(self, request, obj=None):
-        """Allow deletion for cleanup."""
         return request.user.is_superuser
-

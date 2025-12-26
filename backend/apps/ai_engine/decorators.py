@@ -38,7 +38,7 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 
 
-def ai_rate_limit(rate='10/h', key='user', method='POST'):
+def ai_rate_limit(rate='10/h', key='user', method='POST', group=None):
     """
     Rate limit decorator for AI endpoints.
     
