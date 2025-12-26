@@ -69,3 +69,23 @@ htmlcov/
 # ===============================
 *.bak
 *.tmp
+
+# ===============================
+# Documentation (dev notes)
+# ===============================
+*_DEV_NOTES.md
+*_dev_notes.md
+DEV_DOCS/
+
+# Dev D - AI Engine Documentation
+MY_AI_ENGINE_EXPLAINED.md
+AI_ENGINE_*.md
+DEV_D_*.md
+DECORATORS_REVIEW.md
+
+# ===============================
+# Test scripts
+# ===============================
+**/test_setup.py
+*_DAY*_DOCS.md
+verify_day*.py
