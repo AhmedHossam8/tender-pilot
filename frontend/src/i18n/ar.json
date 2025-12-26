@@ -1,16 +1,49 @@
 {
   "common": {
+    "websiteName": "تندر بايلوت",
     "save": "حفظ",
     "cancel": "إلغاء",
     "search": "بحث",
-    "loading": "جاري التحميل..."
+    "loading": "جاري التحميل...",
+    "profile": "الملف الشخصي",
+    "settings": "الإعدادات",
+    "user": "مستخدم"
   },
   "auth": {
     "login": "تسجيل الدخول",
-    "register": "إنشاء حساب"
+    "register": "إنشاء حساب",
+    "logout": "تسجيل الخروج"
   },
   "proposal": {
     "title": "العروض الفنية",
-    "generate": "إنشاء عرض فني"
+    "generate": "إنشاء عرض فني",
+    "submitForReview": "إرسال للمراجعة",
+    "approve": "موافقة",
+    "reject": "رفض",
+    "submit": "اعتماد العرض",
+    "preview": "معاينة",
+    "generateChecklist": "إنشاء قائمة التحقق",
+    "generateDocument": "إنشاء المستند",
+    "generateFeedback": "إنشاء ملاحظات الذكاء الاصطناعي",
+    "regenerateSection": "إعادة توليد القسم",
+    "loadError": "فشل في تحميل العروض الفنية",
+    "noProposals": "لم يتم العثور على عروض فنية."
+  },
+  "sidebar": {
+    "dashboard": "لوحة التحكم",
+    "tenders": "المناقصات",
+    "proposals": "العروض الفنية",
+    "documents": "المستندات",
+    "team": "الفريق",
+    "settings": "الإعدادات",
+    "help": "المساعدة والدعم",
+    "collapse": "طي"
+  },
+  "footer": {
+    "websiteName": "تيندر بايلوت",
+    "rightsReserved": "جميع الحقوق محفوظة.",
+    "privacyPolicy": "سياسة الخصوصية",
+    "termsOfService": "شروط الخدمة",
+    "help": "مساعدة"
   }
 }

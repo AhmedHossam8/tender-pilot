@@ -1,16 +1,49 @@
 {
   "common": {
+    "websiteName": "TenderPilot",
     "save": "Save",
     "cancel": "Cancel",
     "search": "Search",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "profile": "Profile",
+    "settings": "Settings",
+    "user": "User"
   },
   "auth": {
     "login": "Login",
-    "register": "Register"
+    "register": "Register",
+    "logout": "Logout"
   },
   "proposal": {
     "title": "Proposals",
-    "generate": "Generate Proposal"
+    "generate": "Generate Proposal",
+    "submitForReview": "Submit for Review",
+    "approve": "Approve",
+    "reject": "Reject",
+    "submit": "Submit Proposal",
+    "preview": "Preview",
+    "generateChecklist": "Generate Checklist",
+    "generateDocument": "Generate Document",
+    "generateFeedback": "Generate AI Feedback",
+    "regenerateSection": "Regenerate Section",
+    "loadError": "Failed to load proposals",
+    "noProposals": "No proposals found."
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "tenders": "Tenders",
+    "proposals": "Proposals",
+    "documents": "Documents",
+    "team": "Team",
+    "settings": "Settings",
+    "help": "Help & Support",
+    "collapse": "Collapse"
+  },
+  "footer": {
+    "websiteName": "TenderPilot",
+    "rightsReserved": "All rights reserved.",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "help": "Help"
   }
 }

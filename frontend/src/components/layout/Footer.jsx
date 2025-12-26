@@ -1,8 +1,10 @@
 import * as React from "react"
 import { Link } from "react-router-dom"
 import { cn } from "@/lib/utils"
+import { useTranslation } from "react-i18next"
 
-function Footer({ className }) {
+function Footer({ className, websiteName = "TenderPilot" }) {
+  const { t } = useTranslation()
   const currentYear = new Date().getFullYear()
 
   return (
@@ -13,16 +15,18 @@ function Footer({ className }) {
       )}
     >
       <div className="flex flex-col sm:flex-row items-center justify-between gap-2 max-w-7xl mx-auto">
-        <p>© {currentYear} TenderPilot. All rights reserved.</p>
+        <p>
+          © {currentYear} {websiteName}. {t("footer.rightsReserved")}
+        </p>
         <div className="flex items-center gap-4">
           <Link to="/privacy" className="hover:text-foreground transition-colors">
-            Privacy Policy
+            {t("footer.privacyPolicy")}
           </Link>
           <Link to="/terms" className="hover:text-foreground transition-colors">
-            Terms of Service
+            {t("footer.termsOfService")}
           </Link>
           <Link to="/help" className="hover:text-foreground transition-colors">
-            Help
+            {t("footer.help")}
           </Link>
         </div>
       </div>
