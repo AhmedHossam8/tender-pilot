@@ -1,6 +1,6 @@
-import * as React from "react"
-import { NavLink, useLocation } from "react-router-dom"
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { NavLink, useLocation } from "react-router-dom";
+import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   FileText,
@@ -11,39 +11,44 @@ import {
   ChevronLeft,
   ChevronRight,
   Building2,
-} from "lucide-react"
-import { Button } from "@/components/ui/Button"
+} from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { useTranslation } from "react-i18next";
 
-const navigation = [
-  { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Tenders", href: "/tenders", icon: FileText },
-  { name: "Proposals", href: "/proposals", icon: FolderOpen },
-  { name: "Documents", href: "/documents", icon: Building2 },
-  { name: "Team", href: "/team", icon: Users },
-  { name: "Settings", href: "/settings", icon: Settings },
-]
+const navigationItems = [
+  { key: "sidebar.dashboard", href: "/", icon: LayoutDashboard },
+  { key: "sidebar.tenders", href: "/tenders", icon: FileText },
+  { key: "sidebar.proposals", href: "/proposals", icon: FolderOpen },
+  { key: "sidebar.documents", href: "/documents", icon: Building2 },
+  { key: "sidebar.team", href: "/team", icon: Users },
+  { key: "sidebar.settings", href: "/settings", icon: Settings },
+];
 
-const bottomNavigation = [
-  { name: "Help & Support", href: "/help", icon: HelpCircle },
-]
+const bottomNavigationItems = [
+  { key: "sidebar.help", href: "/help", icon: HelpCircle },
+];
 
-function Sidebar({ collapsed, onToggleCollapse, className }) {
-  const location = useLocation()
+function Sidebar({ collapsed, onToggleCollapse, isRtl }) {
+  const location = useLocation();
+  const { t } = useTranslation();
+
+  const navigation = navigationItems.map(item => ({ ...item, name: t(item.key) }));
+  const bottomNavigation = bottomNavigationItems.map(item => ({ ...item, name: t(item.key) }));
 
   return (
     <aside
       className={cn(
         "flex flex-col bg-secondary text-secondary-foreground h-screen transition-all duration-300",
         collapsed ? "w-16" : "w-64",
-        className
+        isRtl ? "rtl absolute right-0" : "absolute left-0"
       )}
+      dir={isRtl ? "rtl" : "ltr"}
     >
       {/* Logo */}
       <div className="flex items-center h-16 px-4 border-b border-secondary-foreground/10">
-        {!collapsed && (
+        {!collapsed ? (
           <span className="text-xl font-bold text-white">TenderPilot</span>
-        )}
-        {collapsed && (
+        ) : (
           <span className="text-xl font-bold text-white mx-auto">TP</span>
         )}
       </div>
@@ -51,7 +56,7 @@ function Sidebar({ collapsed, onToggleCollapse, className }) {
       {/* Navigation */}
       <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
         {navigation.map((item) => {
-          const isActive = location.pathname === item.href
+          const isActive = location.pathname === item.href;
           return (
             <NavLink
               key={item.name}
@@ -66,7 +71,7 @@ function Sidebar({ collapsed, onToggleCollapse, className }) {
               <item.icon className={cn("h-5 w-5", collapsed && "mx-auto")} />
               {!collapsed && <span>{item.name}</span>}
             </NavLink>
-          )
+          );
         })}
       </nav>
 
@@ -77,7 +82,7 @@ function Sidebar({ collapsed, onToggleCollapse, className }) {
             key={item.name}
             to={item.href}
             className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+              "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium",
               "text-secondary-foreground/70 hover:bg-secondary-foreground/10 hover:text-white"
             )}
           >
@@ -100,13 +105,13 @@ function Sidebar({ collapsed, onToggleCollapse, className }) {
           ) : (
             <>
               <ChevronLeft className="h-4 w-4 mr-2" />
-              <span>Collapse</span>
+              <span>{t("sidebar.collapse")}</span>
             </>
           )}
         </Button>
       </div>
     </aside>
-  )
+  );
 }
 
-export { Sidebar, navigation, bottomNavigation }
+export { Sidebar, navigationItems, bottomNavigationItems };

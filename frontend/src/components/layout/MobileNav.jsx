@@ -3,10 +3,15 @@ import { NavLink, useLocation } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { X } from "lucide-react"
 import { Button } from "@/components/ui/Button"
-import { navigation, bottomNavigation } from "./Sidebar"
+import { navigationItems, bottomNavigationItems } from "./Sidebar"
+import { useTranslation } from "react-i18next"
 
 function MobileNav({ isOpen, onClose, className }) {
   const location = useLocation()
+  const { t } = useTranslation()
+
+  const navigation = navigationItems.map(item => ({ ...item, name: t(item.key) }))
+  const bottomNavigation = bottomNavigationItems.map(item => ({ ...item, name: t(item.key) }))
 
   // Close nav when route changes
   React.useEffect(() => {

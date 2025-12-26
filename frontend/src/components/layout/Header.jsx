@@ -1,13 +1,28 @@
 import * as React from "react"
 import { Link } from "react-router-dom"
 import { cn } from "@/lib/utils"
-import { Bell, Search, Menu, User, LogOut, Settings, ChevronDown } from "lucide-react"
+import {
+  Bell,
+  Search,
+  Menu,
+  User,
+  LogOut,
+  Settings,
+  ChevronDown,
+} from "lucide-react"
+
+import { useTranslation } from "react-i18next"
+
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 
 function Header({ onMenuClick, user, className }) {
+  const { t, i18n } = useTranslation()
+
   const [showDropdown, setShowDropdown] = React.useState(false)
   const dropdownRef = React.useRef(null)
+
+  const isArabic = i18n.language === "ar"
 
   // Close dropdown when clicking outside
   React.useEffect(() => {
@@ -19,6 +34,10 @@ function Header({ onMenuClick, user, className }) {
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
+
+  const toggleLanguage = () => {
+    i18n.changeLanguage(isArabic ? "en" : "ar")
+  }
 
   return (
     <header
@@ -41,11 +60,19 @@ function Header({ onMenuClick, user, className }) {
         {/* Search */}
         <div className="hidden md:flex items-center">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search
+              className={cn(
+                "absolute top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground",
+                isArabic ? "right-3" : "left-3"
+              )}
+            />
             <Input
               type="search"
-              placeholder="Search tenders, proposals..."
-              className="pl-9 w-64 lg:w-80"
+              placeholder={t("common.search")}
+              className={cn(
+                "w-64 lg:w-80",
+                isArabic ? "pr-9 text-right" : "pl-9"
+              )}
             />
           </div>
         </div>
@@ -53,6 +80,11 @@ function Header({ onMenuClick, user, className }) {
 
       {/* Right side */}
       <div className="flex items-center gap-2">
+        {/* Language Switch */}
+        <Button variant="ghost" size="sm" onClick={toggleLanguage}>
+          {isArabic ? "English" : "العربية"}
+        </Button>
+
         {/* Notifications */}
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
@@ -70,7 +102,7 @@ function Header({ onMenuClick, user, className }) {
               {user?.name?.charAt(0) || "U"}
             </div>
             <span className="hidden md:inline-block text-sm font-medium">
-              {user?.name || "User"}
+              {user?.name || t("common.user")}
             </span>
             <ChevronDown className="h-4 w-4" />
           </Button>
@@ -78,36 +110,41 @@ function Header({ onMenuClick, user, className }) {
           {showDropdown && (
             <div className="absolute right-0 top-full mt-2 w-48 rounded-md bg-white shadow-lg border py-1 z-50">
               <div className="px-4 py-2 border-b">
-                <p className="text-sm font-medium">{user?.name || "User"}</p>
+                <p className="text-sm font-medium">
+                  {user?.name || t("common.user")}
+                </p>
                 <p className="text-xs text-muted-foreground">
                   {user?.email || "user@example.com"}
                 </p>
               </div>
+
               <Link
                 to="/profile"
                 className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-muted transition-colors"
                 onClick={() => setShowDropdown(false)}
               >
                 <User className="h-4 w-4" />
-                Profile
+                {t("common.profile")}
               </Link>
+
               <Link
                 to="/settings"
                 className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-muted transition-colors"
                 onClick={() => setShowDropdown(false)}
               >
                 <Settings className="h-4 w-4" />
-                Settings
+                {t("common.settings")}
               </Link>
+
               <button
                 className="flex items-center gap-2 px-4 py-2 text-sm text-destructive hover:bg-muted transition-colors w-full"
                 onClick={() => {
                   setShowDropdown(false)
-                  // Handle logout
+                  // logout later
                 }}
               >
                 <LogOut className="h-4 w-4" />
-                Logout
+                {t("auth.logout")}
               </button>
             </div>
           )}

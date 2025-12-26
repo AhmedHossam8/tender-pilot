@@ -31,4 +31,10 @@ export const proposalService = {
 
   generateChecklist: (id) =>
     api.post(`/proposals/${id}/generate-checklist`),
+
+  previewProposal: (id) =>
+    api.get(`/proposals/${id}/preview`, { responseType: "blob" }),
+
+  getSectionFeedback: (sectionId) =>
+    api.get(`/proposals/sections/${sectionId}/ai_feedback`),
 };
