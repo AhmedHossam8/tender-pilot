@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     # Third-party
     'rest_framework',
     'corsheaders',
+    'drf_spectacular',
 
     # Local apps
     'apps.users.apps.UsersConfig',
@@ -162,6 +163,7 @@ STATIC_URL = 'static/'
 
 
 REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
@@ -196,6 +198,27 @@ REST_FRAMEWORK = {
         "document_read":'60/hour'
     },
 }
+
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Tender Pilot API',
+    'DESCRIPTION': 'Backend API for Tender Pilot platform',
+    'VERSION': '1.0.0',
+
+    'SERVE_INCLUDE_SCHEMA': False,
+
+    'COMPONENT_SPLIT_REQUEST': True,
+
+    'SECURITY': [{'bearerAuth': []}],
+    'SECURITY_DEFINITIONS': {
+        'bearerAuth': {
+            'type': 'http',
+            'scheme': 'bearer',
+            'bearerFormat': 'JWT',
+        }
+    },
+}
+
 
 # Adjust the the LifeTime for Access Token and for REfresh token
 
