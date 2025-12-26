@@ -1,0 +1,16 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "search": "Search",
+    "loading": "Loading..."
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register"
+  },
+  "proposal": {
+    "title": "Proposals",
+    "generate": "Generate Proposal"
+  }
+}
