@@ -14,6 +14,7 @@ from rest_framework.permissions import IsAuthenticated
 import logging
 import json
 from .services.ai_request_handler import AIRequestHandler
+from common.throttles import ProposalReadTrhottle , ProposalWriteThrottle
 
 logger = logging.getLogger(__name__)
 ai_handler = AIRequestHandler()
@@ -37,7 +38,10 @@ class ProposalViewSet(BaseModelViewSet):
     filterset_fields = ["tender", "status"]
     ordering_fields = ["created_at"]
 
-    @action(detail=False, methods=["post"], url_path="generate-from-tender/(?P<tender_id>[^/.]+)")
+    @action(detail=False,
+            methods=["post"],
+            url_path="generate-from-tender/(?P<tender_id>[^/.]+)",
+            throttle_classes =[ProposalWriteThrottle])
     def generate_from_tender(self, request, tender_id=None):
         ai_handler = AIRequestHandler()
         try:
@@ -121,7 +125,9 @@ class ProposalViewSet(BaseModelViewSet):
                 proposal.delete()
             raise ValidationError({"detail": f"An unexpected error occurred: {str(e)}"})
 
-    @action(detail=True, methods=["post"])
+    @action(detail=True,
+            methods=["post"], 
+            throttle_classes=[ProposalWriteThrottle])
     def submit_for_review(self, request, pk=None):
         """Proposal writer moves draft → in_review"""
         proposal = self.get_object()
@@ -142,7 +148,9 @@ class ProposalViewSet(BaseModelViewSet):
 
         return Response({"status": "Proposal submitted for review", "proposal_id": proposal.id}, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=["post"])
+    @action(detail=True,
+            methods=["post"],
+            throttle_classes = [ProposalWriteThrottle])
     def approve(self, request, pk=None):
         """Reviewer approves proposal (in_review → approved)"""
         proposal = self.get_object()
@@ -162,7 +170,9 @@ class ProposalViewSet(BaseModelViewSet):
         
         return Response({"status": "Proposal approved", "proposal_id": proposal.id}, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=["post"])
+    @action(detail=True,
+            methods=["post"],
+            throttle_classes=[ProposalWriteThrottle])
     def reject(self, request, pk=None):
         """Reviewer reject proposal (in_review → draft)"""
         proposal = self.get_object()
@@ -202,7 +212,10 @@ class ProposalViewSet(BaseModelViewSet):
         
         return Response({"status": "Proposal submitted", "proposal_id": proposal.id}, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=["post"], url_path="sections/(?P<section_id>[^/.]+)/regenerate")
+    @action(detail=True,
+            methods=["post"],
+            url_path="sections/(?P<section_id>[^/.]+)/regenerate",
+            throttle_classes=[ProposalWriteThrottle])
     def regenerate_section(self, request, pk=None, section_id=None):
         """Regenerate a specific section using AI"""
         proposal = self.get_object()
@@ -254,7 +267,9 @@ class ProposalViewSet(BaseModelViewSet):
             logger.error(f"Unexpected error regenerating section: {e}", exc_info=True)
             raise ValidationError({"detail": f"Failed to regenerate section: {str(e)}"})
 
-    @action(detail=True, methods=["post"], url_path="generate-document")
+    @action(detail=True, methods=["post"],
+             url_path="generate-document",
+             throttle_classes=[ProposalWriteThrottle])
     def generate_document(self, request, pk=None):
         """Generate DOCX document from proposal"""
         proposal = self.get_object()
@@ -290,7 +305,9 @@ class ProposalViewSet(BaseModelViewSet):
             logger.error(f"Error generating document: {e}", exc_info=True)
             raise ValidationError({"detail": f"Failed to generate document: {str(e)}"})
     
-    @action(detail=True, methods=["post"])
+    @action(detail=True,
+            methods=["post"],
+            throttle_classes=[ProposalWriteThrottle])
     def generate_feedback(self, request, pk=None):
         proposal = self.get_object()
         context = build_proposal_context(proposal.tender)
@@ -299,7 +316,10 @@ class ProposalViewSet(BaseModelViewSet):
         proposal.save()
         return Response({"status": "AI feedback generated", "ai_feedback": proposal.ai_feedback}, status=status.HTTP_200_OK)
     
-    @action(detail=True, methods=["post"], url_path="generate-checklist")
+    @action(detail=True,
+            methods=["post"],
+            url_path="generate-checklist",
+            throttle_classes=[ProposalWriteThrottle])
     def generate_checklist(self, request, pk=None):
         proposal = self.get_object()
         context = build_proposal_context(proposal.tender)
@@ -308,7 +328,9 @@ class ProposalViewSet(BaseModelViewSet):
         checklist_data = generate_proposal_checklist(context, sections)
         return Response({"checklist": checklist_data})
     
-    @action(detail=True, methods=["get"])
+    @action(detail=True,
+            methods=["get"],
+            throttle_classes=[ProposalReadTrhottle])
     def preview(self, request, pk=None):
         proposal = self.get_object()
 
