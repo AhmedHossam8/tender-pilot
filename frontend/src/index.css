@@ -35,3 +35,8 @@
     text-wrap: balance;
   }
 }
+
+html[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
