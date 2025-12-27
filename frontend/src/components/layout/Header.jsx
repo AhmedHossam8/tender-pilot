@@ -16,6 +16,10 @@ import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 
+// ✅ Added imports for logout
+import { useAuthStore } from "@/contexts/authStore"
+import { useNavigate } from "react-router-dom"
+
 function Header({ onMenuClick, user, className }) {
   const { t, i18n } = useTranslation()
 
@@ -23,6 +27,15 @@ function Header({ onMenuClick, user, className }) {
   const dropdownRef = React.useRef(null)
 
   const isArabic = i18n.language === "ar"
+
+  // ✅ Added logout logic
+  const logout = useAuthStore((s) => s.logout)
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    await logout()
+    navigate("/login")
+  }
 
   // Close dropdown when clicking outside
   React.useEffect(() => {
@@ -136,11 +149,12 @@ function Header({ onMenuClick, user, className }) {
                 {t("common.settings")}
               </Link>
 
+              {/* ✅ Updated logout button */}
               <button
                 className="flex items-center gap-2 px-4 py-2 text-sm text-destructive hover:bg-muted transition-colors w-full"
-                onClick={() => {
+                onClick={async () => {
                   setShowDropdown(false)
-                  // logout later
+                  await handleLogout()
                 }}
               >
                 <LogOut className="h-4 w-4" />
