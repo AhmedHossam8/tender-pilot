@@ -2,7 +2,7 @@ import React from "react";
 import { Card, CardHeader, CardTitle, CardContent, Badge } from "@/components/ui";
 import { useTranslation } from "react-i18next";
 
-const CompliancePanel = ({ items }) => {
+const CompliancePanel = ({ items = [] }) => {
     const { t } = useTranslation();
 
     return (
