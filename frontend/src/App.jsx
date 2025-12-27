@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import ComponentShowcase from "./pages/ComponentShowcase";
 import ProposalList from "./pages/ProposalList";
-import ProposalDetail from "./pages/ProposalDetail";
+import ProposalDetail from "./pages/proposals/ProposalDetail";
 import AppLayout from "@/layouts/AppLayout";
 
 // Create a client

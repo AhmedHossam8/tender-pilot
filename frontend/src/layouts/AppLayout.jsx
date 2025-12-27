@@ -7,13 +7,16 @@ import { MobileNav } from "@/components/layout/MobileNav";
 import { Footer } from "@/components/layout/Footer";
 import { Toaster } from "sonner";
 import { useTranslation } from "react-i18next";
+// import { useAuthStore } from "../stores/authStore";
 
-function AppLayout({ user, showFooter = false }) {
+function AppLayout({ showFooter = false }) {
   const { i18n } = useTranslation();
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
   const isRtl = i18n.language === "ar";
-
+  // const user = useAuthStore((state) => state.user);
+  const user = { name: "John Doe" }; // Placeholder for user data
+  
   return (
     <div className={cn("min-h-screen bg-background")} dir={isRtl ? "rtl" : "ltr"}>
       {/* Desktop Sidebar */}

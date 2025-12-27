@@ -35,3 +35,113 @@ export const useGenerateProposal = () => {
     },
   });
 };
+
+export const useSubmitForReview = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id) => proposalService.submitForReview(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ["proposal", id] });
+      queryClient.invalidateQueries({ queryKey: ["proposals"] });
+    },
+  });
+};
+
+export const useApproveProposal = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id) => proposalService.approveProposal(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ["proposal", id] });
+      queryClient.invalidateQueries({ queryKey: ["proposals"] });
+    },
+  });
+};
+
+export const useRejectProposal = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id) => proposalService.rejectProposal(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ["proposal", id] });
+      queryClient.invalidateQueries({ queryKey: ["proposals"] });
+    },
+  });
+};
+
+export const useSubmitProposal = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id) => proposalService.submitProposal(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: ["proposal", id] });
+      queryClient.invalidateQueries({ queryKey: ["proposals"] });
+    },
+  });
+};
+
+export const useRegenerateSection = (proposalId) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ sectionId }) =>
+      proposalService.regenerateSection(proposalId, sectionId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["proposal", proposalId] });
+    },
+  });
+};
+
+export const useGenerateFeedback = (proposalId) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => proposalService.generateFeedback(proposalId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["proposal", proposalId] });
+    },
+  });
+};
+
+export const useGenerateChecklist = (proposalId) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => proposalService.generateChecklist(proposalId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["proposal", proposalId] });
+    },
+  });
+};
+
+export const useGenerateDocument = (proposalId) => {
+  return useMutation({
+    mutationFn: () => proposalService.generateDocument(proposalId),
+  });
+};
+
+export const usePreviewProposal = (proposalId) => {
+  return useQuery({
+    queryKey: ["proposal-preview", proposalId],
+    queryFn: async () => {
+      const res = await proposalService.previewProposal(proposalId);
+      return res.data;
+    },
+    enabled: !!proposalId,
+  });
+};
+
+export const useSectionFeedback = (sectionId) => {
+  return useQuery({
+    queryKey: ["section-feedback", sectionId],
+    queryFn: async () => {
+      const res = await proposalService.getSectionFeedback(sectionId);
+      return res.data;
+    },
+    enabled: !!sectionId,
+  });
+};
