@@ -6,17 +6,15 @@ import { proposalService } from "../../services/proposal.service";
 import { useProposal } from "../../hooks/useProposals";
 
 import { LoadingSpinner, EmptyState } from "@/components/common";
-import {
-    Button,
-    Badge,
-} from "@/components/ui";
+import { Button, Badge } from "@/components/ui";
 
-import ProposalCard from "../components/ProposalCard";
-import SectionEditor from "../components/SectionEditor";
-import CompliancePanel from "../components/CompliancePanel";
-import WorkflowStepper from "../components/WorkflowStepper";
-import StatusActions from "../components/StatusActions";
-import ChecklistPanel from "../components/ChecklistPanel";
+import ProposalCard from "../../components/proposals/ProposalCard";
+import SectionEditor from "../../components/proposals/SectionEditor";
+import CompliancePanel from "../../components/proposals/CompliancePanel";
+import WorkflowStepper from "../../components/proposals/WorkflowStepper";
+import StatusActions from "../../components/proposals/StatusActions";
+import ChecklistPanel from "../../components/proposals/ChecklistPanel";
+
 
 const ProposalDetail = ({ user }) => {
     const { t } = useTranslation();

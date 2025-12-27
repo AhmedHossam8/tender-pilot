@@ -1,5 +1,5 @@
 import React from "react";
-import { useProposals } from "../hooks/useProposals";
+import { useProposals } from "../../hooks/useProposals";
 import { Card, CardHeader, CardTitle, CardContent, Badge } from "@/components/ui";
 import { LoadingSpinner, EmptyState } from "@/components/common";
 import { useTranslation } from "react-i18next";
