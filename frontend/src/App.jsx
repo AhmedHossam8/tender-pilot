@@ -7,6 +7,7 @@ import ComponentShowcase from "./pages/ComponentShowcase";
 import ProposalList from "./pages/proposals/ProposalList";
 import ProposalDetail from "./pages/proposals/ProposalDetail";
 import AppLayout from "@/layouts/AppLayout";
+import { AIDashboard, AIResultPanel } from "./pages/ai";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -33,6 +34,8 @@ function App() {
               <Route path="/proposals" element={<ProposalList />} />
               <Route path="/proposals/:id" element={<ProposalDetail />} />
               <Route path="/components" element={<ComponentShowcase />} />
+              <Route path="/ai/dashboard" element={<AIDashboard />} />
+              <Route path="/ai/results/:responseId" element={<AIResultPanel />} />
             </Route>
           </Routes>
         </BrowserRouter>

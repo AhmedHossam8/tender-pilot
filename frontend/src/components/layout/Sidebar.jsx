@@ -11,12 +11,14 @@ import {
   ChevronLeft,
   ChevronRight,
   Building2,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useTranslation } from "react-i18next";
 
 const navigationItems = [
   { key: "sidebar.dashboard", href: "/", icon: LayoutDashboard },
+  { key: "aiEngine.dashboard", href: "/ai/dashboard", icon: Sparkles },
   { key: "sidebar.tenders", href: "/tenders", icon: FileText },
   { key: "sidebar.proposals", href: "/proposals", icon: FolderOpen },
   { key: "sidebar.documents", href: "/documents", icon: Building2 },
