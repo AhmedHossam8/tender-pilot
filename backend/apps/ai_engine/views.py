@@ -14,6 +14,8 @@ Architecture:
 - Validation done via serializers
 - Business logic in service layer
 - Rate limiting applied per endpoint
+- Demo mode support
+- Monitoring integration
 """
 
 import logging
@@ -23,6 +25,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework.exceptions import ValidationError
+from django.conf import settings
 
 from .services.analysis_service import (
     TenderAnalysisService,
@@ -49,6 +52,8 @@ from .exceptions import (
 )
 from .decorators import ai_rate_limit
 from .permissions import CanUseAI, CanRegenerateAI, check_ai_quota, get_user_ai_limits
+from .demo import is_demo_mode, get_demo_response
+from .monitoring import ai_logger, ai_metrics, get_health_metrics
 
 logger = logging.getLogger(__name__)
 
@@ -94,8 +99,19 @@ class TenderAnalysisView(APIView):
     
     @ai_rate_limit(rate='10/h')
     def post(self, request, tender_id):
-        """Handle tender analysis request."""
+        """Handle tender analysis request"""
         try:
+            # Check for demo mode
+            if is_demo_mode(request):
+                demo_response = get_demo_response('tender_analysis', 'highway-construction')
+                ai_logger.log_request(
+                    request_id=demo_response['request_id'],
+                    user_id=request.user.id,
+                    operation='tender_analysis',
+                    demo_mode=True
+                )
+                return Response(demo_response, status=status.HTTP_200_OK)
+            
             # Step 1: Validate request data
             serializer = TenderAnalysisRequestSerializer(
                 data=request.data,
@@ -115,6 +131,11 @@ class TenderAnalysisView(APIView):
                 user=request.user,
                 **serializer.validated_data
             )
+            
+            # Track metrics
+            ai_metrics.increment_requests('tender_analysis', 'openai')
+            ai_metrics.record_tokens('tender_analysis', result.get('tokens_used', 0), 'total')
+            ai_metrics.record_cost('tender_analysis', result.get('cost', 0))
             
             # Step 3: Format response
             response_serializer = TenderAnalysisResponseSerializer(data=result)
@@ -422,33 +443,52 @@ class AIHealthCheckView(APIView):
             "status": "ok",  // ok|degraded|error
             "provider": "openai",
             "available": true,
-            "latency_ms": 123,
-            "last_error": null
+            "enabled": true,
+            "latency_ms": 150,
+            "message": "AI services operational",
+            "metrics": {...}
         }
-    
-    This endpoint is useful for:
-    - Monitoring dashboards
-    - Pre-flight checks before heavy AI operations
-    - Debugging connectivity issues
     """
     
-    permission_classes = []  # Public endpoint
+    permission_classes = []
     
     def get(self, request):
-        """Check if the AI engine is operational."""
+        """Check AI service health."""
+        import time
+        from .services import get_ai_provider
+        
         try:
-            from .services.factory import get_ai_provider
+            # Check if AI is globally enabled
+            ai_enabled = getattr(settings, 'AI_ENABLED', True)
+            if not ai_enabled:
+                return Response({
+                    "status": "disabled",
+                    "provider": "none",
+                    "available": False,
+                    "message": "AI services are disabled",
+                    "enabled": False
+                })
             
-            # Try to get provider
+            # Try to get provider with latency measurement
+            start_time = time.time()
             provider = get_ai_provider()
             is_available = provider.is_available()
+            latency_ms = int((time.time() - start_time) * 1000)
             
-            return Response({
+            # Get additional health metrics
+            health_metrics = get_health_metrics()
+            
+            response_data = {
                 "status": "ok" if is_available else "degraded",
                 "provider": provider.provider_type.value,
                 "available": is_available,
-                "message": "AI services operational" if is_available else "AI services degraded"
-            })
+                "enabled": True,
+                "latency_ms": latency_ms,
+                "message": "AI services operational" if is_available else "AI services degraded",
+                "metrics": health_metrics
+            }
+            
+            return Response(response_data)
             
         except Exception as e:
             logger.error(f"Health check failed: {e}", exc_info=True)
@@ -457,7 +497,9 @@ class AIHealthCheckView(APIView):
                     "status": "error",
                     "provider": "unknown",
                     "available": False,
-                    "message": str(e)
+                    "enabled": getattr(settings, 'AI_ENABLED', True),
+                    "message": str(e),
+                    "error_type": type(e).__name__
                 },
                 status=status.HTTP_503_SERVICE_UNAVAILABLE
             )
