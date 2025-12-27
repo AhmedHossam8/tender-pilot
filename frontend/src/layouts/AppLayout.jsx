@@ -7,16 +7,17 @@ import { MobileNav } from "@/components/layout/MobileNav";
 import { Footer } from "@/components/layout/Footer";
 import { Toaster } from "sonner";
 import { useTranslation } from "react-i18next";
-// import { useAuthStore } from "../stores/authStore";
+import { useAuthStore } from "@/contexts/authStore";
 
 function AppLayout({ showFooter = false }) {
   const { i18n } = useTranslation();
+  const { user } = useAuthStore(); // ✅ REAL USER FROM STORE
+
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
+
   const isRtl = i18n.language === "ar";
-  // const user = useAuthStore((state) => state.user);
-  const user = { name: "John Doe" }; // Placeholder for user data
-  
+
   return (
     <div className={cn("min-h-screen bg-background")} dir={isRtl ? "rtl" : "ltr"}>
       {/* Desktop Sidebar */}
@@ -40,7 +41,7 @@ function AppLayout({ showFooter = false }) {
         isRtl={isRtl}
       />
 
-      {/* Main Content Area */}
+      {/* Main content */}
       <div
         className={cn(
           "flex flex-col min-h-screen transition-all duration-300",
@@ -54,12 +55,15 @@ function AppLayout({ showFooter = false }) {
         )}
       >
         <Header onMenuClick={() => setMobileNavOpen(true)} user={user} />
+
         <main className="flex-1 p-4 md:p-6">
           <Outlet />
         </main>
+
         {showFooter && <Footer />}
       </div>
 
+      {/* Keep only ONE toaster globally */}
       <Toaster position="top-right" richColors />
     </div>
   );

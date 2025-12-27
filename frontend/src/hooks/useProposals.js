@@ -1,29 +1,69 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { proposalService } from "../services/proposal.service";
 
-export const useProposals = (params) => {
+/**
+ * Fetch all proposals (paginated)
+ */
+export const useProposals = (params = {}) => {
   return useQuery({
     queryKey: ["proposals", params],
     queryFn: async () => {
-      const res = await proposalService.getProposals(params);
-      return res.data;
+      try {
+        const res = await proposalService.getProposals(params);
+        return res.data.results || [];
+      } catch (err) {
+        console.error("Error fetching proposals:", err);
+        throw err;
+      }
     },
     staleTime: 1000 * 60 * 5,
     retry: 1,
   });
 };
 
+/**
+ * Fetch a single proposal by ID
+ */
 export const useProposal = (proposalId) => {
   return useQuery({
     queryKey: ["proposal", proposalId],
     queryFn: async () => {
-      const res = await proposalService.getProposal(proposalId);
-      return res.data.data || [];
+      try {
+        const res = await proposalService.getProposal(proposalId);
+        return res.data;
+      } catch (err) {
+        console.error(`Error fetching proposal ${proposalId}:`, err);
+        throw err;
+      }
     },
     enabled: !!proposalId,
   });
 };
 
+/**
+ * Generic mutation hook for proposal actions (approve, reject, submit, etc.)
+ */
+const useProposalAction = (actionName) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id) => proposalService[actionName](id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries(["proposal", id]);
+      queryClient.invalidateQueries(["proposals"]);
+    },
+    onError: (err) => console.error(`Error performing ${actionName}:`, err),
+  });
+};
+
+export const useApproveProposal = () => useProposalAction("approveProposal");
+export const useRejectProposal = () => useProposalAction("rejectProposal");
+export const useSubmitProposal = () => useProposalAction("submitProposal");
+export const useSubmitForReview = () => useProposalAction("submitForReview");
+
+/**
+ * Generate a new proposal from a tender
+ */
 export const useGenerateProposal = () => {
   const queryClient = useQueryClient();
 
@@ -31,59 +71,15 @@ export const useGenerateProposal = () => {
     mutationFn: ({ tenderId, payload }) =>
       proposalService.generateProposal(tenderId, payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["proposals"] });
+      queryClient.invalidateQueries(["proposals"]);
     },
+    onError: (err) => console.error("Error generating proposal:", err),
   });
 };
 
-export const useSubmitForReview = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id) => proposalService.submitForReview(id),
-    onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: ["proposal", id] });
-      queryClient.invalidateQueries({ queryKey: ["proposals"] });
-    },
-  });
-};
-
-export const useApproveProposal = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id) => proposalService.approveProposal(id),
-    onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: ["proposal", id] });
-      queryClient.invalidateQueries({ queryKey: ["proposals"] });
-    },
-  });
-};
-
-export const useRejectProposal = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id) => proposalService.rejectProposal(id),
-    onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: ["proposal", id] });
-      queryClient.invalidateQueries({ queryKey: ["proposals"] });
-    },
-  });
-};
-
-export const useSubmitProposal = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id) => proposalService.submitProposal(id),
-    onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: ["proposal", id] });
-      queryClient.invalidateQueries({ queryKey: ["proposals"] });
-    },
-  });
-};
-
+/**
+ * Regenerate a proposal section
+ */
 export const useRegenerateSection = (proposalId) => {
   const queryClient = useQueryClient();
 
@@ -91,56 +87,69 @@ export const useRegenerateSection = (proposalId) => {
     mutationFn: ({ sectionId }) =>
       proposalService.regenerateSection(proposalId, sectionId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["proposal", proposalId] });
+      queryClient.invalidateQueries(["proposal", proposalId]);
     },
+    onError: (err) =>
+      console.error(`Error regenerating section for proposal ${proposalId}:`, err),
   });
 };
 
-export const useGenerateFeedback = (proposalId) => {
+/**
+ * Generate document, feedback, or checklist for a proposal
+ */
+const useProposalResource = (resourceName, proposalId) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => proposalService.generateFeedback(proposalId),
+    mutationFn: () => proposalService[resourceName](proposalId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["proposal", proposalId] });
+      queryClient.invalidateQueries(["proposal", proposalId]);
     },
+    onError: (err) =>
+      console.error(`Error generating ${resourceName} for proposal ${proposalId}:`, err),
   });
 };
 
-export const useGenerateChecklist = (proposalId) => {
-  const queryClient = useQueryClient();
+export const useGenerateDocument = (proposalId) =>
+  useProposalResource("generateDocument", proposalId);
+export const useGenerateFeedback = (proposalId) =>
+  useProposalResource("generateFeedback", proposalId);
+export const useGenerateChecklist = (proposalId) =>
+  useProposalResource("generateChecklist", proposalId);
 
-  return useMutation({
-    mutationFn: () => proposalService.generateChecklist(proposalId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["proposal", proposalId] });
-    },
-  });
-};
-
-export const useGenerateDocument = (proposalId) => {
-  return useMutation({
-    mutationFn: () => proposalService.generateDocument(proposalId),
-  });
-};
-
+/**
+ * Preview a proposal (returns blob)
+ */
 export const usePreviewProposal = (proposalId) => {
   return useQuery({
     queryKey: ["proposal-preview", proposalId],
     queryFn: async () => {
-      const res = await proposalService.previewProposal(proposalId);
-      return res.data;
+      try {
+        const res = await proposalService.previewProposal(proposalId);
+        return res.data;
+      } catch (err) {
+        console.error(`Error previewing proposal ${proposalId}:`, err);
+        throw err;
+      }
     },
     enabled: !!proposalId,
   });
 };
 
+/**
+ * Get AI feedback for a specific proposal section
+ */
 export const useSectionFeedback = (sectionId) => {
   return useQuery({
     queryKey: ["section-feedback", sectionId],
     queryFn: async () => {
-      const res = await proposalService.getSectionFeedback(sectionId);
-      return res.data;
+      try {
+        const res = await proposalService.getSectionFeedback(sectionId);
+        return res.data;
+      } catch (err) {
+        console.error(`Error fetching feedback for section ${sectionId}:`, err);
+        throw err;
+      }
     },
     enabled: !!sectionId,
   });

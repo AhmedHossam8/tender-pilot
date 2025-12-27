@@ -1,16 +1,25 @@
 import React from "react";
 import { useProposals } from "../../hooks/useProposals";
-import { Card, CardHeader, CardTitle, CardContent, Badge } from "@/components/ui";
+import { Card, CardHeader, CardTitle, CardContent, Badge, Button } from "@/components/ui";
 import { LoadingSpinner, EmptyState } from "@/components/common";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
 const ProposalList = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { data: proposals, isLoading, error } = useProposals();
 
   if (isLoading) return <LoadingSpinner text={t("common.loading")} />;
-  if (error) return <EmptyState title={t("proposal.loadError", "Failed to load proposals")} />;
-  if (!proposals || proposals.length === 0) return <EmptyState title={t("proposal.noProposals", "No proposals found")} />;
+
+  if (error) {
+    console.error("Failed to fetch proposals:", error);
+    return <EmptyState title={t("proposal.loadError", "Failed to load proposals")} />;
+  }
+
+  if (!proposals || proposals.length === 0) {
+    return <EmptyState title={t("proposal.noProposals", "No proposals found")} />;
+  }
 
   return (
     <div className="space-y-6">
@@ -26,11 +35,19 @@ const ProposalList = () => {
                 </CardTitle>
                 <CardContent className="p-0">
                   <p className="text-sm text-muted-foreground">
-                    {t("proposal.tender", "Tender")}: {proposal.tender_title}
+                    {t("proposal.tender", "Tender")}: {proposal.tender_title || proposal.tender}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {t("proposal.createdAt", "Created")}: {new Date(proposal.created_at).toLocaleDateString()}
                   </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-2"
+                    onClick={() => navigate(`/proposals/${proposal.id}`)}
+                  >
+                    {t("proposal.viewDetails", "View Details")}
+                  </Button>
                 </CardContent>
               </div>
               <Badge>{proposal.status}</Badge>
