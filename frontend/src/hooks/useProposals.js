@@ -5,8 +5,14 @@ export const useProposals = (params) => {
   return useQuery({
     queryKey: ["proposals", params],
     queryFn: async () => {
-      const res = await proposalService.getProposals(params);
-      return res.data;
+      try {
+        const res = await proposalService.getProposals(params);
+        // return the array directly for the component
+        return res.data.results || [];
+      } catch (err) {
+        console.error("Error fetching proposals:", err);
+        throw err;
+      }
     },
     staleTime: 1000 * 60 * 5,
     retry: 1,

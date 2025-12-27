@@ -5,10 +5,10 @@ import { Toaster } from "sonner";
 import { useAuthStore } from "@/contexts/authStore";
 
 function AuthLayout({ className }) {
-  const { user, isInitialized } = useAuthStore();
+  const { user, loading } = useAuthStore();
 
   // Prevent flicker before auth hydration finishes
-  if (!isInitialized) return null;
+  if (loading) return null;
 
   // ✅ If already logged in → redirect to app
   if (user) {

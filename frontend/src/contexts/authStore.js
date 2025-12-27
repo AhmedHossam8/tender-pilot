@@ -1,6 +1,14 @@
 import { create } from "zustand";
 import AuthService from "../services/auth.service";
 
+// Map backend roles (uppercase) → frontend roles (lowercase)
+const roleMap = {
+  ADMIN: "admin",
+  PROPOSAL_MANAGER: "proposal_manager",
+  REVIEWER: "reviewer",
+  WRITER: "writer",
+};
+
 export const useAuthStore = create((set, get) => ({
   user: null,
   role: null,
@@ -26,26 +34,16 @@ export const useAuthStore = create((set, get) => ({
 
   login: async (credentials) => {
     const res = await AuthService.login(credentials);
-
-    const { access, refresh, user } = res.data;
+    const { access, refresh } = res.data;
 
     get().setTokens(access, refresh);
 
-    if (user) {
-      set({
-        user,
-        role: user.role,
-        isAuthenticated: true,
-      });
-    } else {
-      // fallback → fetch user
-      const me = await AuthService.me();
-      set({
-        user: me.data,
-        role: me.data.role,
-        isAuthenticated: true,
-      });
-    }
+    const me = await AuthService.me();
+    set({
+      user: me.data,
+      role: roleMap[me.data.role] || me.data.role, // normalize role
+      isAuthenticated: true,
+    });
 
     return res;
   },
@@ -57,7 +55,7 @@ export const useAuthStore = create((set, get) => ({
   logout: async () => {
     try {
       await AuthService.logout();
-    } catch (_) {}
+    } catch (_) { }
 
     get().clearTokens();
 
@@ -81,7 +79,7 @@ export const useAuthStore = create((set, get) => ({
 
       set({
         user: res.data,
-        role: res.data.role,
+        role: roleMap[res.data.role] || res.data.role, // normalize
         isAuthenticated: true,
         loading: false,
       });

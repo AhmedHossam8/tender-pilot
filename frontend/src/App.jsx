@@ -46,7 +46,7 @@ function App() {
             <Route element={<AuthLayout />}>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/forgot-password" element={<ForgetPassword />} />
             </Route>
 
             {/* -------- PROTECTED APP -------- */}

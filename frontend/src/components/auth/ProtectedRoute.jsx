@@ -4,7 +4,8 @@ import { useAuthStore } from "../../contexts/authStore";
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuthStore();
 
-  if (loading) return null;
+  // Wait for auth to initialize before rendering
+  if (loading) return <div className="p-4 text-center">Loading...</div>;
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;

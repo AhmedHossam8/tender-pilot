@@ -2,31 +2,31 @@ import api from "../lib/api";
 
 const AuthService = {
   login(data) {
-    return api.post("/auth/login", data);
+    return api.post("/users/login/", data);
   },
 
   register(data) {
-    return api.post("/auth/register", data);
+    return api.post("/users/register/", data);
   },
 
   logout() {
-    return api.post("/auth/logout");
+    return api.post("/users/logout/");
   },
 
   refresh(refresh) {
-    return api.post("/auth/refresh", { refresh });
+    return api.post("/users/refresh/", { refresh });
   },
 
   me() {
-    return api.get("/auth/me");
+    return api.get("/users/me/");
   },
 
   forgotPassword(email) {
-    return api.post("/auth/forgot-password", { email });
+    return api.post("/users/forgot-password/", { email });
   },
 
   resetPassword(data) {
-    return api.post("/auth/reset-password", data);
+    return api.post("/users/reset-password/", data);
   },
 };
 
