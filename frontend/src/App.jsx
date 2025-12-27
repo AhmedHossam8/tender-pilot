@@ -19,6 +19,7 @@ import ForgetPassword from "@/pages/auth/ForgetPassword";
 import ComponentShowcase from "@/pages/ComponentShowcase";
 import ProposalList from "@/pages/proposals/ProposalList";
 import ProposalDetail from "@/pages/proposals/ProposalDetail";
+import { AIDashboard, AIResultPanel } from "./pages/ai";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -76,6 +77,8 @@ function App() {
                   </RoleGuard>
                 }
               />
+              <Route path="/ai/dashboard" element={<AIDashboard />} />
+              <Route path="/ai/results/:responseId" element={<AIResultPanel />} />
             </Route>
 
             <Route path="/unauthorized" element={<div>Unauthorized</div>} />
