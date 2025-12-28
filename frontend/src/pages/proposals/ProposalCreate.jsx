@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useGenerateProposal, useProposals } from "../../hooks/useProposals";
+import { useTenders } from "../../hooks/useTenders";
 import {
     Card,
     CardHeader,
@@ -22,7 +23,7 @@ import { useTranslation } from "react-i18next";
 const ProposalCreate = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { data: tenders, isLoading, error } = useProposals({});
+    const { data: tenders, isLoading, error } = useTenders({});
     const generateProposalMutation = useGenerateProposal();
 
     const [selectedTender, setSelectedTender] = useState("");
@@ -58,41 +59,47 @@ const ProposalCreate = () => {
         );
 
     return (
-        <Card className="max-w-2xl mx-auto space-y-4 p-6">
-            <CardHeader>
-                <CardTitle>{t("proposal.create")}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <Select value={selectedTender} onValueChange={setSelectedTender}>
-                    <SelectTrigger>
-                        <SelectValue placeholder={t("proposal.selectTender")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {tenders.map((tender) => (
-                            <SelectItem key={tender.id} value={tender.id}>
-                                {tender.title}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+        <>
+            <Card className="max-w-2xl mx-auto space-y-4 p-6">
+                <CardHeader>
+                    <CardTitle>{t("proposal.create")}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <Select value={selectedTender} onValueChange={setSelectedTender}>
+                        <SelectTrigger>
+                            <SelectValue placeholder={t("proposal.selectTender")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {tenders.map((tender) => (
+                                <SelectItem key={tender.id} value={tender.id}>
+                                    {tender.title}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
 
-                <InputWithLabel
-                    label={t("proposal.instructions")}
-                    value={instructions}
-                    onChange={(e) => setInstructions(e.target.value)}
-                    placeholder={t("proposal.provideInstructions")}
-                />
-            </CardContent>
-            <CardFooter>
-                <Button onClick={handleGenerate} className="w-full">
-                    {generateProposalMutation.isLoading ? (
-                        <LoadingSpinner size="sm" />
-                    ) : (
-                        t("proposal.create")
-                    )}
-                </Button>
-            </CardFooter>
-        </Card>
+                    <InputWithLabel
+                        label={t("proposal.instructions")}
+                        value={instructions}
+                        onChange={(e) => setInstructions(e.target.value)}
+                        placeholder={t("proposal.provideInstructions")}
+                    />
+                </CardContent>
+                <CardFooter className="block">
+                    <Button onClick={handleGenerate} className="w-full" variant="success" disabled={generateProposalMutation.isLoading}>
+                        {generateProposalMutation.isLoading ? (
+                            <LoadingSpinner size="sm" />
+                        ) : (
+                            t("proposal.create")
+                        )}
+                    </Button>
+                    <Button onClick={() => navigate("/proposals")} className="w-full mt-2"
+                        variant="destructive">
+                        {t("common.goBack")}
+                    </Button>
+                </CardFooter>
+            </Card>
+        </>
     );
 };
 

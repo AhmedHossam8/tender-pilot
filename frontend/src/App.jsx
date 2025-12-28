@@ -19,6 +19,7 @@ import ForgetPassword from "@/pages/auth/ForgetPassword";
 import ComponentShowcase from "@/pages/ComponentShowcase";
 import ProposalList from "@/pages/proposals/ProposalList";
 import ProposalDetail from "@/pages/proposals/ProposalDetail";
+import ProposalCreate from "./pages/proposals/ProposalCreate";
 import { AIDashboard, AIResultPanel } from "./pages/ai";
 
 const queryClient = new QueryClient({
@@ -63,8 +64,16 @@ function App() {
               <Route
                 path="/proposals"
                 element={
-                  <RoleGuard allowed={["admin", "proposal_manager", "reviewer"]}>
+                  <RoleGuard allowed={["admin", "proposal_manager", "reviewer", "writer"]}>
                     <ProposalList />
+                  </RoleGuard>
+                }
+              />
+              <Route
+                path="/proposals/create"
+                element={
+                  <RoleGuard allowed={["admin", "proposal_manager", "reviewer", "writer"]}>
+                    <ProposalCreate />
                   </RoleGuard>
                 }
               />
@@ -72,7 +81,7 @@ function App() {
               <Route
                 path="/proposals/:id"
                 element={
-                  <RoleGuard allowed={["admin", "proposal_manager", "reviewer"]}>
+                  <RoleGuard allowed={["admin", "proposal_manager", "reviewer", "writer"]}>
                     <ProposalDetail />
                   </RoleGuard>
                 }

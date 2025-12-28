@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { proposalService } from "../services/proposal.service";
+import { tenderService } from "../services/Tenderservices.js";
 
 /**
  * Fetch all proposals (paginated)
@@ -152,5 +153,17 @@ export const useSectionFeedback = (sectionId) => {
       }
     },
     enabled: !!sectionId,
+  });
+};
+
+export const useTenders = (params = {}) => {
+  return useQuery({
+    queryKey: ["tenders", params],
+    queryFn: async () => {
+      const res = await tenderService.getTenders(params);
+      return res.data.results || [];
+    },
+    staleTime: 1000 * 60 * 5,
+    retry: 1,
   });
 };
