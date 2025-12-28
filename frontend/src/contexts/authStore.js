@@ -52,12 +52,9 @@ export const useAuthStore = create((set, get) => ({
     return AuthService.register(data);
   },
 
-  logout: async () => {
-    try {
-      await AuthService.logout();
-    } catch (_) { }
-
-    get().clearTokens();
+  logout: () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
 
     set({
       user: null,

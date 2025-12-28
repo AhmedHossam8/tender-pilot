@@ -8,12 +8,15 @@ const api = axios.create({
   },
 });
 
-// Attach access token
+/* =========================
+   REQUEST INTERCEPTOR
+========================= */
 api.interceptors.request.use(
   (config) => {
     const token = useAuthStore.getState().accessToken;
 
     if (token) {
+      config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
     }
 
@@ -22,7 +25,9 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Handle expired token (refresh flow)
+/* =========================
+   RESPONSE INTERCEPTOR
+========================= */
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -34,8 +39,11 @@ api.interceptors.response.use(
     ) {
       originalRequest._retry = true;
 
-      const { refreshToken, setTokens, logout } =
-        useAuthStore.getState();
+      const {
+        refreshToken,
+        setTokens,
+        logout,
+      } = useAuthStore.getState();
 
       if (!refreshToken) {
         logout();
@@ -43,15 +51,18 @@ api.interceptors.response.use(
       }
 
       try {
+        // SimpleJWT refresh endpoint
         const res = await axios.post(
-          `${import.meta.env.VITE_API_BASE_URL}/auth/refresh`,
+          `${import.meta.env.VITE_API_BASE_URL}/users/refresh/`,
           { refresh: refreshToken }
         );
 
-        setTokens(res.data.access, res.data.refresh);
+        const { access, refresh } = res.data;
 
-        originalRequest.headers.Authorization =
-          `Bearer ${res.data.access}`;
+        setTokens(access, refresh);
+
+        originalRequest.headers = originalRequest.headers || {};
+        originalRequest.headers.Authorization = `Bearer ${access}`;
 
         return api(originalRequest);
       } catch (err) {

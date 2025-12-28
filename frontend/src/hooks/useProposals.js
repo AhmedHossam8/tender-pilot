@@ -126,7 +126,7 @@ export const usePreviewProposal = (proposalId) => {
     queryFn: async () => {
       try {
         const res = await proposalService.previewProposal(proposalId);
-        return res.data;
+        return res.data.response; // assuming blob is in res.data.response
       } catch (err) {
         console.error(`Error previewing proposal ${proposalId}:`, err);
         throw err;

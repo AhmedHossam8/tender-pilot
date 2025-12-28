@@ -8,11 +8,7 @@ const AuthService = {
   register(data) {
     return api.post("/users/register/", data);
   },
-
-  logout() {
-    return api.post("/users/logout/");
-  },
-
+  
   refresh(refresh) {
     return api.post("/users/refresh/", { refresh });
   },
