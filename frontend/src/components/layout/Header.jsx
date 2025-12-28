@@ -6,8 +6,8 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
-// ✅ Import your auth service
-import AuthService from "@/services/auth.service";
+// Import your auth store
+import { useAuthStore } from "@/contexts/authStore";
 
 export function Header({ onMenuClick, className }) {
   const { t, i18n } = useTranslation();
@@ -17,30 +17,12 @@ export function Header({ onMenuClick, className }) {
 
   const isArabic = i18n.language === "ar";
 
-  // ✅ Local user state
-  const [user, setUser] = React.useState(null);
-
-  // Fetch logged-in user on mount
-  React.useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const res = await AuthService.me();
-        setUser(res.data); // expected: { full_name, email, role }
-      } catch (err) {
-        console.error("Failed to fetch user:", err);
-      }
-    };
-    fetchUser();
-  }, []);
+  const { user, logout } = useAuthStore();
 
   // Logout
-  const handleLogout = async () => {
-    try {
-      await AuthService.logout();
-      navigate("/login");
-    } catch (err) {
-      console.error("Logout failed:", err);
-    }
+  const handleLogout = () => {
+    logout();          // clears tokens + state
+    navigate("/login", { replace: true });
   };
 
   // Close dropdown on outside click
@@ -146,7 +128,7 @@ export function Header({ onMenuClick, className }) {
                 className="flex items-center gap-2 px-4 py-2 text-sm text-destructive hover:bg-muted transition-colors w-full"
                 onClick={async () => {
                   setShowDropdown(false);
-                  await handleLogout();
+                  handleLogout();
                 }}
               >
                 <LogOut className="h-4 w-4" />
