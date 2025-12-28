@@ -12,7 +12,8 @@
     "goBack": "العودة",
     "current": "الحالي",
     "refresh": "تحديث",
-    "viewAll": "عرض الكل"
+    "viewAll": "عرض الكل",
+    "Actions": "الإجراءات"
   },
   "auth": {
     "login": "تسجيل الدخول",
@@ -45,6 +46,7 @@
     "loadingTenders": "جاري تحميل المناقصات...",
     "noTenders": "لم يتم العثور على مناقصات",
     "noTendersDescription": "قم باستيراد مناقصة لإنشاء عرض فني.",
+    "statusLabel": "الحالة:",
     "status": {
       "draft": "مسودة",
       "in_review": "قيد المراجعة",

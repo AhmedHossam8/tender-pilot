@@ -20,6 +20,9 @@ import ComponentShowcase from "@/pages/ComponentShowcase";
 import ProposalList from "@/pages/proposals/ProposalList";
 import ProposalDetail from "@/pages/proposals/ProposalDetail";
 import ProposalCreate from "./pages/proposals/ProposalCreate";
+import ProposalReview from "./pages/proposals/ProposalReview";
+import ProposalPreview from "./pages/proposals/ProposalPreview";
+
 import TendersPage from "./pages/Tenders/TendersListPage";
 import TenderCreatePage from "./pages/Tenders/TenderCreatePage";
 import TenderDeletePage from "./pages/Tenders/TenderDeletePage";
@@ -37,7 +40,7 @@ const queryClient = new QueryClient({
 });
 
 function App() {
-  const { initialize } = useAuthStore();
+  const { initialize, user } = useAuthStore();
   const { i18n } = useTranslation();
 
   useEffect(() => {
@@ -74,6 +77,25 @@ function App() {
                   </RoleGuard>
                 }
               />
+
+              <Route
+                path="/proposals/:id/preview"
+                element={
+                  <RoleGuard allowed={["proposal_manager"]}>
+                    <ProposalPreview />
+                  </RoleGuard>
+                }
+              />
+
+              <Route
+                path="/proposals/:id/review"
+                element={
+                  <RoleGuard allowed={["reviewer"]}>
+                    <ProposalReview />
+                  </RoleGuard>
+                }
+              />
+
               <Route
                 path="/proposals/create"
                 element={
@@ -96,12 +118,22 @@ function App() {
             </Route>
 
             <Route path="/unauthorized" element={<div>Unauthorized</div>} />
-                                                 
-            <Route path="/tenders">
-            <Route path="create" element={<TenderCreatePage />} />
-            <Route path=":id" element={<TenderDetailPage />} />
-            <Route path=":id/edit" element={<TenderEditPage />} />
-            <Route path=":id/delete" element={<TenderDeletePage />} />
+
+            {/* -------- TENDERS ROUTES -------- */}
+            <Route
+              path="/tenders"
+              element={
+                <ProtectedRoute>
+                  <AppLayout showFooter />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<TendersPage />} /> {/* /tenders */}
+              <Route path="create" element={<TenderCreatePage />} /> {/* /tenders/create */}
+              <Route path=":id" element={<TenderDetailPage />} /> {/* /tenders/:id */}
+              <Route path=":id/edit" element={<TenderEditPage />} /> {/* /tenders/:id/edit */}
+              <Route path=":id/delete" element={<TenderDeletePage />} /> {/* /tenders/:id/delete */}
+            </Route>
           </Routes>
         </BrowserRouter>
 

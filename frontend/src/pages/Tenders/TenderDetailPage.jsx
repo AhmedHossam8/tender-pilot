@@ -1,13 +1,13 @@
 import { useParams, Link } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
-import TenderServices from "../../services/Tenderservices"
+import { tenderService } from "../../services/Tenderservices";
 
 function TenderDetailPage() {
   const { id } = useParams()
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["tender", id],
-    queryFn: () => TenderServices.getTenderById(id),
+    queryFn: () => tenderService.getTender(id),
   })
 
   if (isLoading) return <p>Loading...</p>

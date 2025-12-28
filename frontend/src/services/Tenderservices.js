@@ -1,68 +1,25 @@
 import api from "../lib/api";
 
-const TenderServices = {
-  getAllTenders: async () => {
-    try {
-        const response = await api.get("/tenders/");
-        console.log("API response data:", response.data);
-      return Array.isArray(response.data)
-        ? response.data
-        : response.data.results || [];
-    } catch (err) {
-      console.error("Error fetching tenders:", err.response || err);
-      throw err;
-    }
-  },
+/**
+ * Service for handling tenders API requests.
+ * All methods return the raw API response data.
+ */
+export const tenderService = {
+  // Fetch all tenders, optionally with query parameters
+  getTenders: (params = {}) => api.get("/tenders", { params }),
 
-  getTenderById: async (id) => {
-    try {
-      const response = await api.get(`/tenders/${id}/`);
-      return response.data;
-    } catch (err) {
-      console.error(`Error fetching tender ${id}:`, err.response || err);
-      throw err;
-    }
-  },
+  // Fetch a single tender by ID
+  getTender: (id) => api.get(`/tenders/${id}`),
 
-  createTender: async (data) => {
-    try {
-      const response = await api.post("/tenders/", data);
-      return response.data;
-    } catch (err) {
-      console.error("Error creating tender:", err.response || err);
-      throw err;
-    }
-  },
+  // Create a new tender
+  createTender: (data) => api.post("/tenders", data),
 
-  updateTender: async (id, data) => {
-    try {
-      const response = await api.put(`/tenders/${id}/`, data);
-      return response.data;
-    } catch (err) {
-      console.error(`Error updating tender ${id}:`, err.response || err);
-      throw err;
-    }
-  },
+  // Update an existing tender completely
+  updateTender: (id, data) => api.put(`/tenders/${id}`, data),
 
-  patchTender: async (id, data) => {
-    try {
-      const response = await api.patch(`/tenders/${id}/`, data);
-      return response.data;
-    } catch (err) {
-      console.error(`Error patching tender ${id}:`, err.response || err);
-      throw err;
-    }
-  },
+  // Partially update an existing tender
+  patchTender: (id, data) => api.patch(`/tenders/${id}`, data),
 
-  deleteTender: async (id) => {
-    try {
-      const response = await api.delete(`/tenders/${id}/`);
-      return response.data;
-    } catch (err) {
-      console.error(`Error deleting tender ${id}:`, err.response || err);
-      throw err;
-    }
-  },
+  // Delete a tender
+  deleteTender: (id) => api.delete(`/tenders/${id}`),
 };
-
-export default TenderServices;

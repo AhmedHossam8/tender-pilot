@@ -26,4 +26,15 @@ class ProposalSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Proposal
-        fields = ['id', 'tender', 'created_by', 'title', 'status', 'created_at', 'updated_at', 'sections', 'documents']
+        fields = [
+            'id',
+            'tender',
+            'created_by',
+            'title',
+            'status',
+            'ai_feedback',
+            'created_at',
+            'updated_at',
+            'sections',
+            'documents',
+        ]

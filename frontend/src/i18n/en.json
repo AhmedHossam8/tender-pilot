@@ -12,7 +12,8 @@
     "goBack": "Go Back",
     "current": "Current",
     "refresh": "Refresh",
-    "viewAll": "View All"
+    "viewAll": "View All",
+    "Actions": "Actions"
   },
   "auth": {
     "login": "Login",
@@ -45,6 +46,7 @@
     "loadingTenders": "Loading tenders...",
     "noTenders": "No tenders found",
     "noTendersDescription": "Import a tender to generate a proposal.",
+    "statusLabel": "Status:",
     "status": {
       "draft": "Draft",
       "in_review": "In Review",

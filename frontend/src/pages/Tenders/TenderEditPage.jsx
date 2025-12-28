@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom"
 import { useQuery } from "@tanstack/react-query"
 import { useTenders } from "../../hooks/useTenders"
-import TenderServices from "../../services/Tenderservices"
+import { tenderService } from "../../services/Tenderservices";
 import { useState } from "react"
 
 export default function TenderEditPage() {
@@ -11,7 +11,7 @@ export default function TenderEditPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ["tender", id],
-    queryFn: () => TenderServices.getTenderById(id),
+    queryFn: () => tenderService.getTenderById(id),
   })
 
   const [form, setForm] = useState(null)
