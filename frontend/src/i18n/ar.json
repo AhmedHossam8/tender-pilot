@@ -47,10 +47,11 @@
     "noTendersDescription": "قم باستيراد مناقصة لإنشاء عرض فني.",
     "status": {
       "draft": "مسودة",
-      "in-review": "قيد المراجعة",
+      "in_review": "قيد المراجعة",
       "approved": "موافق عليه",
       "submitted": "مُعتمد",
-      "rejected": "مرفوض"
+      "rejected": "مرفوض",
+      "final": "مُعتمد"
     },
     "section": "القسم",
     "completed": "مكتمل",
@@ -61,7 +62,8 @@
     "noChecklistItems": "لا توجد عناصر في قائمة التحقق",
     "reviewerComments": "تعليقات المراجع",
     "addComment": "أضف تعليقك",
-    "previewProposal": "معاينة العرض الفني"
+    "previewProposal": "معاينة العرض الفني",
+    "viewDetails": "عرض التفاصيل"
   },
   "sidebar": {
     "dashboard": "لوحة التحكم",

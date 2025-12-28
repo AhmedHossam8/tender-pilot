@@ -23,7 +23,15 @@ const ProposalList = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">{t("proposal.title")}</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">{t("proposal.title")}</h1>
+        <Button
+          variant="success"
+          onClick={() => navigate("/proposals/create")}
+        >
+          {t("proposal.create")}
+        </Button>
+      </div>
 
       <div className="space-y-4">
         {proposals.map((proposal) => (
@@ -50,7 +58,7 @@ const ProposalList = () => {
                   </Button>
                 </CardContent>
               </div>
-              <Badge>{proposal.status}</Badge>
+              <Badge>{t(`proposal.status.${proposal.status}`)}</Badge>
             </CardHeader>
           </Card>
         ))}

@@ -47,10 +47,11 @@
     "noTendersDescription": "Import a tender to generate a proposal.",
     "status": {
       "draft": "Draft",
-      "in-review": "In Review",
+      "in_review": "In Review",
       "approved": "Approved",
       "submitted": "Submitted",
-      "rejected": "Rejected"
+      "rejected": "Rejected",
+      "final": "Submitted"
     },
     "section": "Section",
     "completed": "Completed",
@@ -61,7 +62,8 @@
     "noChecklistItems": "No checklist items found",
     "reviewerComments": "Reviewer Comments",
     "addComment": "Add your comment",
-    "previewProposal": "Preview Proposal"
+    "previewProposal": "Preview Proposal",
+    "viewDetails": "View Details"
   },
   "sidebar": {
     "dashboard": "Dashboard",
