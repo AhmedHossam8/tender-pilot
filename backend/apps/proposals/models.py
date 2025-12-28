@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from apps.tenders.models import Tender
 from django.conf import settings
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -24,6 +25,8 @@ class Proposal(models.Model):
         default=Status.DRAFT,
         db_index=True,
     )
+    # Stores structured AI review feedback for the proposal
+    ai_feedback = models.JSONField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -76,6 +79,7 @@ class ProposalSection(models.Model):
     name = models.CharField(max_length=100)  # e.g., Background, Methodology
     content = models.TextField(blank=True)
     ai_generated = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         indexes = [

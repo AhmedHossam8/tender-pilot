@@ -5,7 +5,7 @@ from rest_framework.exceptions import NotFound, ValidationError
 from django.shortcuts import get_object_or_404
 from .models import ProposalSection
 from .services.context_builder import build_proposal_context
-from .services.writer import generate_proposal_sections
+from .services.writer import generate_proposal_sections, generate_proposal_review
 from common.viewsets import BaseModelViewSet
 from .serializers import ProposalSectionSerializer
 from rest_framework.permissions import IsAuthenticated
@@ -85,24 +85,64 @@ class ProposalSectionViewSet(BaseModelViewSet):
 
     @action(detail=True, methods=["get"])
     def ai_feedback(self, request, pk=None):
-        """Get AI-assisted suggestions for the proposal (reviewer only)"""
-        proposal = self.get_object()
-    
+        """Get AI-assisted feedback for a single proposal section (reviewer only)"""
+        section = self.get_object()
+        proposal = section.proposal
+
         # Only reviewers can access AI feedback
-        check_user_role(request.user, ["reviewer"])
-    
+        user = request.user
+        role = getattr(user, "role", None)
+        reviewer_role = getattr(getattr(user, "Role", None), "REVIEWER", None)
+        if role != reviewer_role:
+            raise ValidationError("Only reviewers can access AI feedback")
+
         if proposal.status != "in_review":
             return Response(
                 {"detail": "AI feedback is only available while proposal is in review"},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
-    
-        feedback = proposal.ai_feedback or "No AI suggestions available yet."
-    
+
+        try:
+            # Build context from tender
+            context = build_proposal_context(proposal.tender)
+            # Review only this section in context of the full tender
+            feedback = generate_proposal_review(context, {section.name: section.content})
+        except Exception as e:
+            logger.error(
+                "Error generating AI feedback for section %s: %s",
+                section.id,
+                e,
+                exc_info=True,
+            )
+            raise ValidationError({"detail": "Failed to generate AI feedback"})
+
+        # Convert structured feedback into a readable string for the UI
+        if isinstance(feedback, dict):
+            overall = feedback.get("overall_rating") or "N/A"
+            strengths = feedback.get("strengths") or []
+            weaknesses = feedback.get("weaknesses") or []
+            missing_elements = feedback.get("missing_elements") or []
+            recommendations = feedback.get("recommendations") or []
+
+            parts = [f"Overall rating: {overall}."]
+            if strengths:
+                parts.append("Strengths: " + "; ".join(str(s) for s in strengths))
+            if weaknesses:
+                parts.append("Weaknesses: " + "; ".join(str(w) for w in weaknesses))
+            if missing_elements:
+                parts.append("Missing elements: " + "; ".join(str(m) for m in missing_elements))
+            if recommendations:
+                parts.append("Recommendations: " + "; ".join(str(r) for r in recommendations))
+
+            feedback_text = " ".join(parts)
+        else:
+            feedback_text = str(feedback) if feedback is not None else "No AI suggestions available yet."
+
         return Response(
             {
+                "section_id": section.id,
                 "proposal_id": proposal.id,
-                "ai_feedback": feedback
+                "ai_feedback": feedback_text,
             },
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )

@@ -1,46 +1,88 @@
 import React from "react";
 import { useParams } from "react-router-dom";
-import { useProposal } from "../hooks/useProposals";
+import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
 import { LoadingSpinner, EmptyState } from "@/components/common";
-import { Button } from "@/components/ui";
+import { Button, Card, CardHeader, CardTitle, CardContent } from "@/components/ui";
 
-import ProposalCard from "../components/proposals/ProposalCard";
-import CompliancePanel from "../components/proposals/CompliancePanel";
-import WorkflowStepper from "../components/proposals/WorkflowStepper";
-import ChecklistPanel from "../components/proposals/ChecklistPanel";
+import { useProposal, useSubmitProposal, useGenerateDocument } from "../../hooks/useProposals";
 
 const ProposalPreview = () => {
     const { t } = useTranslation();
     const { id } = useParams();
-    const { data: proposal, isLoading, error } = useProposal(id);
 
-    if (isLoading) return <LoadingSpinner text={t("common.loading")} />;
-    if (error || !proposal) return <EmptyState title={t("proposal.loadError")} />;
+    // Fetch proposal
+    const { data: proposal, isLoading, isError } = useProposal(id);
+
+    // Mutations
+    const submitProposal = useSubmitProposal();
+    const generateDocument = useGenerateDocument(id);
+
+    if (isLoading)
+        return (
+            <div className="flex justify-center items-center min-h-screen">
+                <LoadingSpinner size="xl" text={t("common.loading")} />
+            </div>
+        );
+
+    if (isError || !proposal)
+        return <EmptyState title={t("proposal.loadError", "Failed to load proposal")} />;
 
     return (
-        <div className="max-w-4xl mx-auto space-y-6 p-4">
-            {/* Header and workflow */}
-            <ProposalCard proposal={proposal}>
-                <WorkflowStepper status={proposal.status} readOnly />
-            </ProposalCard>
+        <div className="max-w-4xl mx-auto p-4 space-y-6">
+            {/* Proposal Header */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>{proposal.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p><strong>{t("Tender")}:</strong> {proposal.tender_title || proposal.tender}</p>
+                    <p><strong>{t("Status")}:</strong> {proposal.status}</p>
+                </CardContent>
+            </Card>
 
-            {/* Sections */}
+            {/* Proposal Sections */}
             {proposal.sections?.map((section) => (
-                <div key={section.id} className="space-y-2">
-                    <h3 className="font-semibold">{section.title}</h3>
-                    <p>{section.content}</p>
-                </div>
+                <Card key={section.id}>
+                    <CardHeader>
+                        <CardTitle>{section.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p>{section.content}</p>
+                    </CardContent>
+                </Card>
             ))}
 
-            {/* Checklist and compliance */}
-            <ChecklistPanel checklist={proposal.checklist} readOnly />
-            <CompliancePanel proposal={proposal} readOnly />
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-4">
+                {proposal.status === "approved" && (
+                    <Button
+                        variant="success"
+                        onClick={() =>
+                            submitProposal.mutate(proposal.id, {
+                                onSuccess: () => toast.success(t("Proposal submitted successfully!")),
+                                onError: () => toast.error(t("Failed to submit proposal.")),
+                            })
+                        }
+                        disabled={submitProposal.isLoading}
+                    >
+                        {submitProposal.isLoading ? t("Submitting...") : t("Submit Proposal")}
+                    </Button>
+                )}
 
-            {/* Print button */}
-            <div className="flex justify-end">
-                <Button onClick={() => window.print()}>{t("proposal.print", "Print Proposal")}</Button>
+                <Button
+                    variant="outline"
+                    onClick={() =>
+                        generateDocument.mutate(undefined, {
+                            onSuccess: () => toast.success(t("Document generated successfully!")),
+                            onError: () => toast.error(t("Failed to generate document.")),
+                        })
+                    }
+                    disabled={generateDocument.isLoading}
+                >
+                    {generateDocument.isLoading ? t("Generating...") : t("Generate Document")}
+                </Button>
             </div>
         </div>
     );

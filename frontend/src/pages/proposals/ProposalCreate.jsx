@@ -23,7 +23,7 @@ import { useTranslation } from "react-i18next";
 const ProposalCreate = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { data: tenders, isLoading, error } = useTenders({});
+    const { tenders, isLoading, isError, error } = useTenders();
     const generateProposalMutation = useGenerateProposal();
 
     const [selectedTender, setSelectedTender] = useState("");

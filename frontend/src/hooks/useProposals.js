@@ -5,20 +5,15 @@ import { tenderService } from "../services/Tenderservices.js";
 /**
  * Fetch all proposals (paginated)
  */
-export const useProposals = (params = {}) => {
+export const useProposals = () => {
   return useQuery({
-    queryKey: ["proposals", params],
+    queryKey: ["proposals"],          // stable key
     queryFn: async () => {
-      try {
-        const res = await proposalService.getProposals(params);
-        return res.data.results || [];
-      } catch (err) {
-        console.error("Error fetching proposals:", err);
-        throw err;
-      }
+      const res = await proposalService.getProposals();
+      return res.data.results;                // return the actual data
     },
-    staleTime: 1000 * 60 * 5,
-    retry: 1,
+    staleTime: 1000 * 60,             // cache for 1 minute
+    keepPreviousData: true,           // avoid flicker on refetch
   });
 };
 
@@ -125,13 +120,8 @@ export const usePreviewProposal = (proposalId) => {
   return useQuery({
     queryKey: ["proposal-preview", proposalId],
     queryFn: async () => {
-      try {
-        const res = await proposalService.previewProposal(proposalId);
-        return res.data.response; // assuming blob is in res.data.response
-      } catch (err) {
-        console.error(`Error previewing proposal ${proposalId}:`, err);
-        throw err;
-      }
+      const res = await proposalService.previewProposal(proposalId);
+      return res.data.response; // assuming blob is in res.data.response
     },
     enabled: !!proposalId,
   });

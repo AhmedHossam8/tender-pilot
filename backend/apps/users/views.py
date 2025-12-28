@@ -17,22 +17,22 @@ from rest_framework.permissions import AllowAny , IsAuthenticated
 from rest_framework.response import Response
 from .permissions import IsAdmin, IsOwnerOrAdmin
 from .models import User
-from .throttles import (
-    LoginThrottle
-    ,RegisterThrottle 
-    ,AdminThrottle
-)
+# from .throttles import (
+#     LoginThrottle
+#     ,RegisterThrottle 
+#     ,AdminThrottle
+# )
 
 class RegisterAPIView(generics.CreateAPIView):
     permission_classes = [AllowAny]
     serializer_class = RegisterSerializer
-    throttle_classes = [RegisterThrottle]
+    # throttle_classes = [RegisterThrottle]
 
 
 class LoginAPIView(TokenObtainPairView):
     permission_classes = [AllowAny]
     serializer_class = LoginSerializer
-    throttle_classes = [LoginThrottle]
+    # throttle_classes = [LoginThrottle]
 
 
 class ProfileAPIView(APIView):
@@ -54,14 +54,14 @@ class AdminListAPIView(ListAPIView):
     queryset = User.objects.all()
     serializer_class = AdminUserSerializer
     permission_classes = [IsAdmin]
-    throttle_classes = [AdminThrottle]
+    # throttle_classes = [AdminThrottle]
 
 
 class AdminUserDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
     serializer_class = AdminUserSerializer
     permission_classes = [IsAdmin]
-    throttle_classes = [AdminThrottle]
+    # throttle_classes = [AdminThrottle]
 
     def destroy(self, request, *args, **kwargs):
          user = self.get_object()
