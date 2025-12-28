@@ -1,9 +1,20 @@
-import * as React from "react"
-import { Outlet, Link } from "react-router-dom"
-import { cn } from "@/lib/utils"
-import { Toaster } from "sonner"
+import * as React from "react";
+import { Outlet, Link, Navigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import { Toaster } from "sonner";
+import { useAuthStore } from "@/contexts/authStore";
 
 function AuthLayout({ className }) {
+  const { user, loading } = useAuthStore();
+
+  // Prevent flicker before auth hydration finishes
+  if (loading) return null;
+
+  // ✅ If already logged in → redirect to app
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
+
   return (
     <div
       className={cn(
@@ -33,10 +44,9 @@ function AuthLayout({ className }) {
         <p>© {new Date().getFullYear()} TenderPilot. All rights reserved.</p>
       </footer>
 
-      {/* Toast Notifications */}
       <Toaster position="top-right" richColors />
     </div>
-  )
+  );
 }
 
-export default AuthLayout
+export default AuthLayout;
