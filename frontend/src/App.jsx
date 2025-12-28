@@ -19,6 +19,11 @@ import ForgetPassword from "@/pages/auth/ForgetPassword";
 import ComponentShowcase from "@/pages/ComponentShowcase";
 import ProposalList from "@/pages/proposals/ProposalList";
 import ProposalDetail from "@/pages/proposals/ProposalDetail";
+import TendersPage from "./pages/Tenders/TendersListPage";
+import TenderCreatePage from "./pages/Tenders/TenderCreatePage";
+import TenderDeletePage from "./pages/Tenders/TenderDeletePage";
+import TenderEditPage from "./pages/Tenders/TenderEditPage";
+import TenderDetailPage from "./pages/Tenders/TenderDetailPage";
 import { AIDashboard, AIResultPanel } from "./pages/ai";
 
 const queryClient = new QueryClient({
@@ -82,6 +87,13 @@ function App() {
             </Route>
 
             <Route path="/unauthorized" element={<div>Unauthorized</div>} />
+                                                 
+            <Route path="/tenders">
+            <Route index element={<TendersPage />} />
+            <Route path="create" element={<TenderCreatePage />} />
+            <Route path=":id" element={<TenderDetailPage />} />
+            <Route path=":id/edit" element={<TenderEditPage />} />
+            <Route path=":id/delete" element={<TenderDeletePage />} />
           </Routes>
         </BrowserRouter>
 
