@@ -89,7 +89,6 @@ function App() {
             <Route path="/unauthorized" element={<div>Unauthorized</div>} />
                                                  
             <Route path="/tenders">
-            <Route index element={<TendersPage />} />
             <Route path="create" element={<TenderCreatePage />} />
             <Route path=":id" element={<TenderDetailPage />} />
             <Route path=":id/edit" element={<TenderEditPage />} />
