@@ -3,10 +3,14 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
 import ComponentShowcase from "./pages/ComponentShowcase";
 import ProposalList from "./pages/ProposalList";
+import TendersPage from "./pages/Tenders/TendersListPage";
 // import ProposalDetail from "./pages/ProposalDetail";
+import TenderCreatePage from "./pages/Tenders/TenderCreatePage";
+import TenderDeletePage from "./pages/Tenders/TenderDeletePage";
+import TenderEditPage from "./pages/Tenders/TenderEditPage";
+import TenderDetailPage from "./pages/Tenders/TenderDetailPage";
 import "./index.css";
 import AppLayout from "@/layouts/AppLayout"
-
 // Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,8 +31,14 @@ function App() {
           <Route element={<AppLayout user={user} showFooter={true} />}>
             <Route path="/" element={<ComponentShowcase />} />
             <Route path="/proposals" element={<ProposalList />} />
+             <Route path="/tenders">
+              <Route index element={<TendersPage />} />
+              <Route path="create" element={<TenderCreatePage />} />
+              <Route path=":id" element={<TenderDetailPage />} />
+              <Route path=":id/edit" element={<TenderEditPage />} />
+              <Route path=":id/delete" element={<TenderDeletePage />} />
+            </Route>
             {/* <Route path="/proposals/:id" element={<ProposalDetail />} /> */}
-
             <Route path="/components" element={<ComponentShowcase />} />
           </Route>
         </Routes>
