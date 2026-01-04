@@ -60,8 +60,10 @@ INSTALLED_APPS = [
     'apps.tenders.apps.TendersConfig',
     'apps.documents.apps.DocumentsConfig',
     'apps.proposals.apps.ProposalsConfig',
+    'apps.bids.apps.BidsConfig',
     'apps.ai_engine.apps.AiEngineConfig',
     'apps.core.apps.CoreConfig',
+
     'common',
 
 
