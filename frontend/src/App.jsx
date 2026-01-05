@@ -23,6 +23,13 @@ import ProposalCreate from "./pages/proposals/ProposalCreate";
 import ProposalReview from "./pages/proposals/ProposalReview";
 import ProposalPreview from "./pages/proposals/ProposalPreview";
 
+// Bid pages (ServiceHub marketplace)
+import BidList from "@/pages/Bids/BidList";
+import BidDetail from "@/pages/Bids/BidDetail";
+import BidCreate from "./pages/Bids/BidCreate";
+import BidPreview from "./pages/Bids/BidPreview";
+import BidReview from "./pages/Bids/BidReview";
+
 import TendersPage from "./pages/Tenders/TendersListPage";
 import TenderCreatePage from "./pages/Tenders/TenderCreatePage";
 import TenderDeletePage from "./pages/Tenders/TenderDeletePage";
@@ -115,6 +122,52 @@ function App() {
               />
               <Route path="/ai/dashboard" element={<AIDashboard />} />
               <Route path="/ai/results/:responseId" element={<AIResultPanel />} />
+
+              {/* -------- BID ROUTES (ServiceHub) -------- */}
+              <Route
+                path="/bids"
+                element={
+                  <RoleGuard allowed={["admin", "client", "provider"]}>
+                    <BidList />
+                  </RoleGuard>
+                }
+              />
+
+              <Route
+                path="/bids/create"
+                element={
+                  <RoleGuard allowed={["provider"]}>
+                    <BidCreate />
+                  </RoleGuard>
+                }
+              />
+
+              <Route
+                path="/bids/:id"
+                element={
+                  <RoleGuard allowed={["admin", "client", "provider"]}>
+                    <BidDetail />
+                  </RoleGuard>
+                }
+              />
+
+              <Route
+                path="/bids/:id/preview"
+                element={
+                  <RoleGuard allowed={["client"]}>
+                    <BidPreview />
+                  </RoleGuard>
+                }
+              />
+
+              <Route
+                path="/bids/:id/review"
+                element={
+                  <RoleGuard allowed={["client"]}>
+                    <BidReview />
+                  </RoleGuard>
+                }
+              />
             </Route>
 
             <Route path="/unauthorized" element={<div>Unauthorized</div>} />
