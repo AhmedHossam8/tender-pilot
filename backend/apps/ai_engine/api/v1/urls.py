@@ -25,6 +25,9 @@ from apps.ai_engine.views import (
     ProposalOutlineView,
     RegenerateResponseView,
     RegenerationHistoryView,
+    AIMatchProvidersView,
+    AIGenerateCoverLetterView,
+    AISuggestPricingView,
 )
 from apps.ai_engine.api.v1.analytics import (
     UsageAnalyticsView,
@@ -108,5 +111,24 @@ urlpatterns = [
         'analytics/prompts/',
         PromptPerformanceView.as_view(),
         name='analytics-prompts'
+    ),
+    
+    # AI Matching endpoints for ServiceHub
+    path(
+        'match/project/<uuid:project_id>/providers/',
+        AIMatchProvidersView.as_view(),
+        name='match-providers'
+    ),
+    
+    path(
+        'bid/generate-cover-letter/',
+        AIGenerateCoverLetterView.as_view(),
+        name='generate-cover-letter'
+    ),
+    
+    path(
+        'bid/suggest-pricing/',
+        AISuggestPricingView.as_view(),
+        name='suggest-pricing'
     ),
 ]
