@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Documentation files (auto-generated)
+AI_PAGES_DOCUMENTATION.md
+AI_PAGES_SUMMARY.md
+AI_PAGES_USAGE_EXAMPLES.jsx
+QUICK_START.md
