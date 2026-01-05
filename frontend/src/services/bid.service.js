@@ -1,200 +1,207 @@
+import api from "./api";
+
 /**
- * Bid Service
- * 
- * Handles all API calls related to bids in the ServiceHub marketplace.
- * This service provides methods to:
- * - List bids (sent by providers or received by clients)
- * - Create new bids
- * - Retrieve bid details
- * - Update bids
- * - Change bid status
- * - Manage bid attachments
- * - Access AI-powered bid assistance features
+ * Bid Service - API endpoints for managing bids in ServiceHub marketplace
  */
 
-import api from './api';
-
 /**
- * Get a list of bids based on filter criteria.
- * 
- * @param {Object} params - Query parameters for filtering
+ * Get all bids (filtered by type and status)
+ * @param {Object} params - Query parameters
  * @param {string} params.type - Filter type: 'sent', 'received', or 'all'
- * @param {string} params.status - Filter by status: 'pending', 'shortlisted', 'accepted', 'rejected', 'withdrawn'
- * @param {string} params.project - Filter by project ID
- * @returns {Promise} Response with array of bids
- * 
- * Example:
- * const sentBids = await bidService.getBids({ type: 'sent', status: 'pending' });
+ * @param {string} params.status - Filter by status: 'pending', 'shortlisted', 'accepted', etc.
+ * @param {number} params.project - Filter by project ID
+ * @returns {Promise} Array of bids
  */
-export const getBids = (params = {}) => {
-  return api.get('/bids/bids/', { params });
+export const getBids = async (params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  const url = queryString ? `/v1/bids/?${queryString}` : `/v1/bids/`;
+  return api.get(url);
 };
 
 /**
- * Get detailed information about a specific bid.
- * 
- * @param {string|number} bidId - The ID of the bid to retrieve
- * @returns {Promise} Response with bid details including attachments, milestones, and audit logs
- * 
- * Example:
- * const bidDetails = await bidService.getBidById(123);
+ * Get a single bid by ID
+ * @param {number} id - Bid ID
+ * @returns {Promise} Bid details
  */
-export const getBidById = (bidId) => {
-  return api.get(`/bids/bids/${bidId}/`);
+export const getBidById = async (id) => {
+  return api.get(`/v1/bids/${id}/`);
 };
 
 /**
- * Create a new bid on a project.
- * 
- * @param {Object} bidData - The bid data
- * @param {string|number} bidData.project - Project ID to bid on
+ * Create a new bid
+ * @param {Object} bidData - Bid creation data
+ * @param {number} bidData.project - Project ID
  * @param {string} bidData.cover_letter - Cover letter text
  * @param {number} bidData.proposed_amount - Proposed price
- * @param {number} bidData.proposed_timeline - Number of days to complete
- * @param {Array} bidData.milestone_details - Optional array of milestone objects
- * @returns {Promise} Response with created bid
- * 
- * Example:
- * const newBid = await bidService.createBid({
- *   project: 456,
- *   cover_letter: 'I am interested in this project...',
- *   proposed_amount: 5000,
- *   proposed_timeline: 30,
- *   milestone_details: [
- *     { order: 1, title: 'Phase 1', duration_days: 10, amount: 2000, description: '...' }
- *   ]
- * });
+ * @param {number} bidData.proposed_timeline - Proposed timeline in days
+ * @param {Array} bidData.milestone_details - Optional array of milestones
+ * @returns {Promise} Created bid
  */
-export const createBid = (bidData) => {
-  return api.post('/bids/bids/', bidData);
+export const createBid = async (bidData) => {
+  return api.post("/v1/bids/", bidData);
 };
 
 /**
- * Update an existing bid (only works if bid is in 'pending' status).
- * 
- * @param {string|number} bidId - The ID of the bid to update
- * @param {Object} bidData - The updated bid data
- * @param {string} bidData.cover_letter - Updated cover letter
- * @param {number} bidData.proposed_amount - Updated price
- * @param {number} bidData.proposed_timeline - Updated timeline
- * @returns {Promise} Response with updated bid
+ * Update an existing bid (only if status is pending)
+ * @param {number} id - Bid ID
+ * @param {Object} bidData - Updated bid data
+ * @returns {Promise} Updated bid
  */
-export const updateBid = (bidId, bidData) => {
-  return api.patch(`/bids/bids/${bidId}/`, bidData);
+export const updateBid = async (id, bidData) => {
+  return api.patch(`/v1/bids/${id}/`, bidData);
 };
 
 /**
- * Change the status of a bid.
- * 
- * @param {string|number} bidId - The ID of the bid
- * @param {string} newStatus - The new status ('shortlisted', 'accepted', 'rejected', 'withdrawn')
- * @param {string} reason - Optional reason for the status change
- * @returns {Promise} Response with updated bid
- * 
- * Example:
- * await bidService.changeBidStatus(123, 'shortlisted', 'Good match for our project');
+ * Change bid status
+ * @param {number} id - Bid ID
+ * @param {string} status - New status
+ * @param {string} reason - Optional reason for status change
+ * @returns {Promise} Updated bid
  */
-export const changeBidStatus = (bidId, newStatus, reason = '') => {
-  return api.post(`/bids/bids/${bidId}/change-status/`, {
-    status: newStatus,
-    reason: reason,
-  });
+export const changeBidStatus = async (id, status, reason = "") => {
+  return api.post(`/v1/bids/${id}/change-status/`, { status, reason });
 };
 
 /**
- * Withdraw a bid (service provider only).
- * 
- * @param {string|number} bidId - The ID of the bid to withdraw
+ * Withdraw a bid (service provider only)
+ * @param {number} id - Bid ID
  * @param {string} reason - Optional reason for withdrawal
- * @returns {Promise} Response confirming withdrawal
+ * @returns {Promise} Updated bid
  */
-export const withdrawBid = (bidId, reason = '') => {
-  return api.post(`/bids/bids/${bidId}/withdraw/`, { reason });
+export const withdrawBid = async (id, reason = "") => {
+  return api.post(`/v1/bids/${id}/withdraw/`, { reason });
 };
 
 /**
- * Get statistics for a specific bid.
- * 
- * @param {string|number} bidId - The ID of the bid
- * @returns {Promise} Response with bid statistics
+ * Get bid statistics
+ * @param {number} id - Bid ID
+ * @returns {Promise} Bid statistics
  */
-export const getBidStatistics = (bidId) => {
-  return api.get(`/bids/bids/${bidId}/statistics/`);
+export const getBidStatistics = async (id) => {
+  return api.get(`/v1/bids/${id}/statistics/`);
 };
 
 /**
- * Add an attachment to a bid.
- * 
- * @param {string|number} bidId - The ID of the bid
- * @param {File} file - The file to upload
- * @param {string} description - Optional description of the file
- * @returns {Promise} Response with created attachment
- * 
- * Example:
- * const formData = new FormData();
- * formData.append('file', fileObject);
- * formData.append('bid', bidId);
- * formData.append('description', 'Portfolio sample');
- * await bidService.addAttachment(bidId, formData);
+ * Get bid milestones
+ * @param {number} bidId - Bid ID
+ * @returns {Promise} Array of milestones
  */
-export const addAttachment = (bidId, formData) => {
-  return api.post('/bids/attachments/', formData, {
+export const getBidMilestones = async (bidId) => {
+  return api.get(`/v1/milestones/?bid=${bidId}`);
+};
+
+/**
+ * Create a bid milestone
+ * @param {Object} milestoneData - Milestone data
+ * @returns {Promise} Created milestone
+ */
+export const createBidMilestone = async (milestoneData) => {
+  return api.post("/v1/milestones/", milestoneData);
+};
+
+/**
+ * Update a bid milestone
+ * @param {number} id - Milestone ID
+ * @param {Object} milestoneData - Updated milestone data
+ * @returns {Promise} Updated milestone
+ */
+export const updateBidMilestone = async (id, milestoneData) => {
+  return api.patch(`/v1/milestones/${id}/`, milestoneData);
+};
+
+/**
+ * Delete a bid milestone
+ * @param {number} id - Milestone ID
+ * @returns {Promise} Success response
+ */
+export const deleteBidMilestone = async (id) => {
+  return api.delete(`/v1/milestones/${id}/`);
+};
+
+/**
+ * Upload bid attachment
+ * @param {number} bidId - Bid ID
+ * @param {File} file - File to upload
+ * @param {string} description - Optional file description
+ * @returns {Promise} Created attachment
+ */
+export const uploadBidAttachment = async (bidId, file, description = "") => {
+  const formData = new FormData();
+  formData.append("bid", bidId);
+  formData.append("file", file);
+  formData.append("file_name", file.name);
+  formData.append("file_type", file.type);
+  formData.append("file_size", file.size);
+  if (description) {
+    formData.append("description", description);
+  }
+
+  return api.post("/v1/attachments/", formData, {
     headers: {
-      'Content-Type': 'multipart/form-data',
+      "Content-Type": "multipart/form-data",
     },
   });
 };
 
 /**
- * Get AI-powered matching score for a project.
- * Uses AI to calculate how well the current user matches a project.
- * 
- * @param {string|number} projectId - The ID of the project
- * @param {number} limit - Maximum number of matches to return
- * @returns {Promise} Response with ranked provider matches
- * 
- * Example:
- * const matches = await bidService.getAIMatches(456, 10);
+ * Get bid attachments
+ * @param {number} bidId - Bid ID
+ * @returns {Promise} Array of attachments
  */
-export const getAIMatches = (projectId, limit = 10) => {
-  return api.post(`/ai/match/project/${projectId}/providers/`, {}, {
-    params: { limit }
+export const getBidAttachments = async (bidId) => {
+  return api.get(`/v1/attachments/?bid=${bidId}`);
+};
+
+/**
+ * Delete bid attachment
+ * @param {number} id - Attachment ID
+ * @returns {Promise} Success response
+ */
+export const deleteBidAttachment = async (id) => {
+  return api.delete(`/v1/attachments/${id}/`);
+};
+
+/**
+ * AI-powered features for bids
+ */
+
+/**
+ * Generate AI cover letter for a bid
+ * @param {number} projectId - Project ID
+ * @param {Object} providerProfile - Service provider profile data
+ * @returns {Promise} Generated cover letter
+ */
+export const generateAICoverLetter = async (projectId, providerProfile) => {
+  return api.post("/v1/ai/bid/generate/", {
+    project_id: projectId,
+    provider_profile: providerProfile,
   });
 };
 
 /**
- * Generate an AI-powered cover letter for a bid.
- * 
- * @param {string|number} projectId - The ID of the project
- * @returns {Promise} Response with generated cover letter text
- * 
- * Example:
- * const { data } = await bidService.generateCoverLetter(456);
- * setCoverLetter(data.cover_letter);
+ * Get AI pricing suggestion for a bid
+ * @param {number} projectId - Project ID
+ * @param {Object} providerHistory - Provider's past work history
+ * @returns {Promise} Pricing suggestion
  */
-export const generateCoverLetter = (projectId) => {
-  return api.post('/ai/bid/generate-cover-letter/', {
+export const getAIPricingSuggestion = async (projectId, providerHistory) => {
+  return api.post("/v1/ai/bid/pricing/", {
     project_id: projectId,
+    provider_history: providerHistory,
   });
 };
 
 /**
- * Get AI-suggested pricing for a bid.
- * 
- * @param {string|number} projectId - The ID of the project
- * @returns {Promise} Response with pricing suggestions and analysis
- * 
- * Example:
- * const { data } = await bidService.suggestPricing(456);
- * setSuggestedPrice(data.suggested_amount);
+ * Get AI match score for provider and project
+ * @param {number} projectId - Project ID
+ * @param {number} providerId - Service provider ID
+ * @returns {Promise} Match score and analysis
  */
-export const suggestPricing = (projectId) => {
-  return api.post('/ai/bid/suggest-pricing/', {
-    project_id: projectId,
-  });
+export const getAIMatchScore = async (projectId, providerId) => {
+  return api.get(`/v1/ai/match/?project=${projectId}&provider=${providerId}`);
 };
 
-const bidService = {
+export default {
   getBids,
   getBidById,
   createBid,
@@ -202,10 +209,14 @@ const bidService = {
   changeBidStatus,
   withdrawBid,
   getBidStatistics,
-  addAttachment,
-  getAIMatches,
-  generateCoverLetter,
-  suggestPricing,
+  getBidMilestones,
+  createBidMilestone,
+  updateBidMilestone,
+  deleteBidMilestone,
+  uploadBidAttachment,
+  getBidAttachments,
+  deleteBidAttachment,
+  generateAICoverLetter,
+  getAIPricingSuggestion,
+  getAIMatchScore,
 };
-
-export default bidService;
