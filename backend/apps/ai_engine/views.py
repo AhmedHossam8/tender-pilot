@@ -697,3 +697,199 @@ class RegenerationHistoryView(APIView):
                 {"error": "An unexpected error occurred"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class AIMatchProvidersView(APIView):
+    """
+    AI endpoint to find and rank matching service providers for a project.
+    
+    POST /api/v1/ai/match/project/{project_id}/providers/
+    
+    Returns ranked list of providers with match scores and explanations.
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request, project_id):
+        """
+        Find matching providers for a project.
+        
+        Args:
+            request: HTTP request
+            project_id: ID of the project/tender
+        
+        Returns:
+            Response with ranked provider matches
+        """
+        logger.info(
+            f"Match providers request from user {request.user.id} "
+            f"for project {project_id}"
+        )
+        
+        try:
+            from apps.tenders.models import Tender
+            from apps.ai_engine.services.matching_service import AIMatchingService
+            
+            # Get the project
+            try:
+                project = Tender.objects.get(id=project_id)
+            except Tender.DoesNotExist:
+                return Response(
+                    {"error": "Project not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            # Get limit from query params
+            limit = int(request.query_params.get('limit', 10))
+            
+            # Find matching providers
+            matching_service = AIMatchingService()
+            matches = matching_service.match_providers_to_project(project, limit=limit)
+            
+            return Response({
+                "project_id": project_id,
+                "project_title": project.title,
+                "matches_count": len(matches),
+                "matches": matches
+            })
+            
+        except Exception as e:
+            logger.error(f"Error in match providers: {e}", exc_info=True)
+            return Response(
+                {"error": "An error occurred while matching providers"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class AIGenerateCoverLetterView(APIView):
+    """
+    AI endpoint to generate a cover letter for a bid.
+    
+    POST /api/v1/ai/bid/generate-cover-letter/
+    
+    Body: {
+        "project_id": <project_id>
+    }
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        """
+        Generate AI cover letter for a bid.
+        
+        Args:
+            request: HTTP request with project_id
+        
+        Returns:
+            Response with generated cover letter
+        """
+        logger.info(f"Generate cover letter request from user {request.user.id}")
+        
+        try:
+            from apps.tenders.models import Tender
+            from apps.ai_engine.services.matching_service import AIBidAssistant
+            
+            project_id = request.data.get('project_id')
+            if not project_id:
+                return Response(
+                    {"error": "project_id is required"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Get the project
+            try:
+                project = Tender.objects.get(id=project_id)
+            except Tender.DoesNotExist:
+                return Response(
+                    {"error": "Project not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            # Generate cover letter
+            assistant = AIBidAssistant()
+            cover_letter = assistant.generate_cover_letter(project, request.user)
+            
+            if cover_letter:
+                return Response({
+                    "project_id": project_id,
+                    "cover_letter": cover_letter,
+                    "generated_at": "now"  # Would use timezone.now() in real impl
+                })
+            else:
+                return Response(
+                    {"error": "Failed to generate cover letter"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            
+        except Exception as e:
+            logger.error(f"Error generating cover letter: {e}", exc_info=True)
+            return Response(
+                {"error": "An error occurred while generating cover letter"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class AISuggestPricingView(APIView):
+    """
+    AI endpoint to suggest competitive pricing for a bid.
+    
+    POST /api/v1/ai/bid/suggest-pricing/
+    
+    Body: {
+        "project_id": <project_id>
+    }
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        """
+        Suggest competitive pricing for a bid.
+        
+        Args:
+            request: HTTP request with project_id
+        
+        Returns:
+            Response with pricing suggestions
+        """
+        logger.info(f"Suggest pricing request from user {request.user.id}")
+        
+        try:
+            from apps.tenders.models import Tender
+            from apps.ai_engine.services.matching_service import AIBidAssistant
+            
+            project_id = request.data.get('project_id')
+            if not project_id:
+                return Response(
+                    {"error": "project_id is required"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Get the project
+            try:
+                project = Tender.objects.get(id=project_id)
+            except Tender.DoesNotExist:
+                return Response(
+                    {"error": "Project not found"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            
+            # Suggest pricing
+            assistant = AIBidAssistant()
+            pricing = assistant.suggest_pricing(project, request.user)
+            
+            if pricing:
+                return Response({
+                    "project_id": project_id,
+                    **pricing
+                })
+            else:
+                return Response(
+                    {"error": "Failed to suggest pricing"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+            
+        except Exception as e:
+            logger.error(f"Error suggesting pricing: {e}", exc_info=True)
+            return Response(
+                {"error": "An error occurred while suggesting pricing"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

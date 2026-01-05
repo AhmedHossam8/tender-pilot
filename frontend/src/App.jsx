@@ -30,6 +30,11 @@ import TenderEditPage from "./pages/Tenders/TenderEditPage";
 import TenderDetailPage from "./pages/Tenders/TenderDetailPage";
 import { AIDashboard, AIResultPanel } from "./pages/ai";
 
+// Bids pages
+import BidsList from "./pages/Bids/BidsList";
+import BidCreate from "./pages/Bids/BidCreate";
+import BidDetail from "./pages/Bids/BidDetail";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -133,6 +138,20 @@ function App() {
               <Route path=":id" element={<TenderDetailPage />} /> {/* /tenders/:id */}
               <Route path=":id/edit" element={<TenderEditPage />} /> {/* /tenders/:id/edit */}
               <Route path=":id/delete" element={<TenderDeletePage />} /> {/* /tenders/:id/delete */}
+            </Route>
+
+            {/* -------- BIDS ROUTES -------- */}
+            <Route
+              path="/bids"
+              element={
+                <ProtectedRoute>
+                  <AppLayout showFooter />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<BidsList />} /> {/* /bids */}
+              <Route path="create" element={<BidCreate />} /> {/* /bids/create */}
+              <Route path=":bidId" element={<BidDetail />} /> {/* /bids/:bidId */}
             </Route>
           </Routes>
         </BrowserRouter>
