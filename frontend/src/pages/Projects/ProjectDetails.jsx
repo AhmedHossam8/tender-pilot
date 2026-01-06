@@ -25,9 +25,9 @@ export default function ProjectDetail() {
       setShowMatchScore(true);
       const response = await bidService.getAIMatches(id, 1);
       if (response.data.matches?.length > 0) setMatchScore(response.data.matches[0]);
-      else toast.info("No match data available");
+      else toast.info(t("ai.noMatchData"));
     } catch {
-      toast.error("Failed to calculate AI match score");
+      toast.error(t("ai.analysisFailed"));
     } finally {
       setLoadingMatch(false);
     }
@@ -51,12 +51,12 @@ export default function ProjectDetail() {
 
       <Card>
         <CardHeader>
-          <CardTitle>AI Match Analysis</CardTitle>
+          <CardTitle>{t("ai.matchAnalysis")}</CardTitle>
         </CardHeader>
         <CardContent>
           {!showMatchScore ? (
             <Button onClick={calculateMyMatchScore} disabled={loadingMatch}>
-              {loadingMatch ? "Analyzing..." : "Calculate My Match"}
+              {loadingMatch ? t("ai.analyzing") : t("ai.calculateMatch")}
             </Button>
           ) : matchScore ? (
             <AIMatchScore score={matchScore.match_score} feedback={matchScore} showDetails />
@@ -65,7 +65,7 @@ export default function ProjectDetail() {
           )}
           {matchScore && (
             <Button className="mt-4" onClick={handleBidOnProject}>
-              Submit Bid
+              {t("ai.submitBid")}
             </Button>
           )}
         </CardContent>

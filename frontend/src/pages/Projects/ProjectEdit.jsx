@@ -26,10 +26,10 @@ export default function ProjectEdit() {
     e.preventDefault();
     try {
       await updateProject.mutateAsync({ id, data: form });
-      toast.success("Project updated successfully!");
+      toast.success(t("project.updateSuccess"));
       navigate("/projects");
     } catch {
-      toast.error("Failed to update project");
+      toast.error(t("project.updateError"));
     }
   };
 
@@ -39,7 +39,7 @@ export default function ProjectEdit() {
     <div className="max-w-2xl mx-auto">
       <Card>
         <CardHeader>
-          <CardTitle>Edit Project</CardTitle>
+          <CardTitle>{t("project.edit")}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

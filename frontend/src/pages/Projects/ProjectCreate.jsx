@@ -2,7 +2,15 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProjects } from "../../hooks/useProjects";
 import { toast } from "sonner";
-import { Button, Card, CardHeader, CardTitle, CardContent, Input, Textarea } from "@/components/ui";
+import {
+  Button,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Input,
+  Textarea,
+} from "@/components/ui";
 
 export default function ProjectCreate() {
   const navigate = useNavigate();
@@ -11,16 +19,28 @@ export default function ProjectCreate() {
   const [form, setForm] = useState({
     title: "",
     description: "",
+    attachment: null,
   });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
-      await createProject.mutateAsync(form);
-      toast.success("Project created successfully!");
+      const formData = new FormData();
+      formData.append("title", form.title);
+      formData.append("description", form.description);
+
+      // only attach file if provided
+      if (form.attachment) {
+        formData.append("attachment", form.attachment);
+      }
+
+      await createProject.mutateAsync(formData);
+
+      toast.success(t("project.createSuccess"));
       navigate("/projects");
-    } catch {
-      toast.error("Failed to create project");
+    } catch (error) {
+      toast.error(t("project.createError"));
     }
   };
 
@@ -28,22 +48,41 @@ export default function ProjectCreate() {
     <div className="max-w-2xl mx-auto">
       <Card>
         <CardHeader>
-          <CardTitle>Create Project</CardTitle>
+          <CardTitle>{t("project.create")}</CardTitle>
         </CardHeader>
+
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               placeholder="Title"
               value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, title: e.target.value })
+              }
               required
             />
+
             <Textarea
               placeholder="Description"
               value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, description: e.target.value })
+              }
               rows={6}
             />
+
+            {/* Optional attachment */}
+            <Input
+              type="file"
+              aria-label={t("project.attachment")}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  attachment: e.target.files?.[0] || null,
+                })
+              }
+            />
+
             <Button type="submit">Create Project</Button>
           </form>
         </CardContent>
