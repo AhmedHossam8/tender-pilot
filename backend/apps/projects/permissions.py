@@ -1,16 +1,28 @@
 from rest_framework.permissions import BasePermission
-from .models import TenderUser
+from .models import Project
 
-class IsTenderManager(BasePermission):
+class IsProjectOwnerOrReadOnly(BasePermission):
+    """
+    Permission to allow only the creator of a project to edit or delete it.
+    Read-only access is allowed for all users.
+    """
+
     def has_permission(self, request, view):
-        tender_id = view.kwargs.get("tender_id")
-        if not tender_id:
-            return False
-        
+        # Safe methods are always allowed
+        if request.method in ("GET", "HEAD", "OPTIONS"):
+            return True
 
-        return TenderUser.objects.filter(
-            tender_id=tender_id,
-            user=request.user,
-            role=TenderUser.TenderRole.MANAGER,
-            is_active=True
-        ).exists()
+        # For create action, any authenticated user can create a project
+        if view.action == "create":
+            return request.user and request.user.is_authenticated
+
+        # For other actions (update, partial_update, destroy), defer to object-level check
+        return True
+
+    def has_object_permission(self, request, view, obj):
+        # Safe methods are always allowed
+        if request.method in ("GET", "HEAD", "OPTIONS"):
+            return True
+
+        # Only the creator of the project can update/delete
+        return obj.created_by == request.user
