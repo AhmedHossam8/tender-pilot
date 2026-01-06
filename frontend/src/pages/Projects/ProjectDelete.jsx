@@ -19,7 +19,7 @@ export default function ProjectDelete() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-md">
+    <div className="max-w-md mx-auto">
       <Card>
         <CardHeader>
           <CardTitle>Delete Project</CardTitle>

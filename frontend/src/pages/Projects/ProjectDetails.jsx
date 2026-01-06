@@ -39,7 +39,7 @@ export default function ProjectDetail() {
   if (isError) return <p>Error loading project</p>;
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>{data.title}</CardTitle>
