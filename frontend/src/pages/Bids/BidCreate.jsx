@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useTenders } from "../../hooks/useTenders";
+import { useTenders } from "../../hooks/useProjects";
 import {
     Card,
     CardHeader,
