@@ -15,7 +15,6 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
 
 const AILoadingIndicator = ({ 
   message = 'AI is thinking...', 
@@ -83,12 +82,6 @@ const AILoadingIndicator = ({
       </div>
     </div>
   );
-};
-
-AILoadingIndicator.propTypes = {
-  message: PropTypes.string,
-  size: PropTypes.oneOf(['small', 'medium', 'large']),
-  showIcon: PropTypes.bool,
 };
 
 export default AILoadingIndicator;

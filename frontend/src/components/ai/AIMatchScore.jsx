@@ -21,7 +21,6 @@
  */
 
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 
 const AIMatchScore = ({ 
   score, 
@@ -240,22 +239,6 @@ const AIMatchScore = ({
       )}
     </div>
   );
-};
-
-AIMatchScore.propTypes = {
-  score: PropTypes.number.isRequired,
-  recommendation: PropTypes.string,
-  showDetails: PropTypes.bool,
-  feedback: PropTypes.shape({
-    matching_skills: PropTypes.arrayOf(PropTypes.string),
-    skill_gaps: PropTypes.arrayOf(PropTypes.string),
-    budget_compatible: PropTypes.bool,
-    budget_assessment: PropTypes.string,
-    experience_assessment: PropTypes.string,
-    potential_concerns: PropTypes.arrayOf(PropTypes.string),
-    reasoning: PropTypes.string,
-  }),
-  size: PropTypes.oneOf(['small', 'medium', 'large']),
 };
 
 export default AIMatchScore;

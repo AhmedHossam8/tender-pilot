@@ -1,4 +1,4 @@
-import api from "./api";
+import api from "../lib/api";
 
 /**
  * Bid Service - API endpoints for managing bids in ServiceHub marketplace
