@@ -37,7 +37,7 @@ const ProposalPreview = () => {
                     <CardTitle>{proposal.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <p><strong>{t("Tender")}:</strong> {proposal.tender_title || proposal.tender}</p>
+                    <p><strong>{t("Project")}:</strong> {proposal.project_title || proposal.project}</p>
                     <p><strong>{t("Status")}:</strong> {proposal.status}</p>
                 </CardContent>
             </Card>

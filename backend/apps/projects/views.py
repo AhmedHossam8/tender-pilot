@@ -22,7 +22,7 @@ class ProjectFilter(filters.FilterSet):
     budget_max = filters.NumberFilter(field_name="budget", lookup_expr="lte")
     skills = filters.ModelMultipleChoiceFilter(
         field_name="skills",
-        queryset=Project.skills.related_model.objects.all(),
+        queryset=Project._meta.get_field("skills").related_model.objects.all(),
         conjoined=False,
     )
 

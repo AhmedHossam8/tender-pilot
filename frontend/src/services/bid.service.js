@@ -14,7 +14,7 @@ import api from "../lib/api";
  */
 export const getBids = async (params = {}) => {
   const queryString = new URLSearchParams(params).toString();
-  const url = queryString ? `/v1/bids/?${queryString}` : `/v1/bids/`;
+  const url = queryString ? `/bids/?${queryString}` : `/bids/`;
   return api.get(url);
 };
 
@@ -24,7 +24,7 @@ export const getBids = async (params = {}) => {
  * @returns {Promise} Bid details
  */
 export const getBidById = async (id) => {
-  return api.get(`/v1/bids/${id}/`);
+  return api.get(`/bids/${id}/`);
 };
 
 /**
@@ -38,7 +38,7 @@ export const getBidById = async (id) => {
  * @returns {Promise} Created bid
  */
 export const createBid = async (bidData) => {
-  return api.post("/v1/bids/", bidData);
+  return api.post("/bids/", bidData);
 };
 
 /**
@@ -48,7 +48,7 @@ export const createBid = async (bidData) => {
  * @returns {Promise} Updated bid
  */
 export const updateBid = async (id, bidData) => {
-  return api.patch(`/v1/bids/${id}/`, bidData);
+  return api.patch(`/bids/${id}/`, bidData);
 };
 
 /**

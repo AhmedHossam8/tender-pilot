@@ -85,7 +85,7 @@ const ProposalList = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>{t("Title")}</TableHead>
-                <TableHead>{t("Tender")}</TableHead>
+                <TableHead>{t("Project")}</TableHead>
                 <TableHead>{t("Status")}</TableHead>
                 <TableHead className="text-right">{t("Actions")}</TableHead>
               </TableRow>
@@ -94,7 +94,7 @@ const ProposalList = () => {
               {proposalList.map((proposal) => (
                 <TableRow key={proposal.id}>
                   <TableCell className="font-medium">{proposal.title}</TableCell>
-                  <TableCell>{proposal.tender_title || proposal.tender}</TableCell>
+                  <TableCell>{proposal.project_title || proposal.project}</TableCell>
                   <TableCell>
                     <StatusBadge status={proposal.status || "draft"} />
                   </TableCell>

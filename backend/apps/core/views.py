@@ -1,5 +1,5 @@
 from rest_framework import generics
-from core.models import Category, Skill
+from apps.core.models import Category, Skill
 from .serializers import CategorySerializer, SkillSerializer
 
 class CategoryListAPIView(generics.ListAPIView):

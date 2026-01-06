@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useGenerateProposal, useProposals } from "../../hooks/useProposals";
-import { useTenders } from "../../hooks/useProjects";
+import { useProjects } from "../../hooks/useProjects";
 import {
     Card,
     CardHeader,
@@ -23,21 +23,21 @@ import { useTranslation } from "react-i18next";
 const ProposalCreate = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { tenders, isLoading, isError, error } = useTenders();
+    const { projects, isLoading, isError, error } = useProjects();
     const generateProposalMutation = useGenerateProposal();
 
-    const [selectedTender, setSelectedTender] = useState("");
+    const [selectedProject, setSelectedProject] = useState("");
     const [instructions, setInstructions] = useState("");
 
     const handleGenerate = async () => {
-        if (!selectedTender) {
-            toast.error(t("proposal.pleaseSelectTender"));
+        if (!selectedProject) {
+            toast.error(t("proposal.pleaseSelectProject"));
             return;
         }
 
         try {
             const res = await generateProposalMutation.mutateAsync({
-                tenderId: selectedTender,
+                projectId: selectedProject,
                 payload: { instructions },
             });
             toast.success(t("proposal.generatedSuccess"));
@@ -47,14 +47,14 @@ const ProposalCreate = () => {
         }
     };
 
-    if (isLoading) return <LoadingSpinner text={t("proposal.loadingTenders")} />;
+    if (isLoading) return <LoadingSpinner text={t("proposal.loadingProjects")} />;
     if (error) return <EmptyState title={t("proposal.generatedError")} />;
 
-    if (!tenders?.length)
+    if (!projects?.length)
         return (
             <EmptyState
-                title={t("proposal.noTenders")}
-                description={t("proposal.noTendersDescription")}
+                title={t("proposal.noProjects")}
+                description={t("proposal.noProjectsDescription")}
             />
         );
 
@@ -65,14 +65,14 @@ const ProposalCreate = () => {
                     <CardTitle>{t("proposal.create")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <Select value={selectedTender} onValueChange={setSelectedTender}>
+                    <Select value={selectedProject} onValueChange={setSelectedProject}>
                         <SelectTrigger>
-                            <SelectValue placeholder={t("proposal.selectTender")} />
+                            <SelectValue placeholder={t("proposal.selectProject")} />
                         </SelectTrigger>
                         <SelectContent>
-                            {tenders.map((tender) => (
-                                <SelectItem key={tender.id} value={tender.id}>
-                                    {tender.title}
+                            {projects.map((project) => (
+                                <SelectItem key={project.id} value={project.id}>
+                                    {project.title}
                                 </SelectItem>
                             ))}
                         </SelectContent>
