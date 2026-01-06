@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from common.viewsets import BaseModelViewSet
 from common.throttles import ProposalReadTrhottle, ProposalWriteThrottle
 
-from apps.tenders.models import Tender
+from apps.projects.models import Project
 from .models import Proposal, ProposalSection, ProposalDocument, Status
 from .serializers import ProposalSerializer
 from .services.context_builder import build_proposal_context
@@ -30,7 +30,7 @@ ai_handler = AIRequestHandler()
 class ProposalViewSet(BaseModelViewSet):
     serializer_class = ProposalSerializer
     permission_classes = [IsAuthenticated]
-    filterset_fields = ["tender", "status"]
+    filterset_fields = ["project", "status"]
     ordering_fields = ["created_at"]
 
     # -------------------------
@@ -41,7 +41,7 @@ class ProposalViewSet(BaseModelViewSet):
     
         queryset = (
             Proposal.objects
-            .select_related("tender", "created_by")
+            .select_related("project", "created_by")
             .prefetch_related("sections", "documents")
         )
     
@@ -65,20 +65,20 @@ class ProposalViewSet(BaseModelViewSet):
     @action(
         detail=False,
         methods=["post"],
-        url_path="generate-from-tender/(?P<tender_id>[^/.]+)",
+        url_path="generate-from-project/(?P<project_id>[^/.]+)",
         throttle_classes=[ProposalWriteThrottle],
     )
-    def generate_from_tender(self, request, tender_id=None):
-        if not tender_id:
-            raise ValidationError({"tender_id": "Tender ID is required"})
+    def generate_from_project(self, request, project_id=None):
+        if not project_id:
+            raise ValidationError({"project_id": "Project ID is required"})
 
         try:
-            tender = Tender.objects.select_related("created_by").get(id=tender_id)
+            project = Project.objects.select_related("created_by").get(id=project_id)
         except (ObjectDoesNotExist, ValueError):
-            raise NotFound({"detail": f"Tender with id {tender_id} not found"})
+            raise NotFound({"detail": f"Project with id {project_id} not found"})
 
         existing = Proposal.objects.filter(
-            tender=tender,
+            project=project,
             created_by=request.user,
             status=Proposal.Status.DRAFT,
         ).first()
@@ -93,20 +93,20 @@ class ProposalViewSet(BaseModelViewSet):
             )
 
         proposal = Proposal.objects.create(
-            tender=tender,
+            project=project,
             created_by=request.user,
-            title=f"Technical Proposal – {tender.title}",
+            title=f"Technical Proposal – {project.title}",
         )
 
         try:
-            context = build_proposal_context(tender)
+            context = build_proposal_context(project)
         except Exception as e:
             logger.error("Context build failed", exc_info=True)
             proposal.delete()
             raise ValidationError(
                 {
                     "detail": str(e),
-                    "hint": "Ensure the tender has an AI-processed document first.",
+                    "hint": "Ensure the project has an AI-processed document first.",
                 }
             )
 
@@ -250,7 +250,7 @@ class ProposalViewSet(BaseModelViewSet):
             raise NotFound({"detail": f"Section {section_id} not found"})
 
         try:
-            context = build_proposal_context(proposal.tender)
+            context = build_proposal_context(proposal.project)
             ai_sections = generate_proposal_sections(context)
 
             if section.name not in ai_sections:
@@ -314,7 +314,7 @@ class ProposalViewSet(BaseModelViewSet):
     def generate_feedback(self, request, pk=None):
         proposal = self.get_object()
 
-        context = build_proposal_context(proposal.tender)
+        context = build_proposal_context(proposal.project)
         sections = {s.name: s.content for s in proposal.sections.all()}
 
         proposal.ai_feedback = generate_proposal_review(context, sections)
@@ -333,7 +333,7 @@ class ProposalViewSet(BaseModelViewSet):
     def generate_checklist(self, request, pk=None):
         proposal = self.get_object()
 
-        context = build_proposal_context(proposal.tender)
+        context = build_proposal_context(proposal.project)
         sections = {s.name: s.content for s in proposal.sections.all()}
 
         checklist = generate_proposal_checklist(context, sections)

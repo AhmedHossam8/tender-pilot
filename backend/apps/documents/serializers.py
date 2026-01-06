@@ -1,12 +1,12 @@
 from rest_framework import serializers
-from .models import TenderDocument
+from .models import ProjectDocument
 
-class TenderDocumentSerializer(serializers.ModelSerializer):
+class ProjectDocumentSerializer(serializers.ModelSerializer):
     class Meta:
-        model = TenderDocument
+        model = ProjectDocument
         fields = "__all__"
         read_only_fields = ("id", "ai_processed", "ai_processed_at", "created_at", "updated_at", "created_by")
 
 class DocumentUploadSerializer(serializers.Serializer):
     file = serializers.FileField()
-    tender_id = tender_id = serializers.IntegerField()
+    project_id = serializers.IntegerField()

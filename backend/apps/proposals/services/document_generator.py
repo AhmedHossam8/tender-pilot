@@ -54,7 +54,7 @@ def generate_proposal_document(proposal):
     title.alignment = WD_ALIGN_PARAGRAPH.CENTER
     
     # Add metadata
-    doc.add_paragraph(f"Tender: {proposal.tender.title}")
+    doc.add_paragraph(f"Project: {proposal.project.title}")
     doc.add_paragraph(f"Status: {proposal.status.title()}")
     doc.add_paragraph(f"Created: {proposal.created_at.strftime('%Y-%m-%d %H:%M:%S')}")
     doc.add_paragraph("")  # Empty line

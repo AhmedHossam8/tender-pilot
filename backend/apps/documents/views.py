@@ -3,9 +3,9 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import status
 from common.viewsets import BaseModelViewSet
-from .models import TenderDocument
-from .serializers import TenderDocumentSerializer, DocumentUploadSerializer
-from apps.tenders.models import Tender
+from .models import ProjectDocument
+from .serializers import ProjectDocumentSerializer, DocumentUploadSerializer
+from apps.projects.models import Project
 from .permissions import DocumentPermission
 from django.utils import timezone
 import json
@@ -14,10 +14,10 @@ from common.throttles import DocumentUploadThrottling , DocumentReadThrottling
 
 logger = logging.getLogger(__name__)
 
-class TenderDocumentViewSet(BaseModelViewSet):
-    queryset = TenderDocument.objects.filter(is_active=True).select_related('tender', 'created_by')
-    serializer_class = TenderDocumentSerializer
-    filterset_fields = ["tender"]
+class ProjectDocumentViewSet(BaseModelViewSet):
+    queryset = ProjectDocument.objects.filter(is_active=True).select_related('project', 'created_by')
+    serializer_class = ProjectDocumentSerializer
+    filterset_fields = ["project"]
     ordering_fields = ["created_at"]
     parser_classes = [MultiPartParser, FormParser]
     permission_classes = [DocumentPermission]
@@ -37,12 +37,12 @@ class TenderDocumentViewSet(BaseModelViewSet):
             serializer = DocumentUploadSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
 
-            # Get the tender
-            tender_id = serializer.validated_data.get("tender_id")
+            # Get the project
+            project_id = serializer.validated_data.get("project_id")
             try:
-                tender = Tender.objects.select_related('created_by').get(id=tender_id)
-            except Tender.DoesNotExist:
-                return Response({"error": "Tender not found"}, status=status.HTTP_404_NOT_FOUND)
+                project = Project.objects.select_related('created_by').get(id=project_id)
+            except Project.DoesNotExist:
+                return Response({"error": "Project not found"}, status=status.HTTP_404_NOT_FOUND)
 
             file = serializer.validated_data.get("file")
 
@@ -72,8 +72,8 @@ class TenderDocumentViewSet(BaseModelViewSet):
                 doc_type = "other"
 
             # Create the document record
-            doc = TenderDocument.objects.create(
-                tender=tender,
+            doc = ProjectDocument.objects.create(
+                project=project,
                 file=file,
                 document_type=doc_type
             )
@@ -117,13 +117,13 @@ class TenderDocumentViewSet(BaseModelViewSet):
              url_path="nested",
              throttle_classes = [DocumentReadThrottling])
     def list_by_tender(self, request, pk=None):
-        """List all documents for a specific tender"""
+        """List all documents for a specific project"""
         try:
-            tender = Tender.objects.select_related('created_by').get(id=pk)
-        except Tender.DoesNotExist:
-            return Response({"error": "Tender not found"}, status=status.HTTP_404_NOT_FOUND)
+            project = Project.objects.select_related('created_by').get(id=pk)
+        except Project.DoesNotExist:
+            return Response({"error": "Project not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        documents = TenderDocument.objects.filter(tender=tender, is_active=True).select_related('tender', 'created_by')
+        documents = ProjectDocument.objects.filter(project=project, is_active=True).select_related('project', 'created_by')
         serializer = self.get_serializer(documents, many=True)
         return Response(serializer.data)
 
@@ -131,8 +131,8 @@ class TenderDocumentViewSet(BaseModelViewSet):
     def get_ai_result(self, request, pk=None):
         """Retrieve stored AI analysis for a document"""
         try:
-            doc = TenderDocument.objects.get(id=pk, is_active=True)
-        except TenderDocument.DoesNotExist:
+            doc = ProjectDocument.objects.get(id=pk, is_active=True)
+        except ProjectDocument.DoesNotExist:
             return Response({"error": "Document not found"}, status=status.HTTP_404_NOT_FOUND)
 
         try:

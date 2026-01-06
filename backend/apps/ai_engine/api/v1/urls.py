@@ -4,10 +4,10 @@ AI Engine URL Configuration
 Maps URLs to AI-powered API endpoints.
 
 Endpoints:
-- GET  /api/v1/ai/health/                          - Health check
-- POST /api/v1/ai/tender/<uuid>/analyze/          - Analyze tender
-- POST /api/v1/ai/tender/<uuid>/compliance/       - Check compliance
-- POST /api/v1/ai/tender/<uuid>/outline/          - Generate outline
+- GET  /api/v1/ai/health/                         - Health check
+- POST /api/v1/ai/project/<uuid>/analyze/         - Analyze project
+- POST /api/v1/ai/project/<uuid>/compliance/      - Check compliance
+- POST /api/v1/ai/project/<uuid>/outline/         - Generate outline
 - POST /api/v1/ai/response/<uuid>/regenerate/     - Regenerate AI response
 - GET  /api/v1/ai/response/<uuid>/history/        - Get regeneration history
 - GET  /api/v1/ai/analytics/usage                 - Usage analytics
@@ -20,7 +20,7 @@ Endpoints:
 from django.urls import path
 from apps.ai_engine.views import (
     AIHealthCheckView,
-    TenderAnalysisView,
+    ProjectAnalysisView,
     ComplianceCheckView,
     ProposalOutlineView,
     RegenerateResponseView,
@@ -47,23 +47,23 @@ urlpatterns = [
         name='health-check'
     ),
     
-    # Tender analysis
+    # Project analysis
     path(
-        'tender/<uuid:tender_id>/analyze/',
-        TenderAnalysisView.as_view(),
-        name='tender-analyze'
+        'project/<uuid:project_id>/analyze/',
+        ProjectAnalysisView.as_view(),
+        name='project-analyze'
     ),
     
     # Compliance checking
     path(
-        'tender/<uuid:tender_id>/compliance/',
+        'project/<uuid:project_id>/compliance/',
         ComplianceCheckView.as_view(),
         name='compliance-check'
     ),
     
     # Proposal outline generation
     path(
-        'tender/<uuid:tender_id>/outline/',
+        'project/<uuid:project_id>/outline/',
         ProposalOutlineView.as_view(),
         name='proposal-outline'
     ),

@@ -34,7 +34,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG') == 'True'
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1").split(",")
 
 # OpenAI API Key
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -57,7 +57,7 @@ INSTALLED_APPS = [
 
     # Local apps
     'apps.users.apps.UsersConfig',
-    'apps.tenders.apps.TendersConfig',
+    'apps.projects.apps.ProjectsConfig',
     'apps.documents.apps.DocumentsConfig',
     'apps.proposals.apps.ProposalsConfig',
     'apps.bids.apps.BidsConfig',

@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
-from apps.tenders.models import Tender
+from apps.projects.models import Project
 from apps.bids.models import Bid, BidMilestone, BidAttachment, BidStatus
 from decimal import Decimal
 
@@ -27,7 +27,7 @@ class BidModelTest(TestCase):
         )
         
         # Create a tender/project
-        self.tender = Tender.objects.create(
+        self.project = Project.objects.create(
             title='Test Project',
             created_by=self.client_user,
             deadline='2026-12-31'
@@ -35,7 +35,7 @@ class BidModelTest(TestCase):
         
         # Create a bid
         self.bid = Bid.objects.create(
-            project=self.tender,
+            project=self.project,
             service_provider=self.provider_user,
             cover_letter='I am experienced in this field...',
             proposed_amount=Decimal('5000.00'),
@@ -45,7 +45,7 @@ class BidModelTest(TestCase):
     
     def test_bid_creation(self):
         """Test that a bid can be created"""
-        self.assertEqual(self.bid.project, self.tender)
+        self.assertEqual(self.bid.project, self.project)
         self.assertEqual(self.bid.service_provider, self.provider_user)
         self.assertEqual(self.bid.proposed_amount, Decimal('5000.00'))
         self.assertEqual(self.bid.proposed_timeline, 30)
@@ -90,7 +90,7 @@ class BidModelTest(TestCase):
     
     def test_bid_string_representation(self):
         """Test string representation of bid"""
-        expected = f"Bid by {self.provider_user} on {self.tender.title}"
+        expected = f"Bid by {self.provider_user} on {self.project.title}"
         self.assertEqual(str(self.bid), expected)
 
 
@@ -108,14 +108,14 @@ class BidMilestoneModelTest(TestCase):
             password='testpass123'
         )
         
-        self.tender = Tender.objects.create(
+        self.project = Project.objects.create(
             title='Test Project',
             created_by=self.client_user,
             deadline='2026-12-31'
         )
         
         self.bid = Bid.objects.create(
-            project=self.tender,
+            project=self.project,
             service_provider=self.provider_user,
             cover_letter='Test cover letter',
             proposed_amount=Decimal('5000.00'),
@@ -175,14 +175,14 @@ class BidAttachmentModelTest(TestCase):
             password='testpass123'
         )
         
-        self.tender = Tender.objects.create(
+        self.project = Project.objects.create(
             title='Test Project',
             created_by=self.client_user,
             deadline='2026-12-31'
         )
         
         self.bid = Bid.objects.create(
-            project=self.tender,
+            project=self.project,
             service_provider=self.provider_user,
             cover_letter='Test cover letter',
             proposed_amount=Decimal('5000.00'),

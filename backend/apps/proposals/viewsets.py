@@ -38,8 +38,8 @@ class ProposalSectionViewSet(BaseModelViewSet):
         proposal = section.proposal
         
         try:
-            # Build context from tender
-            context = build_proposal_context(proposal.tender)
+            # Build context from project
+            context = build_proposal_context(proposal.project)
             
             # Generate sections
             ai_sections = generate_proposal_sections(context)
@@ -103,9 +103,9 @@ class ProposalSectionViewSet(BaseModelViewSet):
             )
 
         try:
-            # Build context from tender
-            context = build_proposal_context(proposal.tender)
-            # Review only this section in context of the full tender
+            # Build context from project
+            context = build_proposal_context(proposal.project)
+            # Review only this section in context of the full project
             feedback = generate_proposal_review(context, {section.name: section.content})
         except Exception as e:
             logger.error(

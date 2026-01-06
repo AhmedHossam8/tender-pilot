@@ -4,15 +4,15 @@ from .models import Proposal, ProposalSection, ProposalDocument
 
 @admin.register(Proposal)
 class ProposalAdmin(admin.ModelAdmin):
-    list_display = ['id', 'title', 'tender', 'status', 'created_by', 'created_at', 'updated_at']
+    list_display = ['id', 'title', 'project', 'status', 'created_by', 'created_at', 'updated_at']
     list_filter = ['status', 'created_at']
-    search_fields = ['title', 'tender__title']
+    search_fields = ['title', 'project__title']
     readonly_fields = ['created_at', 'updated_at']
     date_hierarchy = 'created_at'
     
     fieldsets = (
         ('Basic Information', {
-            'fields': ('tender', 'created_by', 'title', 'status')
+            'fields': ('project', 'created_by', 'title', 'status')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),
