@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/contexts/authStore";
+import { useNavigate } from "react-router-dom";
 
 import {
   Card,
@@ -43,6 +44,8 @@ function ProjectsList() {
   const { data: categories, isLoading: categoriesLoading } = useCategories();
   const { data: skills, isLoading: skillsLoading } = useSkills();
 
+  const navigate = useNavigate();
+
   // Initialize local project list
   useEffect(() => {
     if (!isLoading && !isError && projectList.length === 0) {
@@ -52,22 +55,22 @@ function ProjectsList() {
 
   const handleDelete = (project) => {
     setProjectList((prev) => prev.filter((p) => p.id !== project.id));
-    toast.success(t("Project deleted successfully!"));
+    toast.success(t("project.deleteSuccess"));
   };
 
   const filters = [
     {
       key: "category",
-      label: t("Category"),
+      label: t("filters.category"),
       type: "select",
       options: categories?.map((c) => ({ value: c.id, label: c.name })) || [],
       loading: categoriesLoading,
     },
-    { key: "budget_min", label: t("Min Budget"), type: "number" },
-    { key: "budget_max", label: t("Max Budget"), type: "number" },
+    { key: "budget_min", label: t("filters.minBudget"), type: "number" },
+    { key: "budget_max", label: t("filters.maxBudget"), type: "number" },
     {
       key: "skills",
-      label: t("Skills"),
+      label: t("filters.skills"),
       type: "select-multiple",
       options: skills?.map((s) => ({ value: s.id, label: s.name })) || [],
       loading: skillsLoading,
@@ -124,10 +127,10 @@ function ProjectsList() {
   if (!filteredProjects || filteredProjects.length === 0)
     return (
       <EmptyState
-        title={t("project.noProjects", "No projects found")}
-        description={t("Get started by creating your first project.")}
-        actionLabel={t("Create Project")}
-        action={() => toast.info(t("Redirect to create project"))}
+        title={t("project.noProjects")}
+        description={t("project.emptyDescription")}
+        actionLabel={t("project.create")}
+        action={() => navigate("/projects/create")}
       />
     );
 
@@ -139,7 +142,7 @@ function ProjectsList() {
           value={searchValue}
           onChange={setSearchValue}
           onSearch={() => { }}
-          placeholder={t("Search projects...")}
+          placeholder={t("project.searchPlaceholder")}
           className="flex-1"
         />
         <FilterPanel
@@ -157,8 +160,8 @@ function ProjectsList() {
             <TableHeader>
               <TableRow>
                 <TableHead>{t("Title")}</TableHead>
-                <TableHead>{t("Status")}</TableHead>
-                <TableHead className="text-right">{t("Actions")}</TableHead>
+                <TableHead>{t("project.status")}</TableHead>
+                <TableHead className="text-right">{t("project.actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -207,11 +210,9 @@ function ProjectsList() {
       <ConfirmDialog
         open={confirmDialogOpen}
         onOpenChange={setConfirmDialogOpen}
-        title={t("Delete Project?")}
-        description={t(
-          "This action cannot be undone. Are you sure you want to delete this project?"
-        )}
-        confirmLabel={t("Delete")}
+        title={t("project.confirmDeleteTitle")}
+        description={t("project.confirmDeleteDescription")}
+        confirmLabel={t("confirm.delete")}
         variant="destructive"
         onConfirm={() => {
           if (selectedProject) handleDelete(selectedProject);

@@ -11,10 +11,10 @@ export default function ProjectDelete() {
   const handleDelete = async () => {
     try {
       await deleteProject.mutateAsync(id);
-      toast.success("Project deleted successfully!");
+      toast.success(t("project.deleteSuccess"));
       navigate("/projects");
     } catch {
-      toast.error("Failed to delete project");
+      toast.error(t("project.deleteError"));
     }
   };
 
@@ -22,13 +22,13 @@ export default function ProjectDelete() {
     <div className="max-w-md mx-auto">
       <Card>
         <CardHeader>
-          <CardTitle>Delete Project</CardTitle>
+          <CardTitle>{t("project.delete")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p>Are you sure you want to delete this project? This action cannot be undone.</p>
+          <p>{t("project.confirmDeleteDescription")}</p>
           <div className="flex gap-4">
-            <Button variant="destructive" onClick={handleDelete}>Yes, Delete</Button>
-            <Button onClick={() => navigate(-1)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleDelete}>{t("confirm.yesDelete")}</Button>
+            <Button onClick={() => navigate(-1)}>{t("confirm.cancel")}</Button>
           </div>
         </CardContent>
       </Card>

@@ -160,5 +160,45 @@
     "failedRequests": "Failed Requests",
     "requestsFailed": "requests failed",
     "aiRequest": "AI Request"
+  },
+  "project": {
+    "title": "Projects",
+    "create": "Create Project",
+    "edit": "Edit Project",
+    "delete": "Delete Project",
+    "noProjects": "No projects found",
+    "loadError": "Failed to load projects",
+    "createSuccess": "Project created successfully!",
+    "createError": "Failed to create project",
+    "updateSuccess": "Project updated successfully!",
+    "updateError": "Failed to update project",
+    "deleteSuccess": "Project deleted successfully!",
+    "deleteError": "Failed to delete project",
+    "confirmDeleteTitle": "Delete Project?",
+    "confirmDeleteDescription": "This action cannot be undone. Are you sure you want to delete this project?",
+    "emptyDescription": "Get started by creating your first project.",
+    "searchPlaceholder": "Search projects...",
+    "status": "Status",
+    "actions": "Actions",
+    "attachment": "Attachment (optional)"
+  },
+  "filters": {
+    "category": "Category",
+    "skills": "Skills",
+    "minBudget": "Min Budget",
+    "maxBudget": "Max Budget"
+  },
+  "ai": {
+    "matchAnalysis": "AI Match Analysis",
+    "calculateMatch": "Calculate My Match",
+    "analyzing": "Analyzing...",
+    "noMatchData": "No match data available",
+    "submitBid": "Submit Bid",
+    "analysisFailed": "Failed to calculate AI match score"
+  },
+  "confirm": {
+    "delete": "Delete",
+    "yesDelete": "Yes, Delete",
+    "cancel": "Cancel"
   }
 }

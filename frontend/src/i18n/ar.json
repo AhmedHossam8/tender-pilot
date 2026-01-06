@@ -69,7 +69,7 @@
   },
   "sidebar": {
     "dashboard": "لوحة التحكم",
-    "projects": " المشاريع", 
+    "projects": " المشاريع",
     "proposals": "العروض الفنية",
     "documents": "المستندات",
     "team": "الفريق",
@@ -160,5 +160,45 @@
     "failedRequests": "الطلبات الفاشلة",
     "requestsFailed": "طلبات فشلت",
     "aiRequest": "طلب الذكاء الاصطناعي"
+  },
+  "project": {
+    "title": "المشاريع",
+    "create": "إنشاء مشروع",
+    "edit": "تعديل المشروع",
+    "delete": "حذف المشروع",
+    "noProjects": "لا توجد مشاريع",
+    "loadError": "فشل في تحميل المشاريع",
+    "createSuccess": "تم إنشاء المشروع بنجاح!",
+    "createError": "فشل في إنشاء المشروع",
+    "updateSuccess": "تم تحديث المشروع بنجاح!",
+    "updateError": "فشل في تحديث المشروع",
+    "deleteSuccess": "تم حذف المشروع بنجاح!",
+    "deleteError": "فشل في حذف المشروع",
+    "confirmDeleteTitle": "حذف المشروع؟",
+    "confirmDeleteDescription": "لا يمكن التراجع عن هذا الإجراء. هل أنت متأكد من حذف المشروع؟",
+    "emptyDescription": "ابدأ بإنشاء أول مشروع لك.",
+    "searchPlaceholder": "بحث عن المشاريع...",
+    "status": "الحالة",
+    "actions": "الإجراءات",
+    "attachment": "مرفق (اختياري)"
+  },
+  "filters": {
+    "category": "الفئة",
+    "skills": "المهارات",
+    "minBudget": "أقل ميزانية",
+    "maxBudget": "أقصى ميزانية"
+  },
+  "ai": {
+    "matchAnalysis": "تحليل التوافق بالذكاء الاصطناعي",
+    "calculateMatch": "احسب نسبة التوافق",
+    "analyzing": "جاري التحليل...",
+    "noMatchData": "لا توجد بيانات توافق",
+    "submitBid": "تقديم عرض",
+    "analysisFailed": "فشل في حساب التوافق"
+  },
+  "confirm": {
+    "delete": "حذف",
+    "yesDelete": "نعم، احذف",
+    "cancel": "إلغاء"
   }
 }
