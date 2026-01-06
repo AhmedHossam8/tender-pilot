@@ -1,19 +1,19 @@
 import { useParams, useNavigate } from "react-router-dom"
-import { useTenders } from "../../hooks/useTenders"
+import { useProjects } from "../../hooks/useProjects"
 
-export default function TenderDeletePage() {
+export default function ProjectDeletePage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { deleteTender } = useTenders()
+  const { deleteProject } = useProjects()
 
   const handleDelete = async () => {
-    await deleteTender.mutateAsync(id)
-    navigate("/tenders")
+    await deleteProject.mutateAsync(id)
+    navigate("/projects")
   }
 
   return (
     <div>
-      <h1>Delete Tender</h1>
+      <h1>Delete Project</h1>
       <p>Are you sure?</p>
 
       <button onClick={handleDelete}>Yes, delete</button>

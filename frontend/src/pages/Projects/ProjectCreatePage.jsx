@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom"
-import { useTenders } from "../../hooks/useTenders"
+import { useProjects } from "../../hooks/useProjects"
 import { useState } from "react"
 
-function TenderCreatePage() {
+function ProjectCreatePage() {
   const navigate = useNavigate()
-  const { createTender } = useTenders()
+  const { createProject } = useProjects()
 
   const [form, setForm] = useState({
     title: "",
@@ -13,13 +13,13 @@ function TenderCreatePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    await createTender.mutateAsync(form)
-    navigate("/tenders")
+    await createProject.mutateAsync(form)
+    navigate("/projects")
   }
 
   return (
     <div>
-      <h1>Create Tender</h1>
+      <h1>Create Project</h1>
 
       <form onSubmit={handleSubmit}>
         <input
@@ -43,4 +43,4 @@ function TenderCreatePage() {
     </div>
   )
 }
-export default TenderCreatePage
+export default ProjectCreatePage

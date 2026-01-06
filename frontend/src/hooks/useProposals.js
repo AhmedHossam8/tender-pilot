@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { proposalService } from "../services/proposal.service";
-import { tenderService } from "../services/Tenderservices.js";
+import { tenderService } from "../services/project.services.js";
 
 /**
  * Fetch all proposals (paginated)

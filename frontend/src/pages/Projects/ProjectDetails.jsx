@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tantml/react-query";
-import { tenderService } from "../../services/Tenderservices";
+import { projectService } from "../../services/project.services";
 import bidService from "../../services/bid.service";
 import { AIMatchScore, AILoadingIndicator } from "../../components/ai";
 import { toast } from "react-toastify";
 
-function TenderDetailPage() {
+function ProjectDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   
@@ -16,8 +16,8 @@ function TenderDetailPage() {
   const [showMatchScore, setShowMatchScore] = useState(false);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["tender", id],
-    queryFn: () => tenderService.getTender(id),
+    queryKey: ["project", id],
+    queryFn: () => projectService.getProject(id),
   });
 
   /**
@@ -69,7 +69,7 @@ function TenderDetailPage() {
       <div className="bg-red-50 border border-red-200 rounded-lg p-6">
         <p className="text-red-800">Error loading project</p>
         <button
-          onClick={() => navigate('/tenders')}
+          onClick={() => navigate('/projects')}
           className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
         >
           Back to Projects
@@ -83,7 +83,7 @@ function TenderDetailPage() {
       {/* Header */}
       <div className="mb-6">
         <Link
-          to="/tenders"
+          to="/projects"
           className="text-blue-600 hover:text-blue-800 mb-4 inline-flex items-center gap-2"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -230,7 +230,7 @@ function TenderDetailPage() {
               </button>
               
               <Link
-                to={`/tenders/${id}/edit`}
+                to={`/projects/${id}/edit`}
                 className="block w-full px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-center font-medium transition-colors"
               >
                 Edit Project
@@ -243,4 +243,4 @@ function TenderDetailPage() {
   );
 }
 
-export default TenderDetailPage;
+export default ProjectDetailPage;
