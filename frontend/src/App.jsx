@@ -171,14 +171,7 @@ function App() {
               />
 
               {/* Projects */}
-              <Route
-                path="/projects"
-                element={
-                  <ProtectedRoute>
-                    <AppLayout showFooter />
-                  </ProtectedRoute>
-                }
-              >
+              <Route path="/projects">
                 <Route index element={<ProjectList />} /> {/* /projects */}
                 <Route path="create" element={<ProjectCreate />} /> {/* /projects/create */}
                 <Route path=":id" element={<ProjectDetail />} /> {/* /projects/:id */}
