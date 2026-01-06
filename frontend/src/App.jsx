@@ -11,36 +11,37 @@ import RoleGuard from "@/components/auth/RoleGuard";
 import AppLayout from "@/layouts/AppLayout";
 import AuthLayout from "@/layouts/AuthLayout";
 
-// pages
+// Auth pages
 import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
 import ForgetPassword from "@/pages/auth/ForgetPassword";
 
+// Component showcase
 import ComponentShowcase from "@/pages/ComponentShowcase";
+
+// Proposal pages
 import ProposalList from "@/pages/proposals/ProposalList";
 import ProposalDetail from "@/pages/proposals/ProposalDetail";
 import ProposalCreate from "./pages/proposals/ProposalCreate";
 import ProposalReview from "./pages/proposals/ProposalReview";
 import ProposalPreview from "./pages/proposals/ProposalPreview";
 
-// Bid pages (ServiceHub marketplace)
+// Bid pages
 import BidList from "@/pages/Bids/BidList";
 import BidDetail from "@/pages/Bids/BidDetail";
 import BidCreate from "./pages/Bids/BidCreate";
 import BidPreview from "./pages/Bids/BidPreview";
 import BidReview from "./pages/Bids/BidReview";
 
-import TendersPage from "./pages/Tenders/TendersListPage";
-import TenderCreatePage from "./pages/Tenders/TenderCreatePage";
-import TenderDeletePage from "./pages/Tenders/TenderDeletePage";
-import TenderEditPage from "./pages/Tenders/TenderEditPage";
-import TenderDetailPage from "./pages/Tenders/TenderDetailPage";
-import { AIDashboard, AIResultPanel } from "./pages/ai";
+// Project pages (formerly Tenders)
+import ProjectList from './pages/Projects/ProjectsList';
+import ProjectCreate from './pages/Projects/ProjectCreate';
+import ProjectDelete from './pages/Projects/ProjectDelete';
+import ProjectEdit from "./pages/Projects/ProjectEdit";
+import ProjectDetail from "./pages/Projects/ProjectDetails";
 
-// Bids pages
-import BidsList from "./pages/Bids/BidsList";
-import BidCreate from "./pages/Bids/BidCreate";
-import BidDetail from "./pages/Bids/BidDetail";
+// AI pages
+import { AIDashboard, AIResultPanel } from "./pages/ai";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -81,6 +82,7 @@ function App() {
             >
               <Route path="/" element={<ComponentShowcase />} />
 
+              {/* Proposals */}
               <Route
                 path="/proposals"
                 element={
@@ -89,7 +91,6 @@ function App() {
                   </RoleGuard>
                 }
               />
-
               <Route
                 path="/proposals/:id/preview"
                 element={
@@ -98,7 +99,6 @@ function App() {
                   </RoleGuard>
                 }
               />
-
               <Route
                 path="/proposals/:id/review"
                 element={
@@ -107,7 +107,6 @@ function App() {
                   </RoleGuard>
                 }
               />
-
               <Route
                 path="/proposals/create"
                 element={
@@ -116,7 +115,6 @@ function App() {
                   </RoleGuard>
                 }
               />
-
               <Route
                 path="/proposals/:id"
                 element={
@@ -125,10 +123,12 @@ function App() {
                   </RoleGuard>
                 }
               />
+
+              {/* AI */}
               <Route path="/ai/dashboard" element={<AIDashboard />} />
               <Route path="/ai/results/:responseId" element={<AIResultPanel />} />
 
-              {/* -------- BID ROUTES (ServiceHub) -------- */}
+              {/* Bids */}
               <Route
                 path="/bids"
                 element={
@@ -137,7 +137,6 @@ function App() {
                   </RoleGuard>
                 }
               />
-
               <Route
                 path="/bids/create"
                 element={
@@ -146,7 +145,6 @@ function App() {
                   </RoleGuard>
                 }
               />
-
               <Route
                 path="/bids/:id"
                 element={
@@ -155,7 +153,6 @@ function App() {
                   </RoleGuard>
                 }
               />
-
               <Route
                 path="/bids/:id/preview"
                 element={
@@ -164,7 +161,6 @@ function App() {
                   </RoleGuard>
                 }
               />
-
               <Route
                 path="/bids/:id/review"
                 element={
@@ -173,39 +169,25 @@ function App() {
                   </RoleGuard>
                 }
               />
+
+              {/* Projects */}
+              <Route
+                path="/projects"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout showFooter />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<ProjectList />} /> {/* /projects */}
+                <Route path="create" element={<ProjectCreate />} /> {/* /projects/create */}
+                <Route path=":id" element={<ProjectDetail />} /> {/* /projects/:id */}
+                <Route path=":id/edit" element={<ProjectEdit />} /> {/* /projects/:id/edit */}
+                <Route path=":id/delete" element={<ProjectDelete />} /> {/* /projects/:id/delete */}
+              </Route>
             </Route>
 
             <Route path="/unauthorized" element={<div>Unauthorized</div>} />
-
-            {/* -------- TENDERS ROUTES -------- */}
-            <Route
-              path="/tenders"
-              element={
-                <ProtectedRoute>
-                  <AppLayout showFooter />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<TendersPage />} /> {/* /tenders */}
-              <Route path="create" element={<TenderCreatePage />} /> {/* /tenders/create */}
-              <Route path=":id" element={<TenderDetailPage />} /> {/* /tenders/:id */}
-              <Route path=":id/edit" element={<TenderEditPage />} /> {/* /tenders/:id/edit */}
-              <Route path=":id/delete" element={<TenderDeletePage />} /> {/* /tenders/:id/delete */}
-            </Route>
-
-            {/* -------- BIDS ROUTES -------- */}
-            <Route
-              path="/bids"
-              element={
-                <ProtectedRoute>
-                  <AppLayout showFooter />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<BidsList />} /> {/* /bids */}
-              <Route path="create" element={<BidCreate />} /> {/* /bids/create */}
-              <Route path=":bidId" element={<BidDetail />} /> {/* /bids/:bidId */}
-            </Route>
           </Routes>
         </BrowserRouter>
 
