@@ -3,7 +3,7 @@ import logging
 import re
 from copy import deepcopy
 from django.utils import timezone
-from apps.documents.models import TenderDocument
+from apps.documents.models import ProjectDocument
 from .services import get_ai_provider
 from .services.base import AIGenerationConfig
 from .services.fallback import AIFallbackHandler, RetryConfig, GracefulDegradation
@@ -159,13 +159,13 @@ class AIRequestHandler:
         document_id = data.get("document_id")
         if not document_id:
             raise ValueError("document_id is required for tender-preprocessing")
-        doc = TenderDocument.objects.get(id=document_id)
+        doc = ProjectDocument.objects.get(id=document_id)
         if not doc.extracted_text:
             raise ValueError("Document text is empty. Extract text first.")
 
         # Generate summary, analysis, and requirements
         summary_resp = self._generate_with_fallback(
-            QUICK_SUMMARY_PROMPT.render(tender_title=doc.tender.title, tender_content=doc.extracted_text),
+            QUICK_SUMMARY_PROMPT.render(tender_title=doc.project.title, tender_content=doc.extracted_text),
             QUICK_SUMMARY_PROMPT.system_prompt, max_tokens=500, temperature=0.3
         )
         analysis_resp = self._generate_with_fallback(

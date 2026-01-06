@@ -1,8 +1,8 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from apps.tenders.models import Tender
 from django.conf import settings
 from django.utils import timezone
+from apps.projects.models import Project
 
 User = get_user_model()
 
@@ -23,7 +23,7 @@ class Bid(models.Model):
     """
     # Relationships
     project = models.ForeignKey(
-        Tender, 
+        Project, 
         on_delete=models.CASCADE,
         related_name='bids',
         help_text="The project this bid is for"

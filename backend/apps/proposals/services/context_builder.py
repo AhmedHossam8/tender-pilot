@@ -1,22 +1,22 @@
 import json
 import logging
-from apps.documents.models import TenderDocument
+from apps.documents.models import ProjectDocument
 
 logger = logging.getLogger(__name__)
 
-def build_proposal_context(tender):
+def build_proposal_context(project):
     """
     Extract structured AI output to be used for proposal writing
     """
     doc = (
-        TenderDocument.objects
-        .filter(tender=tender, ai_processed=True, is_active=True)
+        ProjectDocument.objects
+        .filter(project=project, ai_processed=True, is_active=True)
         .order_by("-ai_processed_at")
         .first()
     )
 
     if not doc or not doc.ai_summary:
-        raise ValueError("No AI-processed tender document found")
+        raise ValueError("No AI-processed project document found")
 
     # Parse JSON with better error handling
     ai_summary_str = doc.ai_summary.strip()

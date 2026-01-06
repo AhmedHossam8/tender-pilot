@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from apps.tenders.models import Tender
+from apps.projects.models import Project
 from django.conf import settings
 from django.utils import timezone
 
@@ -16,7 +16,7 @@ class Status(models.TextChoices):
 
 
 class Proposal(models.Model):
-    tender = models.ForeignKey(Tender, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     title = models.CharField(max_length=255)
     status = models.CharField(
@@ -34,7 +34,7 @@ class Proposal(models.Model):
         indexes = [
             models.Index(fields=['status']),
             models.Index(fields=['created_by', 'status']),
-            models.Index(fields=['tender']),
+            models.Index(fields=['project']),
             models.Index(fields=['created_at']),
         ]
 

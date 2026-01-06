@@ -2,8 +2,8 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 from rest_framework import status
-from apps.tenders.models import Tender
-from apps.documents.models import TenderDocument
+from apps.projects.models import Project
+from apps.documents.models import ProjectDocument
 from .models import Proposal, ProposalSection, ProposalDocument
 import json
 
@@ -19,8 +19,8 @@ class ProposalModelTest(TestCase):
             email='test@example.com',
             password='testpass123'
         )
-        self.tender = Tender.objects.create(
-            title='Test Tender',
+        self.project = Project.objects.create(
+            title='Test Project',
             description='Test Description',
             created_by=self.user
         )
@@ -28,7 +28,7 @@ class ProposalModelTest(TestCase):
     def test_proposal_creation(self):
         """Test creating a proposal"""
         proposal = Proposal.objects.create(
-            tender=self.tender,
+            project=self.project,
             created_by=self.user,
             title='Test Proposal',
             status='draft'
@@ -36,19 +36,19 @@ class ProposalModelTest(TestCase):
         
         self.assertEqual(proposal.title, 'Test Proposal')
         self.assertEqual(proposal.status, 'draft')
-        self.assertEqual(proposal.tender, self.tender)
+        self.assertEqual(proposal.project, self.project)
         self.assertEqual(proposal.created_by, self.user)
         self.assertIsNotNone(proposal.created_at)
     
     def test_proposal_str(self):
         """Test proposal string representation"""
         proposal = Proposal.objects.create(
-            tender=self.tender,
+            project=self.project,
             created_by=self.user,
             title='Test Proposal'
         )
         self.assertIn('Test Proposal', str(proposal))
-        self.assertIn(self.tender.title, str(proposal))
+        self.assertIn(self.project.title, str(proposal))
 
 
 class ProposalSectionModelTest(TestCase):
@@ -60,13 +60,13 @@ class ProposalSectionModelTest(TestCase):
             email='test@example.com',
             password='testpass123'
         )
-        self.tender = Tender.objects.create(
-            title='Test Tender',
+        self.project = Project.objects.create(
+            title='Test Project',
             description='Test Description',
             created_by=self.user
         )
         self.proposal = Proposal.objects.create(
-            tender=self.tender,
+            project=self.project,
             created_by=self.user,
             title='Test Proposal'
         )
@@ -109,15 +109,15 @@ class ProposalAPITest(TestCase):
         )
         self.client.force_authenticate(user=self.user)
         
-        self.tender = Tender.objects.create(
-            title='Test Tender',
+        self.project = Project.objects.create(
+            title='Test Project',
             description='Test Description',
             created_by=self.user
         )
         
-        # Create a tender document with AI summary for context building
-        self.tender_doc = TenderDocument.objects.create(
-            tender=self.tender,
+        # Create a project document with AI summary for context building
+        self.project_doc = ProjectDocument.objects.create(
+            project=self.project,
             file='test.pdf',
             ai_processed=True,
             ai_summary=json.dumps({
@@ -130,12 +130,12 @@ class ProposalAPITest(TestCase):
     def test_list_proposals(self):
         """Test listing proposals"""
         Proposal.objects.create(
-            tender=self.tender,
+            project=self.project,
             created_by=self.user,
             title='Test Proposal 1'
         )
         Proposal.objects.create(
-            tender=self.tender,
+            project=self.project,
             created_by=self.user,
             title='Test Proposal 2'
         )
@@ -147,7 +147,7 @@ class ProposalAPITest(TestCase):
     def test_create_proposal(self):
         """Test creating a proposal"""
         data = {
-            'tender': self.tender.id,
+            'project': self.project.id,
             'title': 'New Proposal',
             'status': 'draft'
         }
@@ -160,7 +160,7 @@ class ProposalAPITest(TestCase):
     def test_retrieve_proposal(self):
         """Test retrieving a proposal"""
         proposal = Proposal.objects.create(
-            tender=self.tender,
+            project=self.project,
             created_by=self.user,
             title='Test Proposal'
         )
@@ -172,7 +172,7 @@ class ProposalAPITest(TestCase):
     def test_update_proposal(self):
         """Test updating a proposal"""
         proposal = Proposal.objects.create(
-            tender=self.tender,
+            project=self.project,
             created_by=self.user,
             title='Test Proposal',
             status='draft'
@@ -192,7 +192,7 @@ class ProposalAPITest(TestCase):
     def test_delete_proposal(self):
         """Test deleting a proposal"""
         proposal = Proposal.objects.create(
-            tender=self.tender,
+            project=self.project,
             created_by=self.user,
             title='Test Proposal'
         )
@@ -204,7 +204,7 @@ class ProposalAPITest(TestCase):
     def test_submit_proposal(self):
         """Test submitting a proposal"""
         proposal = Proposal.objects.create(
-            tender=self.tender,
+            project=self.project,
             created_by=self.user,
             title='Test Proposal',
             status='draft'
@@ -218,7 +218,7 @@ class ProposalAPITest(TestCase):
     def test_submit_already_submitted_proposal(self):
         """Test submitting an already submitted proposal"""
         proposal = Proposal.objects.create(
-            tender=self.tender,
+            project=self.project,
             created_by=self.user,
             title='Test Proposal',
             status='final'
@@ -230,7 +230,7 @@ class ProposalAPITest(TestCase):
     def test_approve_proposal(self):
         """Test approving a proposal"""
         proposal = Proposal.objects.create(
-            tender=self.tender,
+            project=self.project,
             created_by=self.user,
             title='Test Proposal'
         )
@@ -252,14 +252,14 @@ class ProposalSectionAPITest(TestCase):
         )
         self.client.force_authenticate(user=self.user)
         
-        self.tender = Tender.objects.create(
-            title='Test Tender',
+        self.project = Project.objects.create(
+            title='Test Project',
             description='Test Description',
             created_by=self.user
         )
         
         self.proposal = Proposal.objects.create(
-            tender=self.tender,
+            project=self.project,
             created_by=self.user,
             title='Test Proposal'
         )
@@ -290,7 +290,7 @@ class ProposalSectionAPITest(TestCase):
         )
         
         proposal2 = Proposal.objects.create(
-            tender=self.tender,
+            project=self.project,
             created_by=self.user,
             title='Proposal 2'
         )

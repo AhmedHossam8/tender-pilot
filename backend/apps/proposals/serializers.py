@@ -28,7 +28,7 @@ class ProposalSerializer(serializers.ModelSerializer):
         model = Proposal
         fields = [
             'id',
-            'tender',
+            'project',
             'created_by',
             'title',
             'status',

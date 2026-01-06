@@ -2,7 +2,7 @@ import json
 import logging
 from copy import deepcopy
 from django.utils import timezone
-from apps.documents.models import TenderDocument
+from apps.documents.models import ProjectDocument
 from apps.ai_engine.services.openai_provider import OpenAIProvider
 from apps.ai_engine.prompts.registry import PromptRegistry
 from apps.ai_engine.services.base import AIGenerationConfig

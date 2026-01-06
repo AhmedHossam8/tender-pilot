@@ -4,9 +4,9 @@ AI Engine API Views
 Provides REST API endpoints for all AI-powered operations.
 
 Endpoints:
-1. POST /api/v1/ai/tender/{tender_id}/analyze - Analyze tender
-2. POST /api/v1/ai/tender/{tender_id}/compliance - Check compliance
-3. POST /api/v1/ai/tender/{tender_id}/outline - Generate proposal outline
+1. POST /api/v1/ai/p/{project_id}/analyze - Analyze project
+2. POST /api/v1/ai/project/{project_id}/compliance - Check compliance
+3. POST /api/v1/ai/project/{project_id}/outline - Generate proposal outline
 4. GET /api/v1/ai/health - Health check
 
 Architecture:
@@ -28,14 +28,14 @@ from rest_framework.exceptions import ValidationError
 from django.conf import settings
 
 from .services.analysis_service import (
-    TenderAnalysisService,
+    ProjectAnalysisService,
     ComplianceCheckService,
     ProposalOutlineService,
 )
 from .services.regeneration import AIRegenerationService
 from .serializers import (
-    TenderAnalysisRequestSerializer,
-    TenderAnalysisResponseSerializer,
+    ProjectAnalysisRequestSerializer,
+    ProjectAnalysisResponseSerializer,
     ComplianceCheckRequestSerializer,
     ComplianceCheckResponseSerializer,
     ProposalOutlineRequestSerializer,
@@ -58,14 +58,14 @@ from .monitoring import ai_logger, ai_metrics, get_health_metrics
 logger = logging.getLogger(__name__)
 
 
-class TenderAnalysisView(APIView):
+class ProjectAnalysisView(APIView):
     """
-    Analyze a tender using AI.
+    Analyze a project using AI.
     
-    POST /api/v1/ai/tender/{tender_id}/analyze
+    POST /api/v1/ai/project/{project_id}/analyze
     
     This endpoint:
-    1. Fetches tender and documents
+    1. Fetches project and documents
     2. Extracts text content
     3. Sends to AI for analysis
     4. Returns structured analysis
@@ -98,47 +98,47 @@ class TenderAnalysisView(APIView):
     permission_classes = [CanUseAI]
     
     @ai_rate_limit(rate='10/h')
-    def post(self, request, tender_id):
-        """Handle tender analysis request"""
+    def post(self, request, project_id):
+        """Handle project analysis request"""
         try:
             # Check for demo mode
             if is_demo_mode(request):
-                demo_response = get_demo_response('tender_analysis', 'highway-construction')
+                demo_response = get_demo_response('project_analysis', 'highway-construction')
                 ai_logger.log_request(
                     request_id=demo_response['request_id'],
                     user_id=request.user.id,
-                    operation='tender_analysis',
+                    operation='project_analysis',
                     demo_mode=True
                 )
                 return Response(demo_response, status=status.HTTP_200_OK)
             
             # Step 1: Validate request data
-            serializer = TenderAnalysisRequestSerializer(
+            serializer = ProjectAnalysisRequestSerializer(
                 data=request.data,
                 context={'user': request.user}
             )
             serializer.is_valid(raise_exception=True)
             
             logger.info(
-                f"Tender analysis request: tender_id={tender_id}, "
+                f"Project analysis request: project_id={project_id}, "
                 f"user={request.user.id}, params={serializer.validated_data}"
             )
             
             # Step 2: Call service layer
-            service = TenderAnalysisService()
-            result = service.analyze_tender(
-                tender_id=tender_id,
+            service = ProjectAnalysisService()
+            result = service.analyze_project(
+                project_id=project_id,
                 user=request.user,
                 **serializer.validated_data
             )
             
             # Track metrics
-            ai_metrics.increment_requests('tender_analysis', 'openai')
-            ai_metrics.record_tokens('tender_analysis', result.get('tokens_used', 0), 'total')
-            ai_metrics.record_cost('tender_analysis', result.get('cost', 0))
+            ai_metrics.increment_requests('project_analysis', 'openai')
+            ai_metrics.record_tokens('project_analysis', result.get('tokens_used', 0), 'total')
+            ai_metrics.record_cost('project_analysis', result.get('cost', 0))
             
             # Step 3: Format response
-            response_serializer = TenderAnalysisResponseSerializer(data=result)
+            response_serializer = ProjectAnalysisResponseSerializer(data=result)
             response_serializer.is_valid(raise_exception=True)
             
             return Response(
@@ -184,7 +184,7 @@ class TenderAnalysisView(APIView):
         
         except Exception as e:
             # Handle unexpected errors
-            logger.error(f"Unexpected error in tender analysis: {e}", exc_info=True)
+            logger.error(f"Unexpected error in project analysis: {e}", exc_info=True)
             return Response(
                 {
                     'error': 'Internal server error',
@@ -196,12 +196,12 @@ class TenderAnalysisView(APIView):
 
 class ComplianceCheckView(APIView):
     """
-    Check proposal compliance against tender requirements.
+    Check proposal compliance against project requirements.
     
-    POST /api/v1/ai/tender/{tender_id}/compliance
+    POST /api/v1/ai/project/{project_id}/compliance
     
     This endpoint:
-    1. Fetches tender requirements
+    1. Fetches project requirements
     2. Gets proposal content (from DB or request)
     3. Analyzes compliance using AI
     4. Returns gaps and recommendations
@@ -237,7 +237,7 @@ class ComplianceCheckView(APIView):
     permission_classes = [CanUseAI]
     
     @ai_rate_limit(rate='20/h')
-    def post(self, request, tender_id):
+    def post(self, request, project_id):
         """Handle compliance check request."""
         try:
             # Step 1: Validate request
@@ -248,14 +248,14 @@ class ComplianceCheckView(APIView):
             serializer.is_valid(raise_exception=True)
             
             logger.info(
-                f"Compliance check request: tender_id={tender_id}, "
+                f"Compliance check request: project_id={project_id}, "
                 f"user={request.user.id}"
             )
             
             # Step 2: Call service layer
             service = ComplianceCheckService()
             result = service.check_compliance(
-                tender_id=tender_id,
+                project_id=project_id,
                 user=request.user,
                 proposal_id=serializer.validated_data.get('proposal_id'),
                 proposal_content=serializer.validated_data.get('proposal_content')
@@ -313,12 +313,12 @@ class ComplianceCheckView(APIView):
 
 class ProposalOutlineView(APIView):
     """
-    Generate a proposal outline based on tender.
+    Generate a proposal outline based on project.
     
-    POST /api/v1/ai/tender/{tender_id}/outline
+    POST /api/v1/ai/project/{project_id}/outline
     
     This endpoint:
-    1. Analyzes tender requirements
+    1. Analyzes project requirements
     2. Generates structured proposal outline
     3. Provides section guidance
     4. Suggests page counts
@@ -358,7 +358,7 @@ class ProposalOutlineView(APIView):
     permission_classes = [CanUseAI]
     
     @ai_rate_limit(rate='15/h')
-    def post(self, request, tender_id):
+    def post(self, request, project_id):
         """Handle proposal outline generation request."""
         try:
             # Step 1: Validate request
@@ -369,14 +369,14 @@ class ProposalOutlineView(APIView):
             serializer.is_valid(raise_exception=True)
             
             logger.info(
-                f"Proposal outline request: tender_id={tender_id}, "
+                f"Proposal outline request: project_id={project_id}, "
                 f"user={request.user.id}, style={serializer.validated_data.get('style')}"
             )
             
             # Step 2: Call service layer
             service = ProposalOutlineService()
             result = service.generate_outline(
-                tender_id=tender_id,
+                project_id=project_id,
                 user=request.user,
                 style=serializer.validated_data.get('style', 'standard'),
                 include_examples=serializer.validated_data.get('include_examples', False)
@@ -715,7 +715,7 @@ class AIMatchProvidersView(APIView):
         
         Args:
             request: HTTP request
-            project_id: ID of the project/tender
+            project_id: ID of the project/project
         
         Returns:
             Response with ranked provider matches
@@ -726,13 +726,13 @@ class AIMatchProvidersView(APIView):
         )
         
         try:
-            from apps.tenders.models import Tender
+            from apps.projects.models import Project
             from apps.ai_engine.services.matching_service import AIMatchingService
             
             # Get the project
             try:
-                project = Tender.objects.get(id=project_id)
-            except Tender.DoesNotExist:
+                project = Project.objects.get(id=project_id)
+            except Project.DoesNotExist:
                 return Response(
                     {"error": "Project not found"},
                     status=status.HTTP_404_NOT_FOUND
@@ -785,7 +785,7 @@ class AIGenerateCoverLetterView(APIView):
         logger.info(f"Generate cover letter request from user {request.user.id}")
         
         try:
-            from apps.tenders.models import Tender
+            from apps.projects.models import Project
             from apps.ai_engine.services.matching_service import AIBidAssistant
             
             project_id = request.data.get('project_id')
@@ -797,8 +797,8 @@ class AIGenerateCoverLetterView(APIView):
             
             # Get the project
             try:
-                project = Tender.objects.get(id=project_id)
-            except Tender.DoesNotExist:
+                project = Project.objects.get(id=project_id)
+            except Project.DoesNotExist:
                 return Response(
                     {"error": "Project not found"},
                     status=status.HTTP_404_NOT_FOUND
@@ -853,7 +853,7 @@ class AISuggestPricingView(APIView):
         logger.info(f"Suggest pricing request from user {request.user.id}")
         
         try:
-            from apps.tenders.models import Tender
+            from apps.projects.models import Project
             from apps.ai_engine.services.matching_service import AIBidAssistant
             
             project_id = request.data.get('project_id')
@@ -865,8 +865,8 @@ class AISuggestPricingView(APIView):
             
             # Get the project
             try:
-                project = Tender.objects.get(id=project_id)
-            except Tender.DoesNotExist:
+                project = Project.objects.get(id=project_id)
+            except Project.DoesNotExist:
                 return Response(
                     {"error": "Project not found"},
                     status=status.HTTP_404_NOT_FOUND

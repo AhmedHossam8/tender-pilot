@@ -20,13 +20,13 @@ from decimal import Decimal
 
 
 # ============================================================================
-# TENDER ANALYSIS SERIALIZERS
+# Project ANALYSIS SERIALIZERS
 # ============================================================================
 
-class TenderAnalysisRequestSerializer(serializers.Serializer):
+class ProjectAnalysisRequestSerializer(serializers.Serializer):
     """
-    Validates input for tender analysis requests.
-    
+    Validates input for project analysis requests.
+
     Example:
         {
             "force_refresh": false,
@@ -113,9 +113,9 @@ class AnalysisDataSerializer(serializers.Serializer):
     )
 
 
-class TenderAnalysisResponseSerializer(serializers.Serializer):
+class ProjectAnalysisResponseSerializer(serializers.Serializer):
     """
-    Formats tender analysis output for API response.
+    Formats project analysis output for API response.
     
     Example response:
         {
@@ -419,12 +419,12 @@ class AIExecuteSerializer(serializers.Serializer):
     NOTE: Prefer using specific serializers above for new code.
     """
     task = serializers.ChoiceField(choices=[
-        "tender_analysis",
+        "project_analysis",
         "compliance_check",
         "proposal_outline",
     ])
     entity_type = serializers.ChoiceField(choices=[
-        "tender",
+        "project",
         "document",
         "proposal",
     ])
@@ -454,8 +454,8 @@ class AIErrorResponseSerializer(serializers.Serializer):
     
     Example:
         {
-            "error": "Tender not found",
-            "code": "tender_not_found",
+            "error": "Project not found",
+            "code": "project_not_found",
             "details": {...},
             "retry_after": 60
         }
