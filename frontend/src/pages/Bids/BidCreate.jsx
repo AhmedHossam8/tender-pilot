@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useTenders } from "../../hooks/useProjects";
+import { useProjects } from "../../hooks/useProjects";
 import {
     Card,
     CardHeader,
@@ -24,7 +24,7 @@ import { createBid } from "../../services/bid.service";
 const BidCreate = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { tenders, isLoading, isError, error } = useTenders();
+    const { projects, isLoading, isError, error } = useProjects();
 
     const [selectedProject, setSelectedProject] = useState("");
     const [coverLetter, setCoverLetter] = useState("");
@@ -71,7 +71,7 @@ const BidCreate = () => {
     if (isLoading) return <LoadingSpinner text={t("bid.loadingProjects", "Loading projects...")} />;
     if (error) return <EmptyState title={t("bid.loadError", "Failed to load projects")} />;
 
-    if (!tenders?.length)
+    if (!projects?.length)
         return (
             <EmptyState
                 title={t("bid.noProjects", "No projects available")}
@@ -95,9 +95,9 @@ const BidCreate = () => {
                                 <SelectValue placeholder={t("bid.selectProjectPlaceholder", "Choose a project...")} />
                             </SelectTrigger>
                             <SelectContent>
-                                {tenders.map((tender) => (
-                                    <SelectItem key={tender.id} value={tender.id.toString()}>
-                                        {tender.title}
+                                {projects.map((project) => (
+                                    <SelectItem key={project.id} value={project.id.toString()}>
+                                        {project.title}
                                     </SelectItem>
                                 ))}
                             </SelectContent>

@@ -1,7 +1,6 @@
 import * as React from "react";
 import { Outlet, Link, Navigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Toaster } from "sonner";
 import { useAuthStore } from "@/contexts/authStore";
 
 function AuthLayout({ className }) {
@@ -43,8 +42,6 @@ function AuthLayout({ className }) {
       <footer className="p-4 text-center text-sm text-muted-foreground">
         <p>© {new Date().getFullYear()} TenderPilot. All rights reserved.</p>
       </footer>
-
-      <Toaster position="top-right" richColors />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { proposalService } from "../services/proposal.service";
-import { tenderService } from "../services/project.services.js";
+import { projectService } from "../services/project.services.js";
 
 /**
  * Fetch all proposals (paginated)
@@ -58,14 +58,14 @@ export const useSubmitProposal = () => useProposalAction("submitProposal");
 export const useSubmitForReview = () => useProposalAction("submitForReview");
 
 /**
- * Generate a new proposal from a tender
+ * Generate a new proposal from a project
  */
 export const useGenerateProposal = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ tenderId, payload }) =>
-      proposalService.generateProposal(tenderId, payload),
+    mutationFn: ({ projectId, payload }) =>
+      proposalService.generateProposal(projectId, payload),
     onSuccess: () => {
       queryClient.invalidateQueries(["proposals"]);
     },
@@ -146,11 +146,11 @@ export const useSectionFeedback = (sectionId) => {
   });
 };
 
-export const useTenders = (params = {}) => {
+export const useProjects = (params = {}) => {
   return useQuery({
-    queryKey: ["tenders", params],
+    queryKey: ["projects", params],
     queryFn: async () => {
-      const res = await tenderService.getTenders(params);
+      const res = await projectService.getProjects(params);
       return res.data.results || [];
     },
     staleTime: 1000 * 60 * 5,
