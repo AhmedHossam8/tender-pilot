@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/contexts/authStore";
-import { useNavigate } from "react-router-dom";
 
 import {
   Card,
@@ -20,54 +19,54 @@ import {
 
 import {
   LoadingSpinner,
-  EmptyState,
-  ConfirmDialog,
   SearchBar,
   FilterPanel,
+  ConfirmDialog,
 } from "@/components/common";
 
 import { Eye, Edit, Trash2, Plus } from "lucide-react";
 import { useProjects } from "../../hooks/useProjects";
 import { useCategories, useSkills } from "../../hooks/useCore";
+import ProjectCreateModal from "./ProjectCreateModal";
+import ProjectEditModal from "./ProjectEditModal";
 
 function ProjectsList() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { user } = useAuthStore((state) => state.user);
 
   const [searchValue, setSearchValue] = useState("");
   const [activeFilters, setActiveFilters] = useState({});
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
-  const [projectList, setProjectList] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState(null);
 
   const { projects = [], isLoading, isError } = useProjects();
   const { data: categories, isLoading: categoriesLoading } = useCategories();
   const { data: skills, isLoading: skillsLoading } = useSkills();
 
-  const navigate = useNavigate();
+  const isAnyLoading = isLoading || categoriesLoading || skillsLoading;
 
-  // Initialize local project list
-  useEffect(() => {
-    if (!isLoading && !isError && projectList.length === 0) {
-      setProjectList(projects);
-    }
-  }, [projects, isLoading, isError]);
-
-  const handleDelete = (project) => {
-    setProjectList((prev) => prev.filter((p) => p.id !== project.id));
-    toast.success(t("project.deleteSuccess"));
-  };
-
+  // Filters definition
   const filters = [
     {
       key: "category",
       label: t("filters.category"),
-      type: "select",
+      type: "select-multiple",
       options: categories?.map((c) => ({ value: c.id, label: c.name })) || [],
       loading: categoriesLoading,
     },
-    { key: "budget_min", label: t("filters.minBudget"), type: "number" },
-    { key: "budget_max", label: t("filters.maxBudget"), type: "number" },
+    {
+      key: "budget_min",
+      label: t("filters.minBudget"),
+      type: "number",
+    },
+    {
+      key: "budget_max",
+      label: t("filters.maxBudget"),
+      type: "number",
+    },
     {
       key: "skills",
       label: t("filters.skills"),
@@ -77,8 +76,9 @@ function ProjectsList() {
     },
   ];
 
+  // Filtered projects
   const filteredProjects = useMemo(() => {
-    let data = projectList || [];
+    let data = [...projects];
 
     if (searchValue) {
       const lower = searchValue.toLowerCase();
@@ -89,69 +89,69 @@ function ProjectsList() {
       );
     }
 
-    if (activeFilters.category) {
-      data = data.filter((p) => p.category?.id === activeFilters.category);
+    if (activeFilters.category?.length) {
+      data = data.filter((p) =>
+        activeFilters.category.includes(p.category?.id)
+      );
     }
 
     if (activeFilters.skills?.length) {
       data = data.filter((p) =>
-        activeFilters.skills.every((f) => p.skills.some((s) => s.id === f))
+        activeFilters.skills.every((id) =>
+          p.skills?.some((s) => s.id === id)
+        )
       );
     }
 
     if (activeFilters.budget_min) {
       data = data.filter((p) => p.budget >= activeFilters.budget_min);
     }
+
     if (activeFilters.budget_max) {
       data = data.filter((p) => p.budget <= activeFilters.budget_max);
     }
 
     return data;
-  }, [projectList, searchValue, activeFilters]);
+  }, [projects, searchValue, activeFilters]);
+
+  const handleDelete = (project) => {
+    setDeleting(true);
+    toast.success(t("project.deleteSuccess"));
+    setDeleting(false);
+  };
 
   // Loading state
-  if (isLoading || categoriesLoading || skillsLoading)
+  if (isAnyLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <LoadingSpinner size="xl" />
       </div>
     );
+  }
 
   // Error state
-  if (isError)
-    return (
-      <EmptyState title={t("project.loadError", "Failed to load projects")} />
-    );
-
-  // Empty state
-  if (!filteredProjects || filteredProjects.length === 0)
-    return (
-      <EmptyState
-        title={t("project.noProjects")}
-        description={t("project.emptyDescription")}
-        actionLabel={t("project.create")}
-        action={() => navigate("/projects/create")}
-      />
-    );
+  if (isError) {
+    return <p className="text-center text-red-500">{t("project.loadError")}</p>;
+  }
 
   return (
-    <div>
+    <div className="space-y-6">
       {/* Search & Filters */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
-        <SearchBar
-          value={searchValue}
-          onChange={setSearchValue}
-          onSearch={() => { }}
-          placeholder={t("project.searchPlaceholder")}
-          className="flex-1"
-        />
-        <FilterPanel
-          filters={filters}
-          activeFilters={activeFilters}
-          onFilterChange={setActiveFilters}
-          onClearFilters={() => setActiveFilters({})}
-        />
-      </div>
+      <Card>
+        <CardContent className="space-y-4">
+          <SearchBar
+            value={searchValue}
+            onChange={setSearchValue}
+            placeholder={t("project.searchPlaceholder")}
+          />
+          <FilterPanel
+            filters={filters}
+            activeFilters={activeFilters}
+            onFilterChange={setActiveFilters}
+            onClearFilters={() => setActiveFilters({})}
+          />
+        </CardContent>
+      </Card>
 
       {/* Projects Table */}
       <Card>
@@ -159,11 +159,12 @@ function ProjectsList() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>{t("Title")}</TableHead>
+                <TableHead>{t("project.title")}</TableHead>
                 <TableHead>{t("project.status")}</TableHead>
                 <TableHead className="text-right">{t("project.actions")}</TableHead>
               </TableRow>
             </TableHeader>
+
             <TableBody>
               {filteredProjects.map((project) => (
                 <TableRow key={project.id}>
@@ -174,26 +175,35 @@ function ProjectsList() {
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Link to={`/projects/${project.id}`}>
-                        <Button size="icon" variant="ghost">
+                        <Button size="icon" variant="ghost" disabled={isAnyLoading}>
                           <Eye className="h-4 w-4" />
                         </Button>
                       </Link>
-                      {user?.role === "writer" && project.is_owner && (
+
+                      {project.is_owner && (
                         <>
-                          <Link to={`/projects/${project.id}/edit`}>
-                            <Button size="icon" variant="ghost">
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                          </Link>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            disabled={isAnyLoading}
+                            onClick={() => {
+                              setEditingProject(project);
+                              setEditModalOpen(true);
+                            }}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+
                           <Button
                             size="icon"
                             variant="destructive"
+                            disabled={isAnyLoading || deleting}
                             onClick={() => {
                               setSelectedProject(project);
                               setConfirmDialogOpen(true);
                             }}
                           >
-                            <Trash2 className="h-4 w-4" />
+                            {deleting ? <LoadingSpinner size="sm" /> : <Trash2 className="h-4 w-4" />}
                           </Button>
                         </>
                       )}
@@ -201,8 +211,42 @@ function ProjectsList() {
                   </TableCell>
                 </TableRow>
               ))}
+
+              {/* Empty rows if search returns no results */}
+              {filteredProjects.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={3} className="border p-2"></TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
+
+          {/* Create Project Buttons */}
+          <div className="flex justify-center mt-4 space-x-2">
+            <ProjectCreateModal
+              trigger={
+                <Button variant="outline" disabled={isAnyLoading}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  {t("project.create")}
+                </Button>
+              }
+              onSuccess={() => window.location.reload()}
+            />
+
+            <ProjectCreateModal
+              trigger={
+                <Button
+                  variant="primary"
+                  className="fixed bottom-6 right-6"
+                  disabled={isAnyLoading}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  {t("project.create")}
+                </Button>
+              }
+              onSuccess={() => window.location.reload()}
+            />
+          </div>
         </CardContent>
       </Card>
 
@@ -217,6 +261,17 @@ function ProjectsList() {
         onConfirm={() => {
           if (selectedProject) handleDelete(selectedProject);
           setConfirmDialogOpen(false);
+        }}
+      />
+
+      {/* Edit Modal */}
+      <ProjectEditModal
+        open={editModalOpen}
+        onOpenChange={setEditModalOpen}
+        project={editingProject}
+        onSuccess={() => {
+          setEditModalOpen(false);
+          window.location.reload();
         }}
       />
     </div>

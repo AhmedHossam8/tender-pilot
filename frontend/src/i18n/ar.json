@@ -165,6 +165,7 @@
     "title": "المشاريع",
     "create": "إنشاء مشروع",
     "edit": "تعديل المشروع",
+    "update": "تحديث المشروع",
     "delete": "حذف المشروع",
     "noProjects": "لا توجد مشاريع",
     "loadError": "فشل في تحميل المشاريع",
@@ -180,7 +181,11 @@
     "searchPlaceholder": "بحث عن المشاريع...",
     "status": "الحالة",
     "actions": "الإجراءات",
-    "attachment": "مرفق (اختياري)"
+    "attachment": "مرفق (اختياري)",
+    "budget": "الميزانية",
+    "description": "الوصف",
+    "selectCategory": "اختر فئة",
+    "selectSkills": "اختر المهارات"
   },
   "filters": {
     "category": "الفئة",
