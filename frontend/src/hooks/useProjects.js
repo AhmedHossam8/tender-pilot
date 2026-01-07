@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { projectService } from "../services/project.services";
+import { toast } from "sonner";
 
 export const useProjects = () => {
   const queryClient = useQueryClient();
@@ -12,14 +13,32 @@ export const useProjects = () => {
     },
   });
 
+  const updateStatus = (id, newStatus) => {
+    updateProject.mutate(
+      { id, data: { status: newStatus } },
+      {
+        onSuccess: () => {
+          toast.success(`Project status updated to ${newStatus}`);
+        },
+        onError: (err) => {
+          toast.error("Failed to update project status");
+          console.error(err);
+        },
+      }
+    );
+  };
+
   const createProject = useMutation({
     mutationFn: projectService.createProject,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["projects"] }),
   });
 
   const updateProject = useMutation({
-    mutationFn: ({ id, data }) => projectService.updateProject(id, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["projects"] }),
+    mutationFn: ({ id, data }) => projectService.patchProject(id, data),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries({ queryKey: ["project", variables.id] });
+    },
   });
 
   const deleteProject = useMutation({
@@ -34,6 +53,8 @@ export const useProjects = () => {
     error,
     createProject,
     updateProject,
+    updateStatus,
+    updateStatusLoading: updateProject.isPending,
     deleteProject,
   };
 };

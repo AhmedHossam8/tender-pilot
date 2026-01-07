@@ -51,6 +51,14 @@ class ProjectSerializer(BaseModelSerializer):
     # frontend-friendly fields
     category_name = serializers.SerializerMethodField()
     skills_names = serializers.SerializerMethodField()
+    
+    def validate_status(self, value):
+        current = self.instance.status if self.instance else None
+        if current == "open" and value != "in_progress":
+            raise serializers.ValidationError("Open projects can only move to In Progress.")
+        if current == "in_progress" and value != "completed":
+            raise serializers.ValidationError("In Progress projects can only move to Completed.")
+        return value
 
     class Meta:
         model = Project
