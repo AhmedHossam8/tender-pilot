@@ -323,6 +323,7 @@
     "cancelled": "Cancelled",
     "open": "Open",
     "in_progress": "In Progress"
+  },
   "reviews": {
     "form": {
       "title": "Write a Review for {{name}}",
