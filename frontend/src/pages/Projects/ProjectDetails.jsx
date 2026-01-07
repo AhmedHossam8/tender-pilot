@@ -15,6 +15,7 @@ import { useProjects } from "../../hooks/useProjects";
 import { useAuthStore } from "@/contexts/authStore";
 import { useTranslation } from "react-i18next";
 import ProjectEditModal from "./ProjectEditModal";
+import { useProjectMatches } from "../../hooks/useProjectMatches";
 
 export default function ProjectDetail() {
   const { t } = useTranslation();
@@ -22,11 +23,11 @@ export default function ProjectDetail() {
   const navigate = useNavigate();
   const { deleteProject } = useProjects();
   const { user } = useAuthStore();
-
   const [editOpen, setEditOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  // Fetch project
   const { data: project, isLoading, isError } = useQuery({
     queryKey: ["project", id],
     queryFn: async () => {
@@ -34,6 +35,10 @@ export default function ProjectDetail() {
       return res.data;
     },
   });
+
+  // Fetch AI matched providers
+  const { data: matchesData, isLoading: matchesLoading } = useProjectMatches(id);
+  const matches = matchesData?.matches ?? []; // ensure array
 
   const handleDelete = async () => {
     try {
@@ -48,7 +53,7 @@ export default function ProjectDetail() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || !project) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <LoadingSpinner size="xl" />
@@ -56,8 +61,8 @@ export default function ProjectDetail() {
     );
   }
 
-  if (isError || !project) {
-    return <p className="text-center">{t("project.loadError")}</p>;
+  if (isError) {
+    return <p className="text-center text-red-500">{t("project.loadError")}</p>;
   }
 
   return (
@@ -67,36 +72,23 @@ export default function ProjectDetail() {
         <CardHeader>
           <CardTitle>{project.title}</CardTitle>
         </CardHeader>
-
         <CardContent className="space-y-4">
-          {/* Description */}
           <p className="text-muted-foreground">{project.description}</p>
-
-          {/* Meta info */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <strong>Budget:</strong>{" "}
-              ${project.budget ?? "-"}
+              <strong>Budget:</strong> ${project.budget ?? "-"}
             </div>
-
             <div>
-              <strong>Category:</strong>{" "}
-              {project.category_name || project.category?.name || "-"}
+              <strong>Category:</strong> {project.category_name || project.category?.name || "-"}
             </div>
-
             <div>
-              <strong>Status:</strong>{" "}
-              {project.status}
+              <strong>Status:</strong> {project.status}
             </div>
-
             <div>
-              <strong>Visibility:</strong>{" "}
-              {project.visibility}
+              <strong>Visibility:</strong> {project.visibility}
             </div>
-
             <div>
-              <strong>Created At:</strong>{" "}
-              {new Date(project.created_at).toLocaleDateString()}
+              <strong>Created At:</strong> {new Date(project.created_at).toLocaleDateString()}
             </div>
           </div>
 
@@ -128,10 +120,7 @@ export default function ProjectDetail() {
           <CardTitle>{t("project.actions")}</CardTitle>
         </CardHeader>
         <CardContent className="flex gap-3">
-          <Button onClick={() => setEditOpen(true)}>
-            {t("project.edit")}
-          </Button>
-
+          <Button onClick={() => setEditOpen(true)}>{t("project.edit")}</Button>
           <Button
             variant="destructive"
             onClick={() => setShowDeleteConfirm(true)}
@@ -143,14 +132,42 @@ export default function ProjectDetail() {
         </CardContent>
       </Card>
 
+      {/* AI Matched Providers */}
+      <Card>
+        <CardHeader>
+          <CardTitle>AI Matched Providers</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {matchesLoading ? (
+            <LoadingSpinner />
+          ) : matches.length === 0 ? (
+            <p className="text-muted-foreground">No matches found.</p>
+          ) : (
+            <ul className="space-y-2">
+              {matches.map((match) => (
+                <li key={match.provider_id || match.id} className="border p-2 rounded">
+                  <div className="flex justify-between">
+                    <span className="font-medium">{match.provider_name || match.name}</span>
+                    {match.match_score !== undefined && (
+                      <span className="text-sm text-gray-500">
+                        Score: {match.match_score}%
+                      </span>
+                    )}
+                  </div>
+                  {match.recommendation && <p className="text-sm mt-1">{match.recommendation}</p>}
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Edit Modal */}
       <ProjectEditModal
         open={editOpen}
         onOpenChange={setEditOpen}
         project={project}
-        onSuccess={() => {
-          setEditOpen(false);
-        }}
+        onSuccess={() => setEditOpen(false)}
       />
 
       {/* Delete Confirm */}

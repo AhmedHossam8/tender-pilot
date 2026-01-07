@@ -125,3 +125,166 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
             project.skills.set(Skill.objects.filter(id__in=skill_ids))
 
         return project
+
+class ProjectAIInsightsSerializer(serializers.Serializer):
+    """Serializer for AI insights about a project"""
+    has_analysis = serializers.BooleanField()
+    analyzed_at = serializers.DateTimeField(required=False, allow_null=True)
+    summary = serializers.CharField(required=False, allow_blank=True)
+    key_requirements = serializers.ListField(
+        child=serializers.DictField(),
+        required=False
+    )
+    estimated_complexity = serializers.CharField(required=False)
+    recommended_actions = serializers.ListField(
+        child=serializers.DictField(),
+        required=False
+    )
+    confidence_score = serializers.FloatField(required=False, allow_null=True)
+
+class ProviderMatchSerializer(serializers.Serializer):
+    """Serializer for provider match results"""
+    provider_id = serializers.IntegerField()
+    provider_name = serializers.CharField()
+    match_score = serializers.IntegerField()
+    matching_skills = serializers.ListField(child=serializers.CharField())
+    skill_gaps = serializers.ListField(child=serializers.CharField())
+    budget_compatible = serializers.BooleanField()
+    budget_assessment = serializers.CharField(required=False)
+    experience_assessment = serializers.CharField(required=False)
+    potential_concerns = serializers.ListField(
+        child=serializers.CharField(),
+        required=False
+    )
+    recommendation = serializers.CharField()
+    reasoning = serializers.CharField()
+    cached = serializers.BooleanField(default=False)
+
+
+class ProjectWithAISerializer(serializers.ModelSerializer):
+    """
+    Enhanced Project serializer with AI-related fields
+    """
+    category = CategorySerializer(read_only=True)
+    skills = SkillSerializer(many=True, read_only=True)
+    
+    # AI-related fields
+    has_ai_analysis = serializers.SerializerMethodField()
+    ai_summary = serializers.CharField(read_only=True, allow_null=True)
+    ai_complexity = serializers.SerializerMethodField()
+    ai_analyzed_at = serializers.SerializerMethodField()
+    
+    # Stats
+    bids_count = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Project
+        fields = [
+            'id',
+            'title',
+            'description',
+            'budget',
+            'category',
+            'skills',
+            'visibility',
+            'status',
+            'created_by',
+            'created_at',
+            # AI fields
+            'has_ai_analysis',
+            'ai_summary',
+            'ai_complexity',
+            'ai_analyzed_at',
+            # Stats
+            'bids_count',
+        ]
+        read_only_fields = ['created_by', 'created_at']
+    
+    def get_has_ai_analysis(self, obj):
+        """Check if project has AI analysis"""
+        from apps.ai_engine.models import AIRequest, AIRequestStatus
+        
+        return AIRequest.objects.filter(
+            content_type='project',
+            object_id=str(obj.id),
+            status=AIRequestStatus.COMPLETED,
+            prompt_name='project_analysis'
+        ).exists()
+    
+    def get_ai_complexity(self, obj):
+        """Get AI-determined complexity"""
+        from apps.ai_engine.models import AIRequest, AIRequestStatus
+        import json
+        
+        latest = (
+            AIRequest.objects
+            .filter(
+                content_type='project',
+                object_id=str(obj.id),
+                status=AIRequestStatus.COMPLETED,
+                prompt_name='project_analysis'
+            )
+            .select_related('response')
+            .order_by('-created_at')
+            .first()
+        )
+        
+        if not latest:
+            return None
+        
+        try:
+            analysis = json.loads(latest.response.content)
+            return analysis.get('estimated_complexity', None)
+        except:
+            return None
+    
+    def get_ai_analyzed_at(self, obj):
+        """Get when AI analysis was performed"""
+        from apps.ai_engine.models import AIRequest, AIRequestStatus
+        
+        latest = (
+            AIRequest.objects
+            .filter(
+                content_type='project',
+                object_id=str(obj.id),
+                status=AIRequestStatus.COMPLETED,
+                prompt_name='project_analysis'
+            )
+            .order_by('-created_at')
+            .first()
+        )
+        
+        return latest.created_at if latest else None
+    
+    def get_bids_count(self, obj):
+        """Get number of bids on this project"""
+        return obj.bids.count()
+    
+class ProjectAnalysisRequestSerializer(serializers.Serializer):
+    """Serializer for AI analysis request"""
+    force_refresh = serializers.BooleanField(default=False, required=False)
+    analysis_depth = serializers.ChoiceField(
+        choices=['quick', 'standard', 'detailed'],
+        default='standard',
+        required=False
+    )
+    include_documents = serializers.BooleanField(default=True, required=False)
+
+
+class ProjectAnalysisResponseSerializer(serializers.Serializer):
+    """Serializer for AI analysis response"""
+    request_id = serializers.UUIDField()
+    analysis = serializers.DictField()
+    tokens_used = serializers.IntegerField()
+    cost = serializers.DecimalField(max_digits=10, decimal_places=6)
+    cached = serializers.BooleanField()
+    processing_time_ms = serializers.IntegerField()
+    cache_age_hours = serializers.FloatField(required=False)
+
+
+class ProjectMatchProvidersResponseSerializer(serializers.Serializer):
+    """Serializer for provider matching response"""
+    project_id = serializers.UUIDField()
+    project_title = serializers.CharField()
+    matches_count = serializers.IntegerField()
+    matches = ProviderMatchSerializer(many=True)

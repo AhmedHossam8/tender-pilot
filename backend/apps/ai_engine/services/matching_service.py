@@ -13,7 +13,7 @@ from django.db.models import Avg, Count, Q
 from django.utils import timezone
 from datetime import timedelta
 
-from apps.ai_engine.services.provider import get_provider
+from apps.ai_engine.services.provider import get_ai_provider as get_provider
 from apps.ai_engine.services.matching_cache import MatchingCache
 from apps.ai_engine.prompts.matching import (
     get_match_score_prompt,
@@ -47,7 +47,7 @@ class AIMatchingService:
         self.ai_provider = get_provider(provider_name)
         self.logger = logger
     
-    def match_providers_to_project(self, project, limit: int = 10, use_cache: bool = True) -> List[Dict]:
+    def match_providers_to_project(self, project, limit: int = 10, use_cache: bool = True, provider_ids: Optional[List[int]] = None) -> List[Dict]:
         """
         Find and rank the best matching service providers for a project.
         
@@ -90,7 +90,11 @@ class AIMatchingService:
             # Find potential service providers
             # For now, get all users who could be providers
             # TODO: Filter by user_type='provider' once user profiles are implemented
-            potential_providers = User.objects.all()[:50]  # Limit for performance
+            # Get potential providers
+            if provider_ids:
+                potential_providers = User.objects.filter(id__in=provider_ids)[:50]
+            else:
+                potential_providers = User.objects.all()[:50]
             
             results = []
             
