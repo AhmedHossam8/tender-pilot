@@ -1,6 +1,7 @@
 import * as React from "react"
 import { cva } from "class-variance-authority"
 import { cn } from "@/lib/utils"
+import { useTranslation } from "react-i18next"
 
 const badgeVariants = cva(
   "inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
@@ -43,13 +44,21 @@ function Badge({ className, variant, ...props }) {
 
 // Status badge component
 function StatusBadge({ status, className }) {
+  const { t } = useTranslation();
+
   const statusConfig = {
-    draft: { label: "Draft", variant: "draft" },
-    "in-review": { label: "In Review", variant: "in-review" },
-    in_review: { label: "In Review", variant: "in-review" },
-    approved: { label: "Approved", variant: "approved" },
-    rejected: { label: "Rejected", variant: "rejected" },
-    submitted: { label: "Submitted", variant: "submitted" },
+    draft: { label: t("status.draft"), variant: "draft" },
+    "in-review": { label: t("status.in-review"), variant: "in-review" },
+    in_review: { label: t("status.in-review"), variant: "in-review" },
+    approved: { label: t("status.approved"), variant: "approved" },
+    rejected: { label: t("status.rejected"), variant: "rejected" },
+    submitted: { label: t("status.submitted"), variant: "submitted" },
+    pending: { label: t("status.pending"), variant: "pending" },
+    confirmed: { label: t("status.confirmed"), variant: "confirmed" },
+    completed: { label: t("status.completed"), variant: "completed" },
+    cancelled: { label: t("status.cancelled"), variant: "cancelled" },
+    open: { label: t("status.open"), variant: "open" },
+    in_progress: { label: t("status.in_progress"), variant: "in_progress" },
   }
 
   const config = statusConfig[status?.toLowerCase()] || {

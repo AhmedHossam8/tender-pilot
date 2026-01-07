@@ -1,5 +1,6 @@
 import React from "react";
 import { useServices } from "../../hooks/useServices";
+import { useTranslation } from "react-i18next";
 
 const ServicesCreate = ({ isOpen, onClose }) => {
     const {
@@ -11,7 +12,12 @@ const ServicesCreate = ({ isOpen, onClose }) => {
         handlePackageChange,
         handleSubmit,
         createServiceMutation,
+        aiSuggestedPackages,
+        applyAiSuggestedPackages,
+        optimizeServiceMutation,
     } = useServices();
+
+    const { t } = useTranslation();
 
     if (!isOpen) return null;
 
@@ -25,7 +31,7 @@ const ServicesCreate = ({ isOpen, onClose }) => {
                     &times;
                 </button>
 
-                <h2 className="text-xl font-bold mb-4">Create New Service</h2>
+                <h2 className="text-xl font-bold mb-4">{t("services.create")}</h2>
 
                 <form onSubmit={(e) => handleSubmit(e, onClose)} className="space-y-4">
                     <div>
@@ -39,16 +45,53 @@ const ServicesCreate = ({ isOpen, onClose }) => {
                     </div>
 
                     <div>
-                        <label className="block font-semibold">Description</label>
+                        <label className="block font-semibold">{t("project.description")}</label>
                         <textarea
                             value={serviceData.description}
                             onChange={(e) => setServiceData({ ...serviceData, description: e.target.value })}
                             className="border p-2 rounded w-full"
                         />
+                        <button
+                            type="button"
+                            onClick={() => optimizeServiceMutation.mutate()}
+                            disabled={
+                                optimizeServiceMutation.isLoading ||
+                                !serviceData.description.trim()
+                            }
+                            className="mt-2 text-sm text-blue-600 hover:text-blue-800 disabled:opacity-50"
+                        >
+                            {optimizeServiceMutation.isLoading
+                                ? t("services.aiImprovingDescription")
+                                : t("services.aiImproveDescription")}
+                        </button>
                     </div>
 
                     <div>
-                        <h3 className="font-bold mb-2">Packages</h3>
+                        <div className="flex items-center justify-between mb-2">
+                            <h3 className="font-bold">{t("services.packages")}</h3>
+                            {aiSuggestedPackages.length > 0 && (
+                                <button
+                                    type="button"
+                                    onClick={applyAiSuggestedPackages}
+                                    className="text-xs text-green-600 hover:text-green-800"
+                                >
+                                    {t("services.applyAiPackages")}
+                                </button>
+                            )}
+                        </div>
+                        {aiSuggestedPackages.length > 0 && (
+                            <div className="mb-3 rounded border border-dashed border-green-400 bg-green-50 p-2 text-xs text-green-800 space-y-1">
+                                <p className="font-semibold">
+                                    {t("services.aiSuggestedPackages")}
+                                </p>
+                                {aiSuggestedPackages.map((pkg, index) => (
+                                    <p key={index}>
+                                        <span className="font-medium">{pkg.name}</span>
+                                        {" — "}${pkg.price} · {pkg.duration_hours}h
+                                    </p>
+                                ))}
+                            </div>
+                        )}
                         {packages.map((pkg, i) => (
                             <div key={i} className="border p-2 rounded mb-2 space-y-2">
                                 <input
@@ -96,7 +139,9 @@ const ServicesCreate = ({ isOpen, onClose }) => {
                         className="bg-green-600 text-white px-6 py-2 rounded"
                         disabled={createServiceMutation.isLoading}
                     >
-                        {createServiceMutation.isLoading ? "Creating..." : "Create Service"}
+                        {createServiceMutation.isLoading
+                            ? t("common.loading")
+                            : t("services.create")}
                     </button>
                 </form>
             </div>

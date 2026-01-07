@@ -28,6 +28,9 @@ export const aiService = {
   getRegenerationHistory: (responseId) =>
     api.get(`/ai/response/${responseId}/history/`),
 
+  // Service description & packages optimization
+  optimizeService: (payload = {}) => api.post("/ai/service/optimize/", payload),
+
   // Analytics endpoints
   getUsageAnalytics: (params = {}) =>
     api.get("/ai/analytics/usage", { params }),

@@ -165,6 +165,61 @@ class ProjectAnalysisResponseSerializer(serializers.Serializer):
 
 
 # ============================================================================
+# SERVICE OPTIMIZATION SERIALIZERS
+# ============================================================================
+
+
+class ServicePackageInputSerializer(serializers.Serializer):
+    """Serializer for existing or suggested service packages."""
+
+    name = serializers.CharField()
+    description = serializers.CharField(required=False, allow_blank=True)
+    price = serializers.FloatField()
+    duration_hours = serializers.IntegerField(min_value=1)
+
+
+class ServiceOptimizeRequestSerializer(serializers.Serializer):
+    """Input for optimizing a service description and suggesting packages.
+
+    Example:
+        {
+            "name": "Website Design",
+            "description": "I build websites...",
+            "category": "Design",
+            "target_audience": "Small businesses",
+            "existing_packages": [
+                {"name": "Basic", "price": 200, "duration_hours": 5}
+            ]
+        }
+    """
+
+    name = serializers.CharField()
+    description = serializers.CharField()
+    category = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    target_audience = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    existing_packages = ServicePackageInputSerializer(many=True, required=False)
+
+
+class ServiceOptimizeResponseSerializer(serializers.Serializer):
+    """Output of the service optimization endpoint."""
+
+    optimized_description = serializers.CharField()
+    tagline = serializers.CharField(required=False, allow_blank=True)
+    keywords = serializers.ListField(
+        child=serializers.CharField(),
+        required=False
+    )
+    suggested_packages = ServicePackageInputSerializer(many=True)
+
+    tokens_used = serializers.IntegerField(required=False)
+    cost = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=6,
+        required=False
+    )
+
+
+# ============================================================================
 # COMPLIANCE CHECK SERIALIZERS
 # ============================================================================
 

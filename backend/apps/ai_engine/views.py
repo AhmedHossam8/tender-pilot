@@ -699,6 +699,93 @@ class RegenerationHistoryView(APIView):
             )
 
 
+class ServiceOptimizeView(APIView):
+    """Optimize a service description and suggest packages.
+
+    POST /api/v1/ai/service/optimize/
+
+    Request body:
+        {
+            "name": "Website Design",
+            "description": "I build websites...",
+            "category": "Design",
+            "target_audience": "Small businesses",
+            "existing_packages": [...]
+        }
+    """
+
+    permission_classes = [CanUseAI]
+
+    @ai_rate_limit(rate="20/h")
+    def post(self, request):
+        from apps.ai_engine.services.service_optimizer import AIServiceOptimizer
+
+        logger.info("Service optimization request from user %s", request.user.id)
+
+        serializer = ServiceOptimizeRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        data = serializer.validated_data
+        optimizer = AIServiceOptimizer()
+
+        try:
+            desc_result = optimizer.optimize_description(
+                name=data["name"],
+                description=data["description"],
+                category=data.get("category") or None,
+                target_audience=data.get("target_audience") or None,
+            )
+
+            suggested_packages = optimizer.suggest_packages(
+                name=data["name"],
+                description=desc_result["optimized_description"],
+                category=data.get("category") or None,
+                existing_packages=data.get("existing_packages"),
+            )
+
+            response_payload = {
+                "optimized_description": desc_result["optimized_description"],
+                "tagline": desc_result.get("tagline", data["name"]),
+                "keywords": desc_result.get("keywords", []),
+                "suggested_packages": suggested_packages,
+            }
+
+            response_serializer = ServiceOptimizeResponseSerializer(data=response_payload)
+            response_serializer.is_valid(raise_exception=True)
+
+            return Response(response_serializer.data, status=status.HTTP_200_OK)
+
+        except ValidationError as e:
+            logger.warning("Validation error in ServiceOptimizeView: %s", e)
+            return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
+        except AIProviderError as e:
+            logger.error("AI provider error in ServiceOptimizeView: %s", e, exc_info=True)
+            return Response(
+                {
+                    "error": "AI service temporarily unavailable",
+                    "code": "ai_service_error",
+                    "details": str(e),
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        except AIRateLimitError as e:
+            logger.error("AI rate limit in ServiceOptimizeView: %s", e)
+            return Response(
+                {
+                    "error": "AI service rate limit exceeded",
+                    "code": "ai_rate_limit",
+                    "retry_after": 60,
+                },
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
+        except Exception as e:
+            logger.error("Unexpected error in ServiceOptimizeView: %s", e, exc_info=True)
+            return Response(
+                {"error": "Internal server error", "code": "internal_error"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
 class AIMatchProvidersView(APIView):
     """
     AI endpoint to find and rank matching service providers for a project.

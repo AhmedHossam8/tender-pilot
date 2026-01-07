@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { serviceService } from "../services/services.service";
+import { aiService } from "../services/ai.service";
 
 export const useServices = () => {
     const queryClient = useQueryClient();
@@ -26,6 +27,7 @@ export const useServices = () => {
         description: "",
     });
     const [packages, setPackages] = useState([]);
+    const [aiSuggestedPackages, setAiSuggestedPackages] = useState([]);
 
     const createServiceMutation = useMutation({
         mutationFn: serviceService.create,
@@ -42,6 +44,35 @@ export const useServices = () => {
             queryClient.invalidateQueries({ queryKey: ["services"] });
             setServiceData({ name: "", description: "" });
             setPackages([]);
+            setAiSuggestedPackages([]);
+        },
+    });
+
+    // --- AI optimization ---
+    const optimizeServiceMutation = useMutation({
+        mutationFn: async () => {
+            return aiService.optimizeService({
+                name: serviceData.name,
+                description: serviceData.description,
+                existing_packages: packages.map((pkg) => ({
+                    name: pkg.name,
+                    description: pkg.description || "",
+                    price: Number(pkg.price) || 0,
+                    duration_hours: Number(pkg.duration_hours) || 1,
+                })),
+            });
+        },
+        onSuccess: (res) => {
+            const data = res?.data ?? res;
+            if (data?.optimized_description) {
+                setServiceData((prev) => ({
+                    ...prev,
+                    description: data.optimized_description,
+                }));
+            }
+            if (Array.isArray(data?.suggested_packages)) {
+                setAiSuggestedPackages(data.suggested_packages);
+            }
         },
     });
 
@@ -68,6 +99,19 @@ export const useServices = () => {
         });
     };
 
+    const applyAiSuggestedPackages = () => {
+        if (!aiSuggestedPackages.length) return;
+        setPackages(
+            aiSuggestedPackages.map((pkg) => ({
+                name: pkg.name,
+                description: pkg.description || "",
+                price: pkg.price ?? 0,
+                duration_hours: pkg.duration_hours ?? 1,
+            }))
+        );
+        setAiSuggestedPackages([]);
+    };
+
     return {
         // Services fetch
         servicesData,
@@ -84,5 +128,10 @@ export const useServices = () => {
         handlePackageChange,
         handleSubmit,
         createServiceMutation,
+
+        // AI optimization
+        aiSuggestedPackages,
+        applyAiSuggestedPackages,
+        optimizeServiceMutation,
     };
 };

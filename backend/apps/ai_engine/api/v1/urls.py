@@ -25,6 +25,7 @@ from apps.ai_engine.views import (
     ProposalOutlineView,
     RegenerateResponseView,
     RegenerationHistoryView,
+    ServiceOptimizeView,
     AIMatchProvidersView,
     AIGenerateCoverLetterView,
     AISuggestPricingView,
@@ -121,6 +122,13 @@ urlpatterns = [
         name='analytics-prompts'
     ),
     
+    # Service optimization endpoint
+    path(
+        'service/optimize/',
+        ServiceOptimizeView.as_view(),
+        name='service-optimize'
+    ),
+
     # AI Matching endpoints for ServiceHub
     path(
         'match/project/<uuid:project_id>/providers/',
