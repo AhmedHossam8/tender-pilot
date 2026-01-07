@@ -1,10 +1,10 @@
 import * as React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Bell, Search, Menu, User, LogOut, Settings, ChevronDown } from "lucide-react";
+import { Bell, Menu, User, LogOut, Settings, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import SearchBar from "@/components/search/SearchBar";
 
 // Import your auth store
 import { useAuthStore } from "@/contexts/authStore";
@@ -43,26 +43,14 @@ export function Header({ onMenuClick, className }) {
   return (
     <header className={cn("flex items-center justify-between h-16 px-4 bg-white border-b", className)}>
       {/* Left: menu + search */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 flex-1">
         <Button variant="ghost" size="icon" onClick={onMenuClick} className="lg:hidden">
           <Menu className="h-5 w-5" />
         </Button>
 
-        {/* Search */}
-        <div className="hidden md:flex items-center">
-          <div className="relative">
-            <Search
-              className={cn(
-                "absolute top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground",
-                isArabic ? "right-3" : "left-3"
-              )}
-            />
-            <Input
-              type="search"
-              placeholder={t("common.search")}
-              className={cn("w-64 lg:w-80", isArabic ? "pr-9 text-right" : "pl-9")}
-            />
-          </div>
+        {/* Search Bar */}
+        <div className="hidden md:block flex-1 max-w-2xl">
+          <SearchBar />
         </div>
       </div>
 

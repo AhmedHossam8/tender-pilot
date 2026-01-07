@@ -69,6 +69,9 @@
   },
   "sidebar": {
     "dashboard": "Dashboard",
+    "clientDashboard": "Client Dashboard",
+    "providerDashboard": "Provider Dashboard",
+    "services": "Services",
     "projects": "Projects",
     "proposals": "Proposals",
     "documents": "Documents",
@@ -83,6 +86,21 @@
     "privacyPolicy": "Privacy Policy",
     "termsOfService": "Terms of Service",
     "help": "Help"
+  },
+  "search": {
+    "placeholder": "Search projects, services, providers...",
+    "projects": "Projects",
+    "services": "Services",
+    "providers": "Providers",
+    "all": "All",
+    "viewAll": "View all results",
+    "noResults": "No results found",
+    "resultsFor": "Search results for",
+    "resultsFound": "results found",
+    "searching": "Searching...",
+    "noQuery": "Search for something",
+    "noQueryDesc": "Use the search bar to find projects, services, or providers",
+    "tryDifferent": "Try a different search term or filter"
   },
   "aiEngine": {
     "dashboard": "AI Dashboard",
