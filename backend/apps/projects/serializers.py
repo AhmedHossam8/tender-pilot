@@ -51,6 +51,7 @@ class ProjectSerializer(BaseModelSerializer):
     # frontend-friendly fields
     category_name = serializers.SerializerMethodField()
     skills_names = serializers.SerializerMethodField()
+    bids_count = serializers.SerializerMethodField()
     
     def validate_status(self, value):
         current = self.instance.status if self.instance else None
@@ -71,6 +72,7 @@ class ProjectSerializer(BaseModelSerializer):
             "category_name",
             "skills",
             "skills_names",
+            "bids_count",
             "visibility",
             "status",
             "created_by",
@@ -87,6 +89,9 @@ class ProjectSerializer(BaseModelSerializer):
 
     def get_skills_names(self, obj):
         return [skill.name for skill in obj.skills.all()]
+
+    def get_bids_count(self, obj):
+        return obj.bids.count()
 
     def update(self, instance, validated_data):
         category_id = validated_data.pop("category_id", None)

@@ -54,6 +54,13 @@ class ProjectViewSet(viewsets.ModelViewSet):
     ordering_fields = ["created_at", "budget"]
     search_fields = ["title", "description"]
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.action == 'list':
+            # For list view, only show user's own projects
+            return queryset.filter(created_by=self.request.user)
+        return queryset
+
     def get_serializer_class(self):
         if self.action == "create":
             return ProjectCreateSerializer

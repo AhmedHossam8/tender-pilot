@@ -36,6 +36,9 @@ class BookingViewSet(viewsets.ModelViewSet):
     search_fields = ["package__name", "package__service__name"]
     ordering_fields = ["scheduled_for", "status"]
 
+    def get_queryset(self):
+        return Booking.objects.filter(user=self.request.user)
+
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 

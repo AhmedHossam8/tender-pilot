@@ -35,6 +35,7 @@ const BookServicePage = () => {
 
     const [selectedPackage, setSelectedPackage] = useState("");
     const [scheduledFor, setScheduledFor] = useState("");
+    const [isReviewing, setIsReviewing] = useState(false);
 
     // --- Fetch service details ---
     const { data, isLoading, isError, error } = useQuery({
@@ -45,6 +46,10 @@ const BookServicePage = () => {
 
     // Normalize data: support both axios {data: ...} and direct object
     const service = data?.data ?? data;
+
+    const selectedPackageObj = service?.packages?.find(
+        (pkg) => String(pkg.id) === String(selectedPackage)
+    );
 
     // --- Booking mutation ---
     const bookingMutation = useMutation({
@@ -103,6 +108,11 @@ const BookServicePage = () => {
 
         if (user.id === service.created_by?.id) {
             toast.error(t("services.cannotBookOwnService"));
+            return;
+        }
+
+        if (!isReviewing) {
+            setIsReviewing(true);
             return;
         }
 
@@ -169,19 +179,59 @@ const BookServicePage = () => {
                             onChange={(e) => setScheduledFor(e.target.value)}
                         />
                     </div>
+
+                    {isReviewing && selectedPackageObj && (
+                        <div className="mt-4 border-t pt-4 space-y-3">
+                            <p className="text-sm font-semibold">
+                                {t("services.reviewBooking")}
+                            </p>
+                            <div className="text-sm space-y-1">
+                                <p>
+                                    <span className="font-medium">{t("services.package")}:</span>{" "}
+                                    {selectedPackageObj.name} — ${selectedPackageObj.price}
+                                </p>
+                                <p>
+                                    <span className="font-medium">{t("services.scheduledFor")}:</span>{" "}
+                                    {new Date(scheduledFor).toLocaleString()}
+                                </p>
+                            </div>
+                            <div className="rounded border bg-muted p-3 text-xs text-muted-foreground">
+                                <p className="font-semibold mb-1">
+                                    {t("services.paymentPlaceholderTitle")}
+                                </p>
+                                <p>{t("services.paymentPlaceholderDescription")}</p>
+                            </div>
+                        </div>
+                    )}
                 </CardContent>
 
-                <CardFooter>
+                <CardFooter className="flex flex-col gap-2 sm:flex-row sm:justify-between">
+                    {isReviewing && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full sm:w-auto"
+                            onClick={() => setIsReviewing(false)}
+                            disabled={bookingMutation.isPending}
+                        >
+                            {t("common.back")}
+                        </Button>
+                    )}
                     <Button
-                        className="w-full"
+                        className="w-full sm:w-auto"
                         onClick={handleBooking}
-                        disabled={bookingMutation.isPending || user?.id === service?.created_by?.id}
+                        disabled={
+                            bookingMutation.isPending ||
+                            user?.id === service?.created_by?.id
+                        }
                     >
                         {bookingMutation.isPending
                             ? t("common.loading")
                             : user?.id === service?.created_by?.id
                             ? t("services.cannotBookOwnService")
-                            : t("services.bookService")}
+                            : isReviewing
+                            ? t("services.confirmAndPay")
+                            : t("services.reviewAndContinue")}
                     </Button>
                 </CardFooter>
             </Card>

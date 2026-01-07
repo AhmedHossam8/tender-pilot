@@ -256,9 +256,62 @@
     "statusUpdated": "تم تحديث حالة الحجز",
     "statusUpdateError": "فشل في تحديث حالة الحجز"
   },
+  "dashboard": {
+    "title": "لوحة تحكم العميل",
+    "welcome": "مرحباً بعودتك، {{name}}! إدارة مشاريعك وحجوزاتك.",
+    "activeProjects": "المشاريع النشطة",
+    "activeProjectsDesc": "مفتوحة حالياً للعروض",
+    "totalProjects": "إجمالي المشاريع",
+    "totalProjectsDesc": "منذ البداية",
+    "activeBookings": "الحجوزات النشطة",
+    "activeBookingsDesc": "مؤكدة أو معلقة",
+    "totalBookings": "إجمالي الحجوزات",
+    "totalBookingsDesc": "منذ البداية",
+    "totalSpent": "إجمالي المصروفات",
+    "totalSpentDesc": "على الخدمات",
+    "pendingBids": "العروض المعلقة",
+    "pendingBidsDesc": "في انتظار الرد",
+    "quickActions": "الإجراءات السريعة",
+    "postProject": "نشر مشروع",
+    "postProjectDesc": "احصل على عروض من المقدمين",
+    "browseServices": "تصفح الخدمات",
+    "browseServicesDesc": "العثور على وتوظيف الخدمات",
+    "editProfile": "تعديل الملف الشخصي",
+    "editProfileDesc": "تحديث معلوماتك",
+    "recentActivity": "النشاط الأخير",
+    "recentProjects": "المشاريع الأخيرة",
+    "recentBookings": "الحجوزات الأخيرة",
+    "noProjects": "لا توجد مشاريع بعد",
+    "postFirstProject": "انشر أول مشروع لك",
+    "noBookings": "لا توجد حجوزات بعد",
+    "browseServicesLink": "تصفح الخدمات",
+    "viewAll": "عرض الكل",
+    "bids": "عروض",
+    "status": {
+      "open": "مفتوح",
+      "in_progress": "قيد التنفيذ",
+      "completed": "مكتمل",
+      "cancelled": "ملغي",
+      "confirmed": "مؤكد",
+      "pending": "معلق"
+    }
+  },
   "confirm": {
     "delete": "حذف",
     "yesDelete": "نعم، احذف",
     "cancel": "إلغاء"
+  },
+  "status": {
+    "draft": "مسودة",
+    "in-review": "قيد المراجعة",
+    "approved": "معتمد",
+    "rejected": "مرفوض",
+    "submitted": "مرسل",
+    "pending": "معلق",
+    "confirmed": "مؤكد",
+    "completed": "مكتمل",
+    "cancelled": "ملغي",
+    "open": "مفتوح",
+    "in_progress": "قيد التنفيذ"
   }
 }
