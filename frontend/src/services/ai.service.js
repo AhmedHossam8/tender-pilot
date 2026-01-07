@@ -8,17 +8,17 @@ export const aiService = {
   // Health check
   checkHealth: () => api.get("/ai/health/"),
 
-  // Tender analysis
-  analyzeTender: (tenderId, payload = {}) =>
-    api.post(`/ai/tender/${tenderId}/analyze/`, payload),
+  // Project analysis
+  analyzeProject: (projectId, payload = {}) =>
+    api.post(`/ai/project/${projectId}/analyze/`, payload),
 
   // Compliance check
-  checkCompliance: (tenderId, payload = {}) =>
-    api.post(`/ai/tender/${tenderId}/compliance/`, payload),
+  checkCompliance: (projectId, payload = {}) =>
+    api.post(`/ai/project/${projectId}/compliance/`, payload),
 
   // Generate proposal outline
-  generateOutline: (tenderId, payload = {}) =>
-    api.post(`/ai/tender/${tenderId}/outline/`, payload),
+  generateOutline: (projectId, payload = {}) =>
+    api.post(`/ai/project/${projectId}/outline/`, payload),
 
   // Regenerate AI response
   regenerateResponse: (responseId, payload = {}) =>

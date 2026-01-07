@@ -37,6 +37,10 @@ import BidReview from "./pages/Bids/BidReview";
 import ProjectList from './pages/Projects/ProjectsList';
 import ProjectDetail from "./pages/Projects/ProjectDetails";
 
+// Service pages
+import ServicesList from "@/pages/Services/ServicesList";
+import BookingsList from "@/pages/Services/BookingsList";
+
 // AI pages
 import { AIDashboard, AIResultPanel } from "./pages/ai";
 
@@ -173,6 +177,10 @@ function App() {
                 <Route path=":id" element={<ProjectDetail />} /> {/* /projects/:id */}
               </Route>
             </Route>
+
+            {/** Service pages */}
+            <Route path="/services" element={<ServicesList />} />
+            <Route path="/bookings" element={<BookingsList />} />
 
             <Route path="/unauthorized" element={<div>Unauthorized</div>} />
           </Routes>
