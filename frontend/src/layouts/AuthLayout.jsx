@@ -4,15 +4,12 @@ import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/contexts/authStore";
 
 function AuthLayout({ className }) {
-  const { user, loading } = useAuthStore();
+  const { user } = useAuthStore();
 
-  // Prevent flicker before auth hydration finishes
-  if (loading) return null;
-
-  // ✅ If already logged in → redirect to app
-  if (user) {
-    return <Navigate to="/" replace />;
-  }
+  // If already logged in → redirect to app
+  // if (user) {
+  //   return <Navigate to="/" replace />;
+  // }
 
   return (
     <div

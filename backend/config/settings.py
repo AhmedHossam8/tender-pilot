@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     'apps.bids.apps.BidsConfig',
     'apps.ai_engine.apps.AiEngineConfig',
     'apps.core.apps.CoreConfig',
+    'apps.notifications.apps.NotificationsConfig',
 
     'common',
 
