@@ -2,7 +2,19 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 from apps.users.viewsets import UserViewSet, UserProfileViewSet
-from apps.users.views import RegisterAPIView, LoginAPIView, ProfileAPIView , UpdateReadApiView,AdminListAPIView,AdminUserDetailAPIView
+from apps.users.views import (
+    RegisterAPIView, 
+    LoginAPIView, 
+    ProfileAPIView, 
+    UpdateReadApiView,
+    AdminListAPIView,
+    AdminUserDetailAPIView,
+    UserProfileDetailView,
+    PublicProfileView,
+    ProviderStatsView,
+    ClientStatsView,
+    SkillListView,
+)
 
 # Create a DRF router
 router = DefaultRouter()
@@ -11,11 +23,25 @@ router.register("profile", UserProfileViewSet, basename="profile")  # Read-only 
 
 # Combine router URLs with action-based URLs
 urlpatterns = [
-    path('register/',RegisterAPIView.as_view()),
-    path('login/',LoginAPIView.as_view()),
-    path('refresh/',TokenRefreshView.as_view()),
-    path('profile/',ProfileAPIView.as_view()),
-    path('me/',UpdateReadApiView.as_view()),
-    path('admin/userslist/',AdminListAPIView.as_view()),
-    path('admin/users/<int:pk>/',AdminUserDetailAPIView.as_view())
+    # Authentication
+    path('register/', RegisterAPIView.as_view(), name='register'),
+    path('login/', LoginAPIView.as_view(), name='login'),
+    path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    
+    # Current user profile
+    path('profile/', ProfileAPIView.as_view(), name='current_profile'),
+    path('me/', UpdateReadApiView.as_view(), name='user_me'),
+    path('me/profile/', UserProfileDetailView.as_view(), name='my_profile_detail'),
+    
+    # Public profiles and stats
+    path('profiles/<int:user_id>/', PublicProfileView.as_view(), name='public_profile'),
+    path('profiles/<int:user_id>/provider-stats/', ProviderStatsView.as_view(), name='provider_stats'),
+    path('profiles/<int:user_id>/client-stats/', ClientStatsView.as_view(), name='client_stats'),
+    
+    # Skills
+    path('skills/', SkillListView.as_view(), name='skills_list'),
+    
+    # Admin
+    path('admin/userslist/', AdminListAPIView.as_view(), name='admin_users_list'),
+    path('admin/users/<int:pk>/', AdminUserDetailAPIView.as_view(), name='admin_user_detail'),
 ]

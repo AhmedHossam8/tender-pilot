@@ -45,6 +45,15 @@ import BookingsList from "@/pages/Services/BookingsList";
 // AI pages
 import { AIDashboard, AIResultPanel } from "./pages/ai";
 
+// Dashboard pages
+import { ClientDashboard, ProviderDashboard } from "./pages/dashboard";
+
+// Profile pages
+import { EditProfilePage, PublicProfilePage } from "./pages/Profile";
+
+// Search pages
+import SearchResultsPage from "./pages/search/SearchResultsPage";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -129,6 +138,17 @@ function App() {
               {/* AI */}
               <Route path="/ai/dashboard" element={<AIDashboard />} />
               <Route path="/ai/results/:responseId" element={<AIResultPanel />} />
+
+              {/* Search */}
+              <Route path="/search" element={<SearchResultsPage />} />
+
+              {/* Dashboards */}
+              <Route path="/dashboard/client" element={<ClientDashboard />} />
+              <Route path="/dashboard/provider" element={<ProviderDashboard />} />
+
+              {/* Profile */}
+              <Route path="/profile/edit" element={<EditProfilePage />} />
+              <Route path="/profiles/:userId" element={<PublicProfilePage />} />
 
               {/* Bids */}
               <Route

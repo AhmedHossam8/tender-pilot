@@ -69,6 +69,9 @@
   },
   "sidebar": {
     "dashboard": "لوحة التحكم",
+    "clientDashboard": "لوحة تحكم العميل",
+    "providerDashboard": "لوحة تحكم مزود الخدمة",
+    "services": "الخدمات",
     "projects": " المشاريع",
     "proposals": "العروض الفنية",
     "documents": "المستندات",
@@ -85,6 +88,21 @@
     "privacyPolicy": "سياسة الخصوصية",
     "termsOfService": "شروط الخدمة",
     "help": "مساعدة"
+  },
+  "search": {
+    "placeholder": "ابحث عن المشاريع، الخدمات، مقدمي الخدمة...",
+    "projects": "المشاريع",
+    "services": "الخدمات",
+    "providers": "مقدمو الخدمة",
+    "all": "الكل",
+    "viewAll": "عرض جميع النتائج",
+    "noResults": "لم يتم العثور على نتائج",
+    "resultsFor": "نتائج البحث عن",
+    "resultsFound": "نتيجة",
+    "searching": "جاري البحث...",
+    "noQuery": "ابحث عن شيء ما",
+    "noQueryDesc": "استخدم شريط البحث للعثور على المشاريع أو الخدمات أو مقدمي الخدمة",
+    "tryDifferent": "جرب مصطلح بحث أو تصفية مختلفة"
   },
   "aiEngine": {
     "dashboard": "لوحة تحكم الذكاء الاصطناعي",

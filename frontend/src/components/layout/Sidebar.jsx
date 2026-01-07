@@ -14,11 +14,16 @@ import {
   Sparkles,
   Wrench,
   Calendar,
+  Briefcase,
+  ShoppingBag,
+  UserCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useTranslation } from "react-i18next";
+import { useAuthStore } from "@/contexts/authStore";
 
-const navigationItems = [
+// Static navigation items for MobileNav backward compatibility
+export const navigationItems = [
   { key: "sidebar.dashboard", href: "/", icon: LayoutDashboard },
   { key: "aiEngine.dashboard", href: "/ai/dashboard", icon: Sparkles },
   { key: "sidebar.projects", href: "/projects", icon: FileText },
@@ -29,16 +34,75 @@ const navigationItems = [
   { key: "sidebar.settings", href: "/settings", icon: Settings },
 ];
 
-const bottomNavigationItems = [
+export const bottomNavigationItems = [
   { key: "sidebar.help", href: "/help", icon: HelpCircle },
 ];
+
+// Helper function to build dynamic navigation based on user type
+export const getDynamicNavigation = (userType, isClient, isProvider) => {
+  const baseNav = [
+    { key: "sidebar.dashboard", href: "/", icon: LayoutDashboard },
+    { key: "aiEngine.dashboard", href: "/ai/dashboard", icon: Sparkles },
+  ];
+
+  // Add user type specific dashboards
+  if (isClient && isClient()) {
+    baseNav.push({ 
+      key: "sidebar.clientDashboard", 
+      href: "/dashboard/client", 
+      icon: UserCircle,
+      label: "Client Dashboard"
+    });
+  }
+
+  if (isProvider && isProvider()) {
+    baseNav.push({ 
+      key: "sidebar.providerDashboard", 
+      href: "/dashboard/provider", 
+      icon: Briefcase,
+      label: "Provider Dashboard"
+    });
+  }
+
+  // Add common navigation items
+  baseNav.push(
+    { key: "sidebar.projects", href: "/projects", icon: FileText },
+    { key: "sidebar.proposals", href: "/proposals", icon: FolderOpen },
+  );
+
+  // Add services for providers
+  if (isProvider && isProvider()) {
+    baseNav.push({ 
+      key: "sidebar.services", 
+      href: "/services", 
+      icon: ShoppingBag,
+      label: "Services"
+    });
+  }
+
+  baseNav.push(
+    { key: "sidebar.documents", href: "/documents", icon: Building2 },
+    { key: "sidebar.team", href: "/team", icon: Users },
+    { key: "sidebar.settings", href: "/settings", icon: Settings },
+  );
+
+  return baseNav;
+};
 
 function Sidebar({ collapsed, onToggleCollapse, isRtl }) {
   const location = useLocation();
   const { t } = useTranslation();
+  const { userType, isClient, isProvider } = useAuthStore();
 
-  const navigation = navigationItems.map(item => ({ ...item, name: t(item.key) }));
-  const bottomNavigation = bottomNavigationItems.map(item => ({ ...item, name: t(item.key) }));
+  const navigation = getDynamicNavigation(userType, isClient, isProvider).map(item => ({ 
+    ...item, 
+    name: item.label || t(item.key) 
+  }));
+  
+  const bottomNavigation = bottomNavigationItems.map(item => ({ 
+    ...item, 
+    name: t(item.key) 
+  }));
 
   return (
     <aside
@@ -119,4 +183,4 @@ function Sidebar({ collapsed, onToggleCollapse, isRtl }) {
   );
 }
 
-export { Sidebar, navigationItems, bottomNavigationItems };
+export { Sidebar as default, Sidebar };
