@@ -11,7 +11,7 @@ Provides admin interfaces for managing:
 from django.contrib import admin
 from django.utils.html import format_html
 from django.db.models import Avg
-from .models import AIRequest, AIResponse, AIUsage, PromptVersion
+from .models import AIRequest, AIResponse, AIUsage, PromptVersion, AIUsageLog, MatchSuccessLog, AIAnalyticsSummary
 from .prompts.registry import PromptRegistry
 
 
@@ -356,3 +356,151 @@ class AIUsageAdmin(admin.ModelAdmin):
     
     def has_delete_permission(self, request, obj=None):
         return request.user.is_superuser
+
+
+@admin.register(AIUsageLog)
+class AIUsageLogAdmin(admin.ModelAdmin):
+    """Admin interface for AI Usage Logs."""
+    
+    list_display = [
+        'id',
+        'user',
+        'feature',
+        'cached',
+        'success',
+        'execution_time',
+        'tokens_used',
+        'cost',
+        'created_at',
+    ]
+    
+    list_filter = [
+        'feature',
+        'cached',
+        'success',
+        'created_at',
+    ]
+    
+    search_fields = [
+        'user__email',
+        'user__username',
+        'error_message',
+    ]
+    
+    readonly_fields = [
+        'user',
+        'feature',
+        'project_id',
+        'bid_id',
+        'execution_time',
+        'tokens_used',
+        'cost',
+        'cached',
+        'success',
+        'error_message',
+        'confidence_score',
+        'created_at',
+    ]
+    
+    date_hierarchy = 'created_at'
+    
+    def has_add_permission(self, request):
+        return False
+
+
+@admin.register(MatchSuccessLog)
+class MatchSuccessLogAdmin(admin.ModelAdmin):
+    """Admin interface for Match Success Logs."""
+    
+    list_display = [
+        'id',
+        'project_id',
+        'provider_id',
+        'predicted_match_score',
+        'predicted_success',
+        'actual_success',
+        'prediction_accuracy',
+        'prediction_date',
+    ]
+    
+    list_filter = [
+        'predicted_success',
+        'actual_success',
+        'bid_submitted',
+        'bid_accepted',
+        'prediction_date',
+    ]
+    
+    search_fields = [
+        'project_id',
+        'provider_id',
+    ]
+    
+    readonly_fields = [
+        'project_id',
+        'provider_id',
+        'predicted_match_score',
+        'predicted_success',
+        'bid_submitted',
+        'bid_accepted',
+        'actual_success',
+        'prediction_date',
+        'outcome_date',
+        'prediction_accuracy',
+    ]
+    
+    date_hierarchy = 'prediction_date'
+    
+    def has_add_permission(self, request):
+        return False
+
+
+@admin.register(AIAnalyticsSummary)
+class AIAnalyticsSummaryAdmin(admin.ModelAdmin):
+    """Admin interface for AI Analytics Summary."""
+    
+    list_display = [
+        'date',
+        'total_requests',
+        'cache_hit_rate_display',
+        'success_rate_display',
+        'total_cost',
+        'match_prediction_accuracy',
+    ]
+    
+    list_filter = [
+        'date',
+    ]
+    
+    readonly_fields = [
+        'date',
+        'total_requests',
+        'cached_requests',
+        'failed_requests',
+        'match_score_requests',
+        'bid_generation_requests',
+        'price_suggestion_requests',
+        'quality_score_requests',
+        'avg_execution_time',
+        'total_tokens_used',
+        'total_cost',
+        'match_prediction_accuracy',
+        'bid_success_rate',
+        'created_at',
+        'updated_at',
+        'cache_hit_rate',
+        'success_rate',
+    ]
+    
+    date_hierarchy = 'date'
+    
+    def cache_hit_rate_display(self, obj):
+        return f"{obj.cache_hit_rate:.1f}%"
+    cache_hit_rate_display.short_description = "Cache Hit Rate"
+    
+    def success_rate_display(self, obj):
+        return f"{obj.success_rate:.1f}%"
+    success_rate_display.short_description = "Success Rate"
+    
+    def has_add_permission(self, request):
+        return False

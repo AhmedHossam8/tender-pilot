@@ -471,3 +471,150 @@ class PromptVersion(models.Model):
         """Increment usage counter."""
         self.usage_count += 1
         self.save(update_fields=['usage_count'])
+
+
+class AIUsageLog(models.Model):
+    """
+    Track all AI feature usage for analytics and cost monitoring.
+    """
+    FEATURE_CHOICES = [
+        ('match_score', 'Match Score Calculation'),
+        ('bid_generation', 'Bid Generation'),
+        ('price_suggestion', 'Price Suggestion'),
+        ('quality_score', 'Bid Quality Score'),
+        ('project_analysis', 'Project Analysis'),
+        ('service_optimization', 'Service Description Optimization'),
+    ]
+    
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    feature = models.CharField(max_length=50, choices=FEATURE_CHOICES)
+    project_id = models.IntegerField(null=True, blank=True)
+    bid_id = models.IntegerField(null=True, blank=True)
+    
+    # Performance metrics
+    execution_time = models.FloatField(help_text="Execution time in seconds")
+    tokens_used = models.IntegerField(default=0)
+    cost = models.DecimalField(max_digits=10, decimal_places=6, default=0)
+    
+    # Result metadata
+    cached = models.BooleanField(default=False)
+    success = models.BooleanField(default=True)
+    error_message = models.TextField(blank=True)
+    
+    # AI response quality
+    confidence_score = models.FloatField(null=True, blank=True, help_text="AI confidence in result (0-1)")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'ai_usage_logs'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['feature', '-created_at']),
+            models.Index(fields=['user', '-created_at']),
+            models.Index(fields=['cached', '-created_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.get_feature_display()} - {self.created_at}"
+
+
+class MatchSuccessLog(models.Model):
+    """
+    Track the success rate of AI match predictions.
+    This helps improve the matching algorithm over time.
+    """
+    project_id = models.IntegerField()
+    provider_id = models.IntegerField()
+    
+    # AI prediction
+    predicted_match_score = models.IntegerField(help_text="AI predicted score (0-100)")
+    predicted_success = models.BooleanField(help_text="AI predicted success")
+    
+    # Actual outcome
+    bid_submitted = models.BooleanField(default=False)
+    bid_accepted = models.BooleanField(default=False)
+    actual_success = models.BooleanField(null=True, blank=True)
+    
+    # Timing
+    prediction_date = models.DateTimeField(auto_now_add=True)
+    outcome_date = models.DateTimeField(null=True, blank=True)
+    
+    # Accuracy metrics
+    prediction_accuracy = models.FloatField(null=True, blank=True, help_text="How accurate was the prediction")
+    
+    class Meta:
+        db_table = 'match_success_logs'
+        ordering = ['-prediction_date']
+        indexes = [
+            models.Index(fields=['project_id', 'provider_id']),
+            models.Index(fields=['predicted_success', 'actual_success']),
+        ]
+    
+    def calculate_accuracy(self):
+        """Calculate how accurate the AI prediction was."""
+        if self.actual_success is None:
+            return None
+        
+        # Perfect prediction
+        if self.predicted_success == self.actual_success:
+            return 1.0
+        
+        # Wrong prediction
+        return 0.0
+    
+    def __str__(self):
+        return f"Match Log: Project {self.project_id} - Provider {self.provider_id}"
+
+
+class AIAnalyticsSummary(models.Model):
+    """
+    Daily summary of AI usage statistics.
+    Aggregated data for faster dashboard queries.
+    """
+    date = models.DateField(unique=True)
+    
+    # Usage stats
+    total_requests = models.IntegerField(default=0)
+    cached_requests = models.IntegerField(default=0)
+    failed_requests = models.IntegerField(default=0)
+    
+    # Feature breakdown
+    match_score_requests = models.IntegerField(default=0)
+    bid_generation_requests = models.IntegerField(default=0)
+    price_suggestion_requests = models.IntegerField(default=0)
+    quality_score_requests = models.IntegerField(default=0)
+    
+    # Performance
+    avg_execution_time = models.FloatField(default=0)
+    total_tokens_used = models.IntegerField(default=0)
+    total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    
+    # Success metrics
+    match_prediction_accuracy = models.FloatField(null=True, blank=True)
+    bid_success_rate = models.FloatField(null=True, blank=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'ai_analytics_summary'
+        ordering = ['-date']
+    
+    def __str__(self):
+        return f"AI Analytics - {self.date}"
+    
+    @property
+    def cache_hit_rate(self):
+        """Calculate cache hit rate percentage."""
+        if self.total_requests == 0:
+            return 0
+        return (self.cached_requests / self.total_requests) * 100
+    
+    @property
+    def success_rate(self):
+        """Calculate success rate percentage."""
+        if self.total_requests == 0:
+            return 0
+        successful = self.total_requests - self.failed_requests
+        return (successful / self.total_requests) * 100

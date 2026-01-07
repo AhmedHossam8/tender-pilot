@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, views
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -14,6 +14,7 @@ from .serializers import (
     BidMilestoneSerializer,
     BidAttachmentSerializer,
 )
+from .services.comparison_service import BidComparisonService
 
 
 class BidViewSet(viewsets.ModelViewSet):
@@ -223,3 +224,77 @@ class BidAttachmentViewSet(viewsets.ModelViewSet):
             action='add_attachment',
             extra_info=f'Added attachment: {attachment.file_name}'
         )
+
+
+class BidComparisonView(views.APIView):
+    """
+    API view for comparing multiple bids.
+    
+    POST /api/v1/bids/compare/
+    Body: { "bid_ids": [1, 2, 3] }
+    
+    Returns comparison data with AI insights and recommendations.
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        bid_ids = request.data.get('bid_ids', [])
+        
+        if not bid_ids or not isinstance(bid_ids, list):
+            return Response(
+                {"error": "bid_ids must be a non-empty list"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if len(bid_ids) < 2:
+            return Response(
+                {"error": "At least 2 bids are required for comparison"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if len(bid_ids) > 10:
+            return Response(
+                {"error": "Maximum 10 bids can be compared at once"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Verify user has access to these bids
+        user_bids = Bid.objects.filter(
+            id__in=bid_ids,
+            project__created_by=request.user
+        ).values_list('id', flat=True)
+        
+        if len(user_bids) != len(bid_ids):
+            return Response(
+                {"error": "You don't have access to one or more of these bids"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Perform comparison
+        comparison_result = BidComparisonService.compare_bids(bid_ids)
+        
+        return Response(comparison_result, status=status.HTTP_200_OK)
+
+
+class ProjectBidsInsightsView(views.APIView):
+    """
+    Get insights for all bids on a project.
+    
+    GET /api/v1/projects/{project_id}/bids/insights/
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, project_id):
+        # Verify user owns the project
+        from apps.projects.models import Project
+        try:
+            project = Project.objects.get(id=project_id, created_by=request.user)
+        except Project.DoesNotExist:
+            return Response(
+                {"error": "Project not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        insights = BidComparisonService.get_bid_comparison_insights(project_id)
+        
+        return Response(insights, status=status.HTTP_200_OK)
