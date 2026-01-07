@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../../contexts/authStore';
 import ProfileService from '../../services/profile.service';
 import SkillBadge from '../../components/profile/SkillBadge';
+import ProfileCompletenessWidget from '../../components/profile/ProfileCompletenessWidget';
 import { toast } from 'sonner';
 
 /**
@@ -122,11 +123,25 @@ const EditProfilePage = () => {
   const isProvider = userType === 'provider' || userType === 'both';
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Edit Profile</h1>
+    <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - Profile Completeness Widget */}
+        <div className="lg:col-span-1">
+          <div className="sticky top-6">
+            <ProfileCompletenessWidget
+              score={profile?.ai_profile_score || 0}
+              profile={profile}
+              showSuggestions={true}
+            />
+          </div>
+        </div>
+        
+        {/* Right Column - Edit Form */}
+        <div className="lg:col-span-2">
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h1 className="text-3xl font-bold text-gray-900 mb-6">Edit Profile</h1>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
           {/* Headline */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -291,6 +306,8 @@ const EditProfilePage = () => {
             </button>
           </div>
         </form>
+          </div>
+        </div>
       </div>
     </div>
   );

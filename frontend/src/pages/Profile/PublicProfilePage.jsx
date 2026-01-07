@@ -3,6 +3,11 @@ import { useParams } from 'react-router-dom';
 import ProfileService from '../../services/profile.service';
 import SkillBadge from '../../components/profile/SkillBadge';
 import { toast } from 'sonner';
+import ReviewSummary from '../../components/reviews/ReviewSummary';
+import ReviewList from '../../components/reviews/ReviewList';
+import ReviewForm from '../../components/reviews/ReviewForm';
+import reviewService from '../../services/review.service';
+import { useAuthStore } from '../../contexts/authStore';
 
 /**
  * PublicProfilePage
@@ -10,12 +15,18 @@ import { toast } from 'sonner';
  */
 const PublicProfilePage = () => {
   const { userId } = useParams();
+  const { user } = useAuthStore();
   const [profile, setProfile] = useState(null);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [activeTab, setActiveTab] = useState('about'); // about, reviews
 
   useEffect(() => {
     loadProfile();
+    loadReviews();
   }, [userId]);
 
   const loadProfile = async () => {
@@ -42,6 +53,27 @@ const PublicProfilePage = () => {
       setLoading(false);
     }
   };
+  
+  const loadReviews = async () => {
+    try {
+      setReviewsLoading(true);
+      const reviewsData = await reviewService.getReviews({ reviewee: userId });
+      setReviews(reviewsData);
+    } catch (error) {
+      console.error('Error loading reviews:', error);
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
+  
+  const handleReviewSuccess = (newReview) => {
+    setReviews([newReview, ...reviews]);
+    setShowReviewForm(false);
+    toast.success('Review submitted successfully!');
+  };
+  
+  const isOwnProfile = user?.id === parseInt(userId);
+  const canLeaveReview = user && !isOwnProfile;
 
   if (loading) {
     return (
@@ -179,88 +211,143 @@ const PublicProfilePage = () => {
 
         {/* Right Column - Details */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Bio */}
-          {profile.bio && (
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">About</h2>
-              <p className="text-gray-700 whitespace-pre-line">{profile.bio}</p>
+          {/* Tab Navigation */}
+          <div className="bg-white rounded-lg shadow-md">
+            <div className="flex border-b border-gray-200">
+              <button
+                onClick={() => setActiveTab('about')}
+                className={`px-6 py-3 font-medium transition-colors ${
+                  activeTab === 'about'
+                    ? 'text-blue-600 border-b-2 border-blue-600'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                About
+              </button>
+              <button
+                onClick={() => setActiveTab('reviews')}
+                className={`px-6 py-3 font-medium transition-colors ${
+                  activeTab === 'reviews'
+                    ? 'text-blue-600 border-b-2 border-blue-600'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                Reviews ({reviews.length})
+              </button>
             </div>
-          )}
+          </div>
+          
+          {/* About Tab */}
+          {activeTab === 'about' && (
+            <>
+              {/* Bio */}
+              {profile.bio && (
+                <div className="bg-white rounded-lg shadow-md p-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-4">About</h2>
+                  <p className="text-gray-700 whitespace-pre-line">{profile.bio}</p>
+                </div>
+              )}
 
-          {/* Skills */}
-          {profile.skills && profile.skills.length > 0 && (
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Skills</h2>
-              <div className="flex flex-wrap gap-2">
-                {profile.skills.map((skill) => (
-                  <SkillBadge key={skill.id} skill={skill} />
-                ))}
-              </div>
-            </div>
-          )}
+              {/* Skills */}
+              {profile.skills && profile.skills.length > 0 && (
+                <div className="bg-white rounded-lg shadow-md p-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-4">Skills</h2>
+                  <div className="flex flex-wrap gap-2">
+                    {profile.skills.map((skill) => (
+                      <SkillBadge key={skill.id} skill={skill} />
+                    ))}
+                  </div>
+                </div>
+              )}
 
-          {/* Stats */}
-          {stats && (
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Statistics</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {isProvider ? (
-                  <>
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <p className="text-3xl font-bold text-blue-600">
-                        {stats.completed_projects}
-                      </p>
-                      <p className="text-sm text-gray-600">Completed Projects</p>
-                    </div>
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <p className="text-3xl font-bold text-blue-600">
-                        {stats.active_bids}
-                      </p>
-                      <p className="text-sm text-gray-600">Active Bids</p>
-                    </div>
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <p className="text-3xl font-bold text-blue-600">
-                        {stats.average_rating.toFixed(1)}
-                      </p>
-                      <p className="text-sm text-gray-600">Average Rating</p>
-                    </div>
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <p className="text-3xl font-bold text-blue-600">
-                        {stats.total_reviews}
-                      </p>
-                      <p className="text-sm text-gray-600">Reviews</p>
-                    </div>
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <p className="text-3xl font-bold text-blue-600">
-                        {stats.success_rate.toFixed(0)}%
-                      </p>
-                      <p className="text-sm text-gray-600">Success Rate</p>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <p className="text-3xl font-bold text-blue-600">
-                        {stats.posted_projects}
-                      </p>
-                      <p className="text-sm text-gray-600">Posted Projects</p>
-                    </div>
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <p className="text-3xl font-bold text-blue-600">
-                        {stats.active_projects}
-                      </p>
-                      <p className="text-sm text-gray-600">Active Projects</p>
-                    </div>
-                    <div className="text-center p-4 bg-gray-50 rounded-lg">
-                      <p className="text-3xl font-bold text-blue-600">
-                        {stats.total_bookings}
-                      </p>
-                      <p className="text-sm text-gray-600">Total Bookings</p>
-                    </div>
-                  </>
-                )}
+              {/* Stats */}
+              {stats && (
+                <div className="bg-white rounded-lg shadow-md p-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-4">Statistics</h2>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {isProvider ? (
+                      <>
+                        <div className="text-center p-4 bg-gray-50 rounded-lg">
+                          <p className="text-3xl font-bold text-blue-600">
+                            {stats.completed_projects}
+                          </p>
+                          <p className="text-sm text-gray-600">Completed Projects</p>
+                        </div>
+                        <div className="text-center p-4 bg-gray-50 rounded-lg">
+                          <p className="text-3xl font-bold text-blue-600">
+                            {stats.active_bids}
+                          </p>
+                          <p className="text-sm text-gray-600">Active Bids</p>
+                        </div>
+                        <div className="text-center p-4 bg-gray-50 rounded-lg">
+                          <p className="text-3xl font-bold text-blue-600">
+                            {stats.total_services}
+                          </p>
+                          <p className="text-sm text-gray-600">Services Offered</p>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-center p-4 bg-gray-50 rounded-lg">
+                          <p className="text-3xl font-bold text-blue-600">
+                            {stats.posted_projects}
+                          </p>
+                          <p className="text-sm text-gray-600">Posted Projects</p>
+                        </div>
+                        <div className="text-center p-4 bg-gray-50 rounded-lg">
+                          <p className="text-3xl font-bold text-blue-600">
+                            {stats.active_projects}
+                          </p>
+                          <p className="text-sm text-gray-600">Active Projects</p>
+                        </div>
+                        <div className="text-center p-4 bg-gray-50 rounded-lg">
+                          <p className="text-3xl font-bold text-blue-600">
+                            {stats.total_bookings}
+                          </p>
+                          <p className="text-sm text-gray-600">Total Bookings</p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+          
+          {/* Reviews Tab */}
+          {activeTab === 'reviews' && (
+            <>
+              {/* Review Summary */}
+              <ReviewSummary userId={userId} />
+              
+              {/* Leave Review Button */}
+              {canLeaveReview && !showReviewForm && (
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => setShowReviewForm(true)}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Write a Review
+                  </button>
+                </div>
+              )}
+              
+              {/* Review Form */}
+              {showReviewForm && (
+                <ReviewForm
+                  revieweeId={parseInt(userId)}
+                  revieweeName={profile.user_full_name}
+                  onSuccess={handleReviewSuccess}
+                  onCancel={() => setShowReviewForm(false)}
+                />
+              )}
+              
+              {/* Reviews List */}
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">All Reviews</h2>
+                <ReviewList reviews={reviews} loading={reviewsLoading} />
               </div>
-            </div>
+            </>
           )}
         </div>
       </div>
