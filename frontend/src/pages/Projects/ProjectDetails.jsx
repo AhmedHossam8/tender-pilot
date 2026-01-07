@@ -9,6 +9,10 @@ import {
   CardHeader,
   CardTitle,
   CardContent,
+  Skeleton,
+  SkeletonCard,
+  SkeletonList,
+  SkeletonText,
 } from "@/components/ui";
 import { ConfirmDialog, LoadingSpinner } from "@/components/common";
 import { useProjects } from "../../hooks/useProjects";
@@ -67,8 +71,45 @@ export default function ProjectDetail() {
 
   if (isLoading || !project) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <LoadingSpinner size="xl" />
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* Project Info Skeleton */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-8 w-1/3" />
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <SkeletonText lines={3} />
+            <div className="grid grid-cols-2 gap-4">
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-4 w-1/2" />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Actions Skeleton */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-1/4" />
+          </CardHeader>
+          <CardContent className="flex gap-3">
+            <Skeleton className="h-10 w-28" />
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-24" />
+            <Skeleton className="h-10 w-24" />
+          </CardContent>
+        </Card>
+
+        {/* AI Matched Providers Skeleton */}
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-1/3" />
+          </CardHeader>
+          <CardContent>
+            <SkeletonList items={3} />
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -153,7 +194,7 @@ export default function ProjectDetail() {
         </CardHeader>
         <CardContent>
           {matchesLoading ? (
-            <LoadingSpinner />
+            <SkeletonList items={3} />
           ) : matches.length === 0 ? (
             <p className="text-muted-foreground">No matches found.</p>
           ) : (

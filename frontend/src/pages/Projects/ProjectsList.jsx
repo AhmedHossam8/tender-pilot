@@ -15,6 +15,8 @@ import {
   TableCell,
   StatusBadge,
   Button,
+  Skeleton,
+  SkeletonTable,
 } from "@/components/ui";
 
 import {
@@ -123,8 +125,21 @@ function ProjectsList() {
   // Loading state
   if (isAnyLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <LoadingSpinner size="xl" />
+      <div className="space-y-6">
+        {/* Search & Filters Skeleton */}
+        <Card>
+          <CardContent className="space-y-4">
+            <Skeleton className="h-10 w-full max-w-md" />
+            <Skeleton className="h-8 w-full" />
+          </CardContent>
+        </Card>
+
+        {/* Projects Table Skeleton */}
+        <Card>
+          <CardContent>
+            <SkeletonTable rows={5} />
+          </CardContent>
+        </Card>
       </div>
     );
   }

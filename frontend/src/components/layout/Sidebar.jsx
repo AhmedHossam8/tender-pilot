@@ -12,6 +12,8 @@ import {
   ChevronRight,
   Building2,
   Sparkles,
+  Wrench,
+  Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useTranslation } from "react-i18next";
@@ -20,9 +22,10 @@ const navigationItems = [
   { key: "sidebar.dashboard", href: "/", icon: LayoutDashboard },
   { key: "aiEngine.dashboard", href: "/ai/dashboard", icon: Sparkles },
   { key: "sidebar.projects", href: "/projects", icon: FileText },
-  { key: "sidebar.proposals", href: "/proposals", icon: FolderOpen },
-  { key: "sidebar.documents", href: "/documents", icon: Building2 },
-  { key: "sidebar.team", href: "/team", icon: Users },
+  // { key: "sidebar.proposals", href: "/proposals", icon: FolderOpen },
+  // { key: "sidebar.documents", href: "/documents", icon: Building2 },
+  { key: "sidebar.services", href: "/services", icon: Wrench },  
+  { key: "sidebar.bookings", href: "/bookings", icon: Calendar },  { key: "sidebar.team", href: "/team", icon: Users },
   { key: "sidebar.settings", href: "/settings", icon: Settings },
 ];
 

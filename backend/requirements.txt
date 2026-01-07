@@ -12,10 +12,12 @@ django-filter>=23
 django-ratelimit==4.1.0
 djangorestframework==3.16.1
 djangorestframework_simplejwt==5.5.1
+drf-nested-routers
 drf-spectacular==0.27.1
 faiss-cpu==1.13.1
 gunicorn==21.2.0
 google-genai>=0.8.0
+google-generativeai
 h11==0.16.0
 httpcore==1.0.9
 httpx==0.28.1
