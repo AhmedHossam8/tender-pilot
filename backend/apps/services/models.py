@@ -6,6 +6,7 @@ User = get_user_model()
 class Service(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='services', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -38,4 +39,4 @@ class Booking(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.username} - {self.package.name} ({self.status})"
+        return f"{self.user.email} - {self.package.name} ({self.status})"

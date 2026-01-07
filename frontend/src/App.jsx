@@ -39,6 +39,7 @@ import ProjectDetail from "./pages/Projects/ProjectDetails";
 
 // Service pages
 import ServicesList from "@/pages/Services/ServicesList";
+import BookServicePage from "@/pages/Services/BookServicePage";
 import BookingsList from "@/pages/Services/BookingsList";
 
 // AI pages
@@ -196,11 +197,12 @@ function App() {
                 <Route index element={<ProjectList />} /> {/* /projects */}
                 <Route path=":id" element={<ProjectDetail />} /> {/* /projects/:id */}
               </Route>
-            </Route>
 
-            {/** Service pages */}
-            <Route path="/services" element={<ServicesList />} />
-            <Route path="/bookings" element={<BookingsList />} />
+              {/* Services */}
+              <Route path="/services" element={<ServicesList />} />
+              <Route path="/services/:id/book" element={<BookServicePage />} />
+              <Route path="/bookings" element={<BookingsList />} />
+            </Route>
 
             <Route path="/unauthorized" element={<div>Unauthorized</div>} />
           </Routes>
