@@ -21,8 +21,20 @@ export default function ProjectDetail() {
   const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
-  const { deleteProject } = useProjects();
-  const { user } = useAuthStore();
+  const formatStatus = (status) => {
+    switch (status) {
+      case 'in_progress':
+        return 'In Progress';
+      case 'completed':
+        return 'Completed';
+      case 'open':
+        return 'Open';
+      case 'deleted':
+        return 'Deleted';
+      default:
+        return status;
+    }
+  };
   const [editOpen, setEditOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -82,7 +94,7 @@ export default function ProjectDetail() {
               <strong>Category:</strong> {project.category_name || project.category?.name || "-"}
             </div>
             <div>
-              <strong>Status:</strong> {project.status}
+              <strong>Status:</strong> {formatStatus(project.status)}
             </div>
             <div>
               <strong>Visibility:</strong> {project.visibility}
@@ -120,6 +132,8 @@ export default function ProjectDetail() {
           <CardTitle>{t("project.actions")}</CardTitle>
         </CardHeader>
         <CardContent className="flex gap-3">
+          <Button disabled={updateStatusLoading || project.status !== 'open'} onClick={() => updateStatus(id, 'in_progress')}>Start Project</Button>
+          <Button disabled={updateStatusLoading || project.status !== 'in_progress'} onClick={() => updateStatus(id, 'completed')}>Complete Project</Button>
           <Button onClick={() => setEditOpen(true)}>{t("project.edit")}</Button>
           <Button
             variant="destructive"

@@ -12,7 +12,7 @@ class Project(models.Model):
     STATUS_CHOICES = [
         ("open", "Open"),
         ("in_progress", "In Progress"),
-        ("closed", "Closed"),
+        ("completed", "Completed"),
         ("deleted", "Deleted"),  # Added for soft-delete
     ]
 
