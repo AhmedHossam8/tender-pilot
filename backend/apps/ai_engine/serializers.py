@@ -602,3 +602,85 @@ class RegenerationHistorySerializer(serializers.Serializer):
     total_regenerations = serializers.IntegerField(
         help_text="Total number of regenerations in the chain"
     )
+
+
+# ============================================================================
+# AI ANALYTICS SERIALIZERS
+# ============================================================================
+
+class AIUsageLogSerializer(serializers.Serializer):
+    """Serializer for AI usage log data."""
+    id = serializers.IntegerField(read_only=True)
+    user_email = serializers.EmailField(source='user.email', read_only=True)
+    feature = serializers.CharField()
+    project_id = serializers.IntegerField(allow_null=True)
+    bid_id = serializers.IntegerField(allow_null=True)
+    execution_time = serializers.FloatField()
+    tokens_used = serializers.IntegerField()
+    cost = serializers.DecimalField(max_digits=10, decimal_places=6)
+    cached = serializers.BooleanField()
+    success = serializers.BooleanField()
+    confidence_score = serializers.FloatField(allow_null=True)
+    created_at = serializers.DateTimeField()
+
+
+class AIAnalyticsSummarySerializer(serializers.Serializer):
+    """Serializer for AI analytics summary data."""
+    date = serializers.DateField()
+    total_requests = serializers.IntegerField()
+    cached_requests = serializers.IntegerField()
+    failed_requests = serializers.IntegerField()
+    match_score_requests = serializers.IntegerField()
+    bid_generation_requests = serializers.IntegerField()
+    price_suggestion_requests = serializers.IntegerField()
+    quality_score_requests = serializers.IntegerField()
+    avg_execution_time = serializers.FloatField()
+    total_tokens_used = serializers.IntegerField()
+    total_cost = serializers.DecimalField(max_digits=10, decimal_places=2)
+    cache_hit_rate = serializers.FloatField()
+    success_rate = serializers.FloatField()
+    match_prediction_accuracy = serializers.FloatField(allow_null=True)
+
+
+class AIAnalyticsStatsSerializer(serializers.Serializer):
+    """Serializer for aggregated AI statistics."""
+    total_requests = serializers.IntegerField()
+    cached_requests = serializers.IntegerField()
+    failed_requests = serializers.IntegerField()
+    successful_requests = serializers.IntegerField()
+    cache_hit_rate = serializers.FloatField()
+    success_rate = serializers.FloatField()
+    feature_breakdown = serializers.ListField()
+    total_tokens_used = serializers.IntegerField()
+    total_cost = serializers.FloatField()
+    avg_execution_time = serializers.FloatField()
+    avg_confidence = serializers.FloatField()
+    date_range = serializers.DictField()
+
+
+class MatchAccuracyStatsSerializer(serializers.Serializer):
+    """Serializer for match prediction accuracy statistics."""
+    total_predictions = serializers.IntegerField()
+    correct_predictions = serializers.IntegerField()
+    accuracy_rate = serializers.FloatField()
+    precision = serializers.FloatField()
+    recall = serializers.FloatField()
+    true_positives = serializers.IntegerField()
+    false_positives = serializers.IntegerField()
+    false_negatives = serializers.IntegerField()
+
+
+class CostTrendSerializer(serializers.Serializer):
+    """Serializer for cost trend data."""
+    date = serializers.DateField()
+    total_cost = serializers.FloatField()
+    total_requests = serializers.IntegerField()
+    cache_hit_rate = serializers.FloatField()
+    success_rate = serializers.FloatField()
+
+
+class FeatureUsageBreakdownSerializer(serializers.Serializer):
+    """Serializer for feature usage breakdown."""
+    total_requests = serializers.IntegerField()
+    features = serializers.ListField()
+    period_days = serializers.IntegerField()

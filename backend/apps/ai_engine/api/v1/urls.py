@@ -36,6 +36,14 @@ from apps.ai_engine.api.v1.analytics import (
     CostAnalyticsView,
     PromptPerformanceView,
 )
+from apps.ai_engine.api.analytics_views import (
+    AIUsageStatsView,
+    MatchAccuracyView,
+    DailySummaryView,
+    CostTrendView,
+    FeatureUsageView,
+    GenerateDailySummaryView,
+)
 
 app_name = 'ai_engine'
 
@@ -130,5 +138,42 @@ urlpatterns = [
         'bid/suggest-pricing/',
         AISuggestPricingView.as_view(),
         name='suggest-pricing'
+    ),
+    
+    # New analytics endpoints for Day 4
+    path(
+        'analytics/stats/',
+        AIUsageStatsView.as_view(),
+        name='analytics-stats'
+    ),
+    
+    path(
+        'analytics/match-accuracy/',
+        MatchAccuracyView.as_view(),
+        name='analytics-match-accuracy'
+    ),
+    
+    path(
+        'analytics/daily-summary/',
+        DailySummaryView.as_view(),
+        name='analytics-daily-summary'
+    ),
+    
+    path(
+        'analytics/cost-trend/',
+        CostTrendView.as_view(),
+        name='analytics-cost-trend'
+    ),
+    
+    path(
+        'analytics/feature-usage/',
+        FeatureUsageView.as_view(),
+        name='analytics-feature-usage'
+    ),
+    
+    path(
+        'analytics/generate-summary/',
+        GenerateDailySummaryView.as_view(),
+        name='analytics-generate-summary'
     ),
 ]
