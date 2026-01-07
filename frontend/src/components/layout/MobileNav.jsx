@@ -3,14 +3,19 @@ import { NavLink, useLocation } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { X } from "lucide-react"
 import { Button } from "@/components/ui/Button"
-import { navigationItems, bottomNavigationItems } from "./Sidebar"
+import { getDynamicNavigation, bottomNavigationItems } from "./Sidebar"
 import { useTranslation } from "react-i18next"
+import { useAuthStore } from "@/contexts/authStore"
 
 function MobileNav({ isOpen, onClose, className }) {
   const location = useLocation()
   const { t } = useTranslation()
+  const { userType, isClient, isProvider } = useAuthStore()
 
-  const navigation = navigationItems.map(item => ({ ...item, name: t(item.key) }))
+  const navigation = getDynamicNavigation(userType, isClient, isProvider).map(item => ({ 
+    ...item, 
+    name: item.label || t(item.key) 
+  }))
   const bottomNavigation = bottomNavigationItems.map(item => ({ ...item, name: t(item.key) }))
 
   // Close nav when route changes
