@@ -323,5 +323,77 @@
     "cancelled": "Cancelled",
     "open": "Open",
     "in_progress": "In Progress"
+  "reviews": {
+    "form": {
+      "title": "Write a Review for {{name}}",
+      "rating": "Rating",
+      "comment": "Your Review",
+      "comment_placeholder": "Share your experience working with this person...",
+      "make_public": "Make this review public",
+      "submit": "Submit Review"
+    },
+    "errors": {
+      "rating_required": "Please select a rating",
+      "comment_too_short": "Please write at least 10 characters",
+      "submit_failed": "Failed to submit review",
+      "response_too_short": "Response must be at least 10 characters",
+      "response_failed": "Failed to post response",
+      "suggestion_failed": "Failed to get AI suggestion"
+    },
+    "success": {
+      "created": "Review submitted successfully!",
+      "response_created": "Response posted successfully!"
+    },
+    "response": {
+      "button": "Respond",
+      "placeholder": "Write your response...",
+      "get_ai_help": "AI Help",
+      "use_suggestion": "Use This Response",
+      "post": "Post Response"
+    },
+    "flag": {
+      "title": "Flag for moderation",
+      "confirm": "Are you sure you want to flag this review for moderation?",
+      "success": "Review flagged for moderation",
+      "error": "Failed to flag review"
+    },
+    "sentiment": {
+      "positive": "Positive",
+      "neutral": "Neutral",
+      "negative": "Negative"
+    },
+    "summary": {
+      "title": "Reviews & Ratings",
+      "excellent": "Excellent",
+      "based_on": "{{count}} reviews",
+      "five_star": "5-Star",
+      "satisfaction": "Satisfaction",
+      "positive": "Positive"
+    },
+    "no_reviews": "No reviews yet",
+    "empty": "No reviews yet"
+  },
+  "profile": {
+    "completeness": {
+      "title": "Profile Completeness",
+      "excellent": "Excellent",
+      "good": "Good",
+      "fair": "Fair",
+      "poor": "Incomplete",
+      "progress": "Completion",
+      "improve": "Ways to Improve",
+      "benefit": "A complete profile gets 3x more visibility!",
+      "perfect": "Your profile is 100% complete! Great job!"
+    },
+    "suggestions": {
+      "add_bio": "Add a detailed bio (at least 50 characters)",
+      "add_headline": "Add a professional headline",
+      "add_skills": "Add at least 3 skills",
+      "add_avatar": "Upload a profile photo",
+      "add_location": "Add your location",
+      "add_languages": "Specify languages you speak",
+      "add_rate": "Set your hourly rate",
+      "add_portfolio": "Add portfolio URL"
+    }
   }
 }
