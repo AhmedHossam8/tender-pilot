@@ -165,6 +165,7 @@
     "title": "Projects",
     "create": "Create Project",
     "edit": "Edit Project",
+    "update": "Update Project",
     "delete": "Delete Project",
     "noProjects": "No projects found",
     "loadError": "Failed to load projects",
@@ -180,7 +181,11 @@
     "searchPlaceholder": "Search projects...",
     "status": "Status",
     "actions": "Actions",
-    "attachment": "Attachment (optional)"
+    "attachment": "Attachment (optional)",
+    "budget": "Budget",
+    "description": "Description",
+    "selectCategory": "Select a category",
+    "selectSkills": "Select skills"
   },
   "filters": {
     "category": "Category",

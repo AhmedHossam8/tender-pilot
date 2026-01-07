@@ -35,9 +35,6 @@ import BidReview from "./pages/Bids/BidReview";
 
 // Project pages (formerly Tenders)
 import ProjectList from './pages/Projects/ProjectsList';
-import ProjectCreate from './pages/Projects/ProjectCreate';
-import ProjectDelete from './pages/Projects/ProjectDelete';
-import ProjectEdit from "./pages/Projects/ProjectEdit";
 import ProjectDetail from "./pages/Projects/ProjectDetails";
 
 // AI pages
@@ -173,10 +170,7 @@ function App() {
               {/* Projects */}
               <Route path="/projects">
                 <Route index element={<ProjectList />} /> {/* /projects */}
-                <Route path="create" element={<ProjectCreate />} /> {/* /projects/create */}
                 <Route path=":id" element={<ProjectDetail />} /> {/* /projects/:id */}
-                <Route path=":id/edit" element={<ProjectEdit />} /> {/* /projects/:id/edit */}
-                <Route path=":id/delete" element={<ProjectDelete />} /> {/* /projects/:id/delete */}
               </Route>
             </Route>
 
