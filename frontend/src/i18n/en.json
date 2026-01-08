@@ -75,12 +75,27 @@
     "projects": "Projects",
     "proposals": "Proposals",
     "documents": "Documents",
-    "services": "Services",
+    "messages": "Messages",
     "bookings": "Bookings",
     "team": "Team",
     "settings": "Settings",
     "help": "Help & Support",
     "collapse": "Collapse"
+  },
+  "messages": {
+    "title": "Messages",
+    "unread": "unread",
+    "noConversations": "No conversations yet",
+    "noMessages": "No messages yet",
+    "error": "Failed to load conversations"
+  },
+  "chat": {
+    "title": "Conversation",
+    "placeholder": "Type a message...",
+    "send": "Send",
+    "noMessages": "No messages yet. Start the conversation!",
+    "backToMessages": "Back to Messages",
+    "error": "Failed to load messages"
   },
   "footer": {
     "websiteName": "TenderPilot",
@@ -395,6 +410,14 @@
       "add_languages": "Specify languages you speak",
       "add_rate": "Set your hourly rate",
       "add_portfolio": "Add portfolio URL"
+    }
+  },
+  "messages": {
+    "title": "Messages",
+    "chat": {
+      "title": "Chat",
+      "placeholder": "Type a message...",
+      "send": "Send"
     }
   }
 }

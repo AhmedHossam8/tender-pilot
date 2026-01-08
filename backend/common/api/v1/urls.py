@@ -11,4 +11,5 @@ urlpatterns = [
     path('proposals/', include('apps.proposals.api.v1.urls')),
     path('core/', include('apps.core.api.v1.urls')),
     path('services/', include('apps.services.urls')),
+    path('messaging/', include('apps.messaging.urls')),
 ]

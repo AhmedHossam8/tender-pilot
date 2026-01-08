@@ -72,15 +72,30 @@
     "clientDashboard": "لوحة تحكم العميل",
     "providerDashboard": "لوحة تحكم مزود الخدمة",
     "services": "الخدمات",
-    "projects": " المشاريع",
+    "projects": "المشاريع",
     "proposals": "العروض الفنية",
     "documents": "المستندات",
-    "services": "الخدمات",
+    "messages": "الرسائل",
     "bookings": "الحجوزات",
     "team": "الفريق",
     "settings": "الإعدادات",
     "help": "المساعدة والدعم",
     "collapse": "طي"
+  },
+  "messages": {
+    "title": "الرسائل",
+    "unread": "غير مقروءة",
+    "noConversations": "لا توجد محادثات بعد",
+    "noMessages": "لا توجد رسائل بعد",
+    "error": "فشل في تحميل المحادثات"
+  },
+  "chat": {
+    "title": "المحادثة",
+    "placeholder": "اكتب رسالة...",
+    "send": "إرسال",
+    "noMessages": "لا توجد رسائل بعد. ابدأ المحادثة!",
+    "backToMessages": "العودة للرسائل",
+    "error": "فشل في تحميل الرسائل"
   },
   "footer": {
     "websiteName": "تيندر بايلوت",

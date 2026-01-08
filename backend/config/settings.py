@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'apps.ai_engine.apps.AiEngineConfig',
     'apps.core.apps.CoreConfig',
     'apps.services.apps.ServicesConfig',
+    'apps.messaging.apps.MessagingConfig',
     'common',
 
 
