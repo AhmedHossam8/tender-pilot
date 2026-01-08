@@ -62,7 +62,6 @@ INSTALLED_APPS = [
     'apps.users.apps.UsersConfig',
     'apps.projects.apps.ProjectsConfig',
     'apps.documents.apps.DocumentsConfig',
-    'apps.proposals.apps.ProposalsConfig',
     'apps.bids.apps.BidsConfig',
     'apps.ai_engine.apps.AiEngineConfig',
     'apps.core.apps.CoreConfig',

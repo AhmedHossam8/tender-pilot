@@ -28,13 +28,11 @@ import { messagingService } from "@/services/messaging.service";
 
 // Static navigation items for MobileNav backward compatibility
 export const navigationItems = [
-  { key: "sidebar.dashboard", href: "/", icon: LayoutDashboard },
-  { key: "aiEngine.dashboard", href: "/ai/dashboard", icon: Sparkles },
   { key: "sidebar.projects", href: "/projects", icon: FileText },
   { key: "sidebar.messages", href: "/messages", icon: MessageSquare },
   { key: "sidebar.services", href: "/services", icon: Wrench },
   { key: "sidebar.bookings", href: "/bookings", icon: Calendar },
-  { key: "sidebar.team", href: "/team", icon: Users },
+  { key: "sidebar.bids", href: "/bids", icon: Briefcase },
   { key: "sidebar.settings", href: "/settings", icon: Settings },
 ];
 
@@ -44,10 +42,7 @@ export const bottomNavigationItems = [
 
 // Helper function to build dynamic navigation based on user type
 export const getDynamicNavigation = (userType, isClient, isProvider) => {
-  const baseNav = [
-    { key: "sidebar.dashboard", href: "/", icon: LayoutDashboard },
-    { key: "aiEngine.dashboard", href: "/ai/dashboard", icon: Sparkles },
-  ];
+  const baseNav = [];
 
   // Add user type specific dashboards
   if (isClient && isClient()) {
@@ -71,10 +66,10 @@ export const getDynamicNavigation = (userType, isClient, isProvider) => {
   // Add common navigation items
   baseNav.push(
     { key: "sidebar.projects", href: "/projects", icon: FileText },
+    { key: "sidebar.bids", href: "/bids", icon: ShoppingBag },
     { key: "sidebar.services", href: "/services", icon: Wrench },
     { key: "sidebar.bookings", href: "/bookings", icon: Calendar },
     { key: "sidebar.messages", href: "/messages", icon: MessageSquare, showBadge: true },
-    { key: "sidebar.team", href: "/team", icon: Users },
     { key: "sidebar.settings", href: "/settings", icon: Settings },
   );
 
@@ -115,9 +110,9 @@ function Sidebar({ collapsed, onToggleCollapse, isRtl }) {
       {/* Logo */}
       <div className="flex items-center h-16 px-4 border-b border-secondary-foreground/10">
         {!collapsed ? (
-          <span className="text-xl font-bold text-white">TenderPilot</span>
+          <span className="text-xl font-bold text-white">ServiceHub</span>
         ) : (
-          <span className="text-xl font-bold text-white mx-auto">TP</span>
+          <span className="text-xl font-bold text-white mx-auto">SH</span>
         )}
       </div>
 

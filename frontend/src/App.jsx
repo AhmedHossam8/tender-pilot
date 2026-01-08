@@ -16,16 +16,6 @@ import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
 import ForgetPassword from "@/pages/auth/ForgetPassword";
 
-// Component showcase
-import ComponentShowcase from "@/pages/ComponentShowcase";
-
-// Proposal pages
-import ProposalList from "@/pages/proposals/ProposalList";
-import ProposalDetail from "@/pages/proposals/ProposalDetail";
-import ProposalCreate from "./pages/proposals/ProposalCreate";
-import ProposalReview from "./pages/proposals/ProposalReview";
-import ProposalPreview from "./pages/proposals/ProposalPreview";
-
 // Bid pages
 import BidList from "@/pages/Bids/BidList";
 import BidDetail from "@/pages/Bids/BidDetail";
@@ -94,49 +84,7 @@ function App() {
                 </ProtectedRoute>
               }
             >
-              <Route path="/" element={<ComponentShowcase />} />
-
-              {/* Proposals */}
-              <Route
-                path="/proposals"
-                element={
-                  <RoleGuard allowed={["admin", "proposal_manager", "reviewer", "writer"]}>
-                    <ProposalList />
-                  </RoleGuard>
-                }
-              />
-              <Route
-                path="/proposals/:id/preview"
-                element={
-                  <RoleGuard allowed={["proposal_manager"]}>
-                    <ProposalPreview />
-                  </RoleGuard>
-                }
-              />
-              <Route
-                path="/proposals/:id/review"
-                element={
-                  <RoleGuard allowed={["reviewer"]}>
-                    <ProposalReview />
-                  </RoleGuard>
-                }
-              />
-              <Route
-                path="/proposals/create"
-                element={
-                  <RoleGuard allowed={["admin", "proposal_manager", "reviewer", "writer"]}>
-                    <ProposalCreate />
-                  </RoleGuard>
-                }
-              />
-              <Route
-                path="/proposals/:id"
-                element={
-                  <RoleGuard allowed={["admin", "proposal_manager", "reviewer", "writer"]}>
-                    <ProposalDetail />
-                  </RoleGuard>
-                }
-              />
+              <Route path="/" element={<ProjectList />} />
 
               {/* AI */}
               <Route path="/ai/dashboard" element={<AIDashboard />} />

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Bid, BidMilestone, BidAttachment, BidAuditLog
+from .models import Bid, BidMilestone, BidAttachment, BidAuditLog, BidStatus
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -241,7 +241,7 @@ class BidUpdateSerializer(serializers.ModelSerializer):
 
 class BidStatusChangeSerializer(serializers.Serializer):
     """Serializer for changing bid status"""
-    status = serializers.ChoiceField(choices=Bid.BidStatus.choices)
+    status = serializers.ChoiceField(choices=BidStatus.choices)
     reason = serializers.CharField(required=False, allow_blank=True)
     
     def validate_status(self, value):

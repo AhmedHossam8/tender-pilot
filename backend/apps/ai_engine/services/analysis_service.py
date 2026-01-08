@@ -18,11 +18,11 @@ from django.core.exceptions import ValidationError
 from apps.projects.models import Project, ProjectRequirement
 from apps.documents.models import ProjectDocument
 
-# Proposal is optional
+# Bid is optional
 try:
-    from apps.proposals.models import Proposal
+    from apps.bids.models import Bid
 except ImportError:
-    Proposal = None
+    Bid = None
 
 from ..models import AIRequest, AIResponse, AIRequestStatus
 from ..prompts.registry import get_prompt
