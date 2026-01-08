@@ -17,7 +17,7 @@ class AISearchService(AIService):
     """
     
     def __init__(self, provider_type: str = "gemini"):
-        super().__init__()
+        super().__init__(provider_type)
         self.max_results = 50
     
     def semantic_search(
@@ -128,7 +128,7 @@ class AISearchService(AIService):
         # Base queryset
         qs = Project.objects.filter(
             status__in=['open', 'in_progress']
-        ).select_related('client')
+        ).select_related('created_by', 'category')
         
         # Apply text search
         if query:
@@ -142,17 +142,16 @@ class AISearchService(AIService):
             ).filter(search=search_query).order_by('-rank')
         
         # Apply filters
-        if filters.get('category'):
-            qs = qs.filter(category=filters['category'])
+        if filters.get('category'):            qs = qs.filter(category=filters['category'])
         
         if filters.get('budget_min'):
-            qs = qs.filter(budget_max__gte=filters['budget_min'])
+            qs = qs.filter(budget__gte=filters['budget_min'])
         
         if filters.get('budget_max'):
-            qs = qs.filter(budget_min__lte=filters['budget_max'])
+            qs = qs.filter(budget__lte=filters['budget_max'])
         
         if filters.get('skills'):
-            qs = qs.filter(skills_required__name__in=filters['skills'])
+            qs = qs.filter(skills__name__in=filters['skills'])
         
         # Limit results
         qs = qs[:limit]
@@ -164,10 +163,10 @@ class AISearchService(AIService):
                 'type': 'project',
                 'title': p.title,
                 'description': p.description[:200] if p.description else '',
-                'client': p.client.get_full_name() if p.client else None,
-                'budget_range': f"${p.budget_min}-${p.budget_max}" if p.budget_min and p.budget_max else None,
-                'deadline': p.deadline.isoformat() if p.deadline else None,
+                'client': p.created_by.full_name if p.created_by else None,
+                'budget': float(p.budget) if p.budget else None,
                 'status': p.status,
+                'category': p.category.name if p.category else None,
                 'created_at': p.created_at.isoformat(),
             }
             for p in qs
@@ -182,14 +181,12 @@ class AISearchService(AIService):
         """Search services with filters"""
         from apps.services.models import Service
         
-        # Base queryset
-        qs = Service.objects.filter(
-            is_active=True
-        ).select_related('provider')
+        # Base queryset - Service model has: name, description, created_by, created_at
+        qs = Service.objects.all().select_related('created_by')
         
         # Apply text search
         if query:
-            search_vector = SearchVector('title', weight='A') + \
+            search_vector = SearchVector('name', weight='A') + \
                           SearchVector('description', weight='B')
             search_query = SearchQuery(query)
             
@@ -197,19 +194,6 @@ class AISearchService(AIService):
                 search=search_vector,
                 rank=SearchRank(search_vector, search_query)
             ).filter(search=search_query).order_by('-rank')
-        
-        # Apply filters
-        if filters.get('category'):
-            qs = qs.filter(category=filters['category'])
-        
-        if filters.get('price_min'):
-            qs = qs.filter(base_price__gte=filters['price_min'])
-        
-        if filters.get('price_max'):
-            qs = qs.filter(base_price__lte=filters['price_max'])
-        
-        if filters.get('skills'):
-            qs = qs.filter(skills__name__in=filters['skills'])
         
         # Limit results
         qs = qs[:limit]
@@ -219,13 +203,10 @@ class AISearchService(AIService):
             {
                 'id': s.id,
                 'type': 'service',
-                'title': s.title,
+                'title': s.name,
                 'description': s.description[:200] if s.description else '',
-                'provider': s.provider.get_full_name() if s.provider else None,
-                'provider_id': s.provider.id if s.provider else None,
-                'base_price': float(s.base_price) if s.base_price else None,
-                'delivery_time': s.delivery_time_days if hasattr(s, 'delivery_time_days') else None,
-                'rating': float(s.rating) if hasattr(s, 'rating') and s.rating else None,
+                'provider': s.created_by.full_name if s.created_by else None,
+                'provider_id': s.created_by.id if s.created_by else None,
                 'created_at': s.created_at.isoformat(),
             }
             for s in qs
@@ -286,7 +267,7 @@ class AISearchService(AIService):
             {
                 'id': p.user.id,
                 'type': 'provider',
-                'name': p.user.get_full_name(),
+                'name': p.user.full_name,
                 'title': p.title,
                 'bio': p.bio[:200] if p.bio else '',
                 'hourly_rate': float(p.hourly_rate) if p.hourly_rate else None,

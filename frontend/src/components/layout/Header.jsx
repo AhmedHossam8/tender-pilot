@@ -93,7 +93,7 @@ export function Header({ onMenuClick, className }) {
 
               {/* Profile link */}
               <Link
-                to="/profile"
+                to="/app/profile/edit"
                 className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-muted transition-colors"
                 onClick={() => setShowDropdown(false)}
               >
@@ -103,7 +103,7 @@ export function Header({ onMenuClick, className }) {
 
               {/* Settings link */}
               <Link
-                to="/settings"
+                to="/app/settings"
                 className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-muted transition-colors"
                 onClick={() => setShowDropdown(false)}
               >

@@ -12,9 +12,9 @@ const PublicLayout = () => {
 
   const navigation = [
     { name: 'Home', href: '/' },
+    { name: 'Browse Services', href: '/browse/services' },
+    { name: 'Browse Projects', href: '/browse/projects' },
     { name: 'About', href: '#about' },
-    { name: 'How It Works', href: '#how-it-works' },
-    { name: 'Features', href: '#features' },
   ];
 
   const isActive = (href) => {

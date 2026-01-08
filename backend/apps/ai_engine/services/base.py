@@ -191,12 +191,17 @@ class AIProvider(ABC):
         return 0.0
 
 class AIService:
-    def __init__(self):
-        self.client = client
-
-    def chat(self, prompt: str):
-        response = self.client.chat.completions.create(
-            model="gpt-5-nano",
-            messages=[{"role": "user", "content": prompt}]
-        )
-        return response.choices[0].message.content
+    """
+    Base service class for AI-powered features.
+    Provides common functionality for all AI services.
+    """
+    
+    def __init__(self, provider_name: str = None):
+        """
+        Initialize the AI service with a provider.
+        
+        Args:
+            provider_name: Name of the AI provider to use (defaults to settings)
+        """
+        from .provider import get_ai_provider
+        self.provider = get_ai_provider(provider_name)

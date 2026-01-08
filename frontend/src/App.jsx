@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -14,6 +14,8 @@ import PublicLayout from "@/layouts/PublicLayout";
 
 // Public pages
 import LandingPage from "@/pages/public/LandingPage";
+import BrowseServices from "@/pages/public/BrowseServices";
+import BrowseProjects from "@/pages/public/BrowseProjects";
 
 // Auth pages
 import Login from "@/pages/auth/Login";
@@ -67,7 +69,7 @@ const queryClient = new QueryClient({
 });
 
 function App() {
-  const { initialize, user } = useAuthStore();
+  const { initialize } = useAuthStore();
   const { i18n } = useTranslation();
 
   useEffect(() => {
@@ -82,6 +84,8 @@ function App() {
             {/* -------- PUBLIC ROUTES -------- */}
             <Route element={<PublicLayout />}>
               <Route path="/" element={<LandingPage />} />
+              <Route path="/browse/services" element={<BrowseServices />} />
+              <Route path="/browse/projects" element={<BrowseProjects />} />
             </Route>
 
             {/* -------- AUTH ROUTES -------- */}
@@ -113,6 +117,7 @@ function App() {
               <Route path="/app/dashboard/provider" element={<ProviderDashboard />} />
 
               {/* Profile */}
+              <Route path="/app/profile" element={<Navigate to="/app/profile/edit" replace />} />
               <Route path="/app/profile/edit" element={<EditProfilePage />} />
               <Route path="/app/profiles/:userId" element={<PublicProfilePage />} />
 
