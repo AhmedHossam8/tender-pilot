@@ -10,6 +10,10 @@ import RoleGuard from "@/components/auth/RoleGuard";
 
 import AppLayout from "@/layouts/AppLayout";
 import AuthLayout from "@/layouts/AuthLayout";
+import PublicLayout from "@/layouts/PublicLayout";
+
+// Public pages
+import LandingPage from "@/pages/public/LandingPage";
 
 // Auth pages
 import Login from "@/pages/auth/Login";
@@ -47,6 +51,11 @@ import SearchResultsPage from "./pages/search/SearchResultsPage";
 // Messages pages
 import { MessagesList, ChatPage } from "./pages/messages";
 
+// Settings & Help pages
+import SettingsPage from "./pages/settings/SettingsPage";
+import HelpPage from "./pages/help/HelpPage";
+import NotFoundPage from "./pages/NotFoundPage";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -69,6 +78,11 @@ function App() {
       <div dir={i18n.language === "ar" ? "rtl" : "ltr"} className="min-h-screen">
         <BrowserRouter>
           <Routes>
+            {/* -------- PUBLIC ROUTES -------- */}
+            <Route element={<PublicLayout />}>
+              <Route path="/" element={<LandingPage />} />
+            </Route>
+
             {/* -------- AUTH ROUTES -------- */}
             <Route element={<AuthLayout />}>
               <Route path="/login" element={<Login />} />
@@ -84,26 +98,26 @@ function App() {
                 </ProtectedRoute>
               }
             >
-              <Route path="/" element={<ProjectList />} />
+              <Route path="/app" element={<ProjectList />} />
 
               {/* AI */}
-              <Route path="/ai/dashboard" element={<AIDashboard />} />
-              <Route path="/ai/results/:responseId" element={<AIResultPanel />} />
+              <Route path="/app/ai/dashboard" element={<AIDashboard />} />
+              <Route path="/app/ai/results/:responseId" element={<AIResultPanel />} />
 
               {/* Search */}
-              <Route path="/search" element={<SearchResultsPage />} />
+              <Route path="/app/search" element={<SearchResultsPage />} />
 
               {/* Dashboards */}
-              <Route path="/dashboard/client" element={<ClientDashboard />} />
-              <Route path="/dashboard/provider" element={<ProviderDashboard />} />
+              <Route path="/app/dashboard/client" element={<ClientDashboard />} />
+              <Route path="/app/dashboard/provider" element={<ProviderDashboard />} />
 
               {/* Profile */}
-              <Route path="/profile/edit" element={<EditProfilePage />} />
-              <Route path="/profiles/:userId" element={<PublicProfilePage />} />
+              <Route path="/app/profile/edit" element={<EditProfilePage />} />
+              <Route path="/app/profiles/:userId" element={<PublicProfilePage />} />
 
               {/* Bids */}
               <Route
-                path="/bids"
+                path="/app/bids"
                 element={
                   <RoleGuard allowed={["admin", "client", "provider"]}>
                     <BidList />
@@ -111,7 +125,7 @@ function App() {
                 }
               />
               <Route
-                path="/bids/create"
+                path="/app/bids/create"
                 element={
                   <RoleGuard allowed={["provider"]}>
                     <BidCreate />
@@ -119,7 +133,7 @@ function App() {
                 }
               />
               <Route
-                path="/bids/:id"
+                path="/app/bids/:id"
                 element={
                   <RoleGuard allowed={["admin", "client", "provider"]}>
                     <BidDetail />
@@ -127,7 +141,7 @@ function App() {
                 }
               />
               <Route
-                path="/bids/:id/preview"
+                path="/app/bids/:id/preview"
                 element={
                   <RoleGuard allowed={["client"]}>
                     <BidPreview />
@@ -135,7 +149,7 @@ function App() {
                 }
               />
               <Route
-                path="/bids/:id/review"
+                path="/app/bids/:id/review"
                 element={
                   <RoleGuard allowed={["client"]}>
                     <BidReview />
@@ -144,22 +158,28 @@ function App() {
               />
 
               {/* Projects */}
-              <Route path="/projects">
-                <Route index element={<ProjectList />} /> {/* /projects */}
-                <Route path=":id" element={<ProjectDetail />} /> {/* /projects/:id */}
+              <Route path="/app/projects">
+                <Route index element={<ProjectList />} /> {/* /app/projects */}
+                <Route path=":id" element={<ProjectDetail />} /> {/* /app/projects/:id */}
               </Route>
 
               {/* Services */}
-              <Route path="/services" element={<ServicesList />} />
-              <Route path="/services/:id/book" element={<BookServicePage />} />
-              <Route path="/bookings" element={<BookingsList />} />
+              <Route path="/app/services" element={<ServicesList />} />
+              <Route path="/app/services/:id/book" element={<BookServicePage />} />
+              <Route path="/app/bookings" element={<BookingsList />} />
 
               {/* Messages */}
-              <Route path="/messages" element={<MessagesList />} />
-              <Route path="/messages/:id" element={<ChatPage />} />
+              <Route path="/app/messages" element={<MessagesList />} />
+              <Route path="/app/messages/:id" element={<ChatPage />} />
+
+              {/* Settings & Help */}
+              <Route path="/app/settings" element={<SettingsPage />} />
+              <Route path="/app/help" element={<HelpPage />} />
             </Route>
 
+            {/* 404 and other routes */}
             <Route path="/unauthorized" element={<div>Unauthorized</div>} />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </BrowserRouter>
 

@@ -42,9 +42,10 @@ export default function ProjectDetail() {
   const [editOpen, setEditOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [updateStatusLoading, setUpdateStatusLoading] = useState(false);
 
   // Fetch project
-  const { data: project, isLoading, isError } = useQuery({
+  const { data: project, isLoading, isError, refetch } = useQuery({
     queryKey: ["project", id],
     queryFn: async () => {
       const res = await projectService.getProject(id);
@@ -55,6 +56,19 @@ export default function ProjectDetail() {
   // Fetch AI matched providers
   const { data: matchesData, isLoading: matchesLoading } = useProjectMatches(id);
   const matches = matchesData?.matches ?? []; // ensure array
+
+  const updateStatus = async (projectId, newStatus) => {
+    try {
+      setUpdateStatusLoading(true);
+      await projectService.updateProjectStatus(projectId, newStatus);
+      toast.success(t("project.statusUpdated", "Project status updated successfully"));
+      refetch(); // Refresh project data
+    } catch (error) {
+      toast.error(t("project.statusUpdateError", "Failed to update project status"));
+    } finally {
+      setUpdateStatusLoading(false);
+    }
+  };
 
   const handleDelete = async () => {
     try {
