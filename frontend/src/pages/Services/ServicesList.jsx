@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/Button";
 import { SkeletonCard } from "@/components/ui";
 import { EmptyState } from "@/components/common";
+import { useAuthStore } from "@/contexts/authStore";
 
 const ServicesList = () => {
     const [showModal, setShowModal] = useState(false);
@@ -18,6 +19,10 @@ const ServicesList = () => {
     } = useServices();
 
     const { t } = useTranslation();
+    const { user } = useAuthStore();
+
+    const canCreateService =
+        user?.user_type === "provider" || user?.user_type === "both";
 
     if (isServicesError) {
         return (
@@ -33,12 +38,14 @@ const ServicesList = () => {
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold">{t("services.title")}</h1>
 
-                <Button
-                    onClick={() => setShowModal(true)}
-                    disabled={isServicesLoading}
-                >
-                    + {t("services.create")}
-                </Button>
+                {canCreateService && (
+                    <Button
+                        onClick={() => setShowModal(true)}
+                        disabled={isServicesLoading}
+                    >
+                        + {t("services.create")}
+                    </Button>
+                )}
             </div>
 
             {/* Content */}
@@ -52,9 +59,13 @@ const ServicesList = () => {
                     <div className="col-span-full">
                         <EmptyState
                             title={t("services.emptyTitle")}
-                            description={t("services.emptyDescription")}
-                            actionLabel={t("services.create")}
-                            action={() => setShowModal(true)}
+                            {...(canCreateService
+                                ? {
+                                    description: t("services.emptyDescription"),
+                                    actionLabel: t("services.create"),
+                                    action: () => setShowModal(true),
+                                }
+                                : {})}
                         />
                     </div>
                 )}
@@ -66,10 +77,12 @@ const ServicesList = () => {
             </div>
 
             {/* Create Modal */}
-            <ServicesCreate
-                isOpen={showModal}
-                onClose={() => setShowModal(false)}
-            />
+            {canCreateService && (
+                <ServicesCreate
+                    isOpen={showModal}
+                    onClose={() => setShowModal(false)}
+                />
+            )}
         </div>
     );
 };

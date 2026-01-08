@@ -76,11 +76,11 @@ export const getDynamicNavigation = (userType, isClient, isProvider) => {
   }
 
   // Services and Bookings - primarily for providers, but clients can browse
-  if (isProvider && isProvider()) {
+  // if (isProvider && isProvider()) {
     baseNav.push(
       { key: "sidebar.services", href: "/app/services", icon: Wrench },
     );
-  }
+  // }
 
   baseNav.push(
     { key: "sidebar.bookings", href: "/app/bookings", icon: Calendar },

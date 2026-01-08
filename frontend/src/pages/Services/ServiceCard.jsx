@@ -1,11 +1,24 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "@/contexts/authStore";
 
 const ServiceCard = ({ service }) => {
     const navigate = useNavigate();
+    const { user } = useAuthStore();
 
     const handleClick = () => {
-        navigate(`/services/${service.id}/book`);
+        if (!user) return;
+
+        // Provider → Service details
+        if (user.user_type === "provider") {
+            navigate(`/app/services/${service.id}`);
+            return;
+        }
+
+        // Client or Both → Booking page
+        if (user.user_type === "client" || user.user_type === "both") {
+            navigate(`/app/services/${service.id}/book`);
+        }
     };
 
     return (
@@ -15,6 +28,7 @@ const ServiceCard = ({ service }) => {
         >
             <h2 className="text-xl font-semibold">{service.name}</h2>
             <p className="text-muted-foreground">{service.description}</p>
+
             <div className="mt-2 flex gap-2 flex-wrap">
                 {service.skills?.map((skill) => (
                     <span
@@ -25,7 +39,12 @@ const ServiceCard = ({ service }) => {
                     </span>
                 ))}
             </div>
-            <p className="mt-2 font-bold">${service.packages?.[0]?.price}</p>
+
+            {service.packages?.[0]?.price && (
+                <p className="mt-2 font-bold">
+                    ${service.packages[0].price}
+                </p>
+            )}
         </div>
     );
 };

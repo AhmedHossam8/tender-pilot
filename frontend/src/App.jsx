@@ -33,6 +33,7 @@ import ProjectDetail from "./pages/Projects/ProjectDetails";
 
 // Service pages
 import ServicesList from "@/pages/Services/ServicesList";
+import ServiceDetailPage from "@/pages/Services/ServiceDetailPage";
 import BookServicePage from "@/pages/Services/BookServicePage";
 import BookingsList from "@/pages/Services/BookingsList";
 
@@ -165,9 +166,10 @@ function App() {
 
               {/* Services */}
               <Route path="/app/services" element={<ServicesList />} />
+              <Route path="/app/services/:id" element={<ServiceDetailPage />} />
               <Route path="/app/services/:id/book" element={<BookServicePage />} />
               <Route path="/app/bookings" element={<BookingsList />} />
-
+              
               {/* Messages */}
               <Route path="/app/messages" element={<MessagesList />} />
               <Route path="/app/messages/:id" element={<ChatPage />} />
