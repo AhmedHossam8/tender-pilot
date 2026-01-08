@@ -5,7 +5,7 @@ const ServiceCard = ({ service }) => {
     const navigate = useNavigate();
 
     const handleClick = () => {
-        navigate(`/services/${service.id}/book`);
+        navigate(`/app/services/${service.id}`);
     };
 
     return (

@@ -33,7 +33,7 @@ const EditProfilePage = () => {
     try {
       // Load available skills
       const skillsRes = await ProfileService.getSkills();
-      setSkills(skillsRes.data);
+      setSkills(Array.isArray(skillsRes.data) ? skillsRes.data : []);
 
       // Load current profile
       if (profile) {
@@ -180,20 +180,24 @@ const EditProfilePage = () => {
             </label>
             <div className="border border-gray-300 rounded-lg p-4 max-h-64 overflow-y-auto">
               <div className="flex flex-wrap gap-2">
-                {skills.map((skill) => (
-                  <button
-                    key={skill.id}
-                    type="button"
-                    onClick={() => handleSkillToggle(skill)}
-                    className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                      selectedSkills.some((s) => s.id === skill.id)
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    {skill.name}
-                  </button>
-                ))}
+                {Array.isArray(skills) && skills.length > 0 ? (
+                  skills.map((skill) => (
+                    <button
+                      key={skill.id}
+                      type="button"
+                      onClick={() => handleSkillToggle(skill)}
+                      className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+                        selectedSkills.some((s) => s.id === skill.id)
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {skill.name}
+                    </button>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">No skills available. Loading...</p>
+                )}
               </div>
             </div>
             {selectedSkills.length > 0 && (

@@ -75,13 +75,12 @@ export const getDynamicNavigation = (userType, isClient, isProvider) => {
     );
   }
 
-  // Services and Bookings - primarily for providers, but clients can browse
-  if (isProvider && isProvider()) {
-    baseNav.push(
-      { key: "sidebar.services", href: "/app/services", icon: Wrench },
-    );
-  }
+  // Services - visible to all users (clients browse/book, providers manage)
+  baseNav.push(
+    { key: "sidebar.services", href: "/app/services", icon: Wrench },
+  );
 
+  // Bookings - for tracking service bookings
   baseNav.push(
     { key: "sidebar.bookings", href: "/app/bookings", icon: Calendar },
     { key: "sidebar.messages", href: "/app/messages", icon: MessageSquare, showBadge: true },
@@ -124,11 +123,13 @@ function Sidebar({ collapsed, onToggleCollapse, isRtl }) {
     >
       {/* Logo */}
       <div className="flex items-center h-16 px-4 border-b border-secondary-foreground/10">
-        {!collapsed ? (
-          <span className="text-xl font-bold text-white">ServiceHub</span>
-        ) : (
-          <span className="text-xl font-bold text-white mx-auto">SH</span>
-        )}
+        <NavLink to="/app" className="flex items-center w-full">
+          {!collapsed ? (
+            <span className="text-xl font-bold text-white">ServiceHub</span>
+          ) : (
+            <span className="text-xl font-bold text-white mx-auto">SH</span>
+          )}
+        </NavLink>
       </div>
 
       {/* Navigation */}

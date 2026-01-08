@@ -188,21 +188,21 @@ REST_FRAMEWORK = {
     ],
     
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '50/hour',      
-        'user': '50/hour',    
+        'anon': '100/hour',      
+        'user': '1000/hour',    # Increased for development
 
-        'login': '10/hour',
-        "register": "5/hour",
+        'login': '20/hour',
+        "register": "10/hour",
 
 
-        'admin':"100/hour",
+        'admin':"1000/hour",
 
-        'proposal_write':'5/hour',
-        'proposal_read':'60/hour',
+        'proposal_write':'20/hour',
+        'proposal_read':'200/hour',
 
         #custom Throttle
-        "document_upload":'5/hour',
-        "document_read":'60/hour'
+        "document_upload":'20/hour',
+        "document_read":'200/hour'
     },
 }
 

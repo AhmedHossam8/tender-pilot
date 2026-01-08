@@ -29,6 +29,21 @@ api.interceptors.request.use(
 /* =========================
    RESPONSE INTERCEPTOR
 ========================= */
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  
+  failedQueue = [];
+};
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -36,9 +51,22 @@ api.interceptors.response.use(
 
     if (
       error.response?.status === 401 &&
-      !originalRequest._retry
+      !originalRequest._retry &&
+      !originalRequest.url?.includes('/users/refresh/')
     ) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then(token => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return api(originalRequest);
+          })
+          .catch(err => Promise.reject(err));
+      }
+
       originalRequest._retry = true;
+      isRefreshing = true;
 
       const {
         refreshToken,
@@ -47,6 +75,7 @@ api.interceptors.response.use(
       } = useAuthStore.getState();
 
       if (!refreshToken) {
+        isRefreshing = false;
         logout();
         return Promise.reject(error);
       }
@@ -61,12 +90,17 @@ api.interceptors.response.use(
         const { access, refresh } = res.data;
 
         setTokens(access, refresh);
-
+        
         originalRequest.headers = originalRequest.headers || {};
         originalRequest.headers.Authorization = `Bearer ${access}`;
 
+        processQueue(null, access);
+        isRefreshing = false;
+
         return api(originalRequest);
       } catch (err) {
+        processQueue(err, null);
+        isRefreshing = false;
         logout();
         return Promise.reject(err);
       }

@@ -18,10 +18,10 @@ import {
 const ServiceDetailPage = () => {
     const { id } = useParams();
 
-    const { data, isLoading, isError, error } = useQuery(
-        ["service", id],
-        () => serviceService.getById(id)
-    );
+    const { data, isLoading, isError, error } = useQuery({
+        queryKey: ["service", id],
+        queryFn: () => serviceService.getById(id),
+    });
 
     if (isLoading) {
         return (

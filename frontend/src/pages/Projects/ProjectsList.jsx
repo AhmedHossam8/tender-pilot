@@ -150,120 +150,156 @@ function ProjectsList() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Search & Filters */}
-      <Card>
-        <CardContent className="space-y-4">
-          <SearchBar
-            value={searchValue}
-            onChange={setSearchValue}
-            placeholder={t("project.searchPlaceholder")}
-          />
-          <FilterPanel
-            filters={filters}
-            activeFilters={activeFilters}
-            onFilterChange={setActiveFilters}
-            onClearFilters={() => setActiveFilters({})}
-          />
-        </CardContent>
-      </Card>
-
-      {/* Projects Table */}
-      <Card>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t("project.title")}</TableHead>
-                <TableHead>{t("project.status")}</TableHead>
-                <TableHead className="text-right">{t("project.actions")}</TableHead>
-              </TableRow>
-            </TableHeader>
-
-            <TableBody>
-              {filteredProjects.map((project) => (
-                <TableRow key={project.id}>
-                  <TableCell className="font-medium">{project.title}</TableCell>
-                  <TableCell>
-                    <StatusBadge status={project.status || "draft"} />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Link to={`/app/projects/${project.id}`}>
-                        <Button size="icon" variant="ghost" disabled={isAnyLoading}>
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </Link>
-
-                      {project.is_owner && (
-                        <>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            disabled={isAnyLoading}
-                            onClick={() => {
-                              setEditingProject(project);
-                              setEditModalOpen(true);
-                            }}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-
-                          <Button
-                            size="icon"
-                            variant="destructive"
-                            disabled={isAnyLoading || deleting}
-                            onClick={() => {
-                              setSelectedProject(project);
-                              setConfirmDialogOpen(true);
-                            }}
-                          >
-                            {deleting ? <LoadingSpinner size="sm" /> : <Trash2 className="h-4 w-4" />}
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-
-              {/* Empty rows if search returns no results */}
-              {filteredProjects.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={3} className="border p-2"></TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-
-          {/* Create Project Buttons */}
-          <div className="flex justify-center mt-4 space-x-2">
-            <ProjectCreateModal
-              trigger={
-                <Button variant="outline" disabled={isAnyLoading}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t("project.create")}
-                </Button>
-              }
-              onSuccess={() => window.location.reload()}
-            />
-
-            <ProjectCreateModal
-              trigger={
-                <Button
-                  variant="primary"
-                  className="fixed bottom-6 right-6"
-                  disabled={isAnyLoading}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t("project.create")}
-                </Button>
-              }
-              onSuccess={() => window.location.reload()}
-            />
+    <div className="min-h-screen bg-background p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header Section */}
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">
+              {t("project.title") || "Projects"}
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Manage and track all your projects
+            </p>
           </div>
-        </CardContent>
-      </Card>
+          <ProjectCreateModal
+            trigger={
+              <Button size="lg" disabled={isAnyLoading}>
+                <Plus className="h-5 w-5 mr-2" />
+                {t("project.create") || "Create Project"}
+              </Button>
+            }
+            onSuccess={() => window.location.reload()}
+          />
+        </div>
+
+        {/* Search & Filters */}
+        <Card>
+          <CardContent className="p-6 space-y-4">
+            <SearchBar
+              value={searchValue}
+              onChange={setSearchValue}
+              placeholder={t("project.searchPlaceholder") || "Search projects..."}
+            />
+            <FilterPanel
+              filters={filters}
+              activeFilters={activeFilters}
+              onFilterChange={setActiveFilters}
+              onClearFilters={() => setActiveFilters({})}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Projects Table */}
+        <Card>
+          <CardContent className="p-0">
+            {filteredProjects.length === 0 ? (
+              <div className="p-12 text-center">
+                <p className="text-muted-foreground text-lg mb-4">
+                  {searchValue || Object.keys(activeFilters).length > 0
+                    ? "No projects match your search"
+                    : "No projects yet"}
+                </p>
+                {!searchValue && Object.keys(activeFilters).length === 0 && (
+                  <ProjectCreateModal
+                    trigger={
+                      <Button>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create your first project
+                      </Button>
+                    }
+                    onSuccess={() => window.location.reload()}
+                  />
+                )}
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted/50">
+                      <TableHead className="font-semibold px-6">{t("project.title") || "Title"}</TableHead>
+                      <TableHead className="font-semibold px-6">{t("project.status") || "Status"}</TableHead>
+                      <TableHead className="font-semibold px-6 text-right">{t("project.actions") || "Actions"}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+
+                  <TableBody>
+                    {filteredProjects.map((project) => (
+                      <TableRow key={project.id} className="hover:bg-muted/50 transition-colors">
+                        <TableCell className="px-6 py-4">
+                          <div className="space-y-1">
+                            <Link
+                              to={`/app/projects/${project.id}`}
+                              className="font-medium text-foreground hover:text-primary hover:underline transition-colors"
+                            >
+                              {project.title}
+                            </Link>
+                            {project.description && (
+                              <p className="text-sm text-muted-foreground line-clamp-1">
+                                {project.description}
+                              </p>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="px-6 py-4">
+                          <StatusBadge status={project.status || "draft"} />
+                        </TableCell>
+                        <TableCell className="px-6 py-4">
+                          <div className="flex justify-end gap-2">
+                            <Link to={`/app/projects/${project.id}`}>
+                              <Button size="sm" variant="ghost" disabled={isAnyLoading}>
+                                <Eye className="h-4 w-4 mr-1" />
+                                View
+                              </Button>
+                            </Link>
+
+                            {project.is_owner && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  disabled={isAnyLoading}
+                                  onClick={() => {
+                                    setEditingProject(project);
+                                    setEditModalOpen(true);
+                                  }}
+                                >
+                                  <Edit className="h-4 w-4 mr-1" />
+                                  Edit
+                                </Button>
+
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                  disabled={isAnyLoading || deleting}
+                                  onClick={() => {
+                                    setSelectedProject(project);
+                                    setConfirmDialogOpen(true);
+                                  }}
+                                >
+                                  {deleting ? (
+                                    <LoadingSpinner size="sm" />
+                                  ) : (
+                                    <>
+                                      <Trash2 className="h-4 w-4 mr-1" />
+                                      Delete
+                                    </>
+                                  )}
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Confirm Delete Dialog */}
       <ConfirmDialog

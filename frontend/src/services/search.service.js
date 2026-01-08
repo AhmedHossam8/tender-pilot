@@ -14,7 +14,7 @@ const SearchService = {
       ...options
     });
     
-    const response = await api.get(`/api/v1/ai/search/?${params.toString()}`);
+    const response = await api.get(`/ai/search/?${params.toString()}`);
     return response.data;
   },
 
@@ -22,7 +22,7 @@ const SearchService = {
    * Get similar items based on an item
    */
   getSimilarItems: async (type, id, limit = 5) => {
-    const response = await api.get('/api/v1/ai/search/similar/', {
+    const response = await api.get('/ai/search/similar/', {
       params: { type, id, limit }
     });
     return response.data;
@@ -32,7 +32,7 @@ const SearchService = {
    * Auto-categorize content
    */
   autoCategorize: async (text, contentType) => {
-    const response = await api.post('/api/v1/ai/search/auto-categorize/', {
+    const response = await api.post('/ai/search/auto-categorize/', {
       text,
       content_type: contentType
     });
@@ -43,7 +43,7 @@ const SearchService = {
    * Extract skills from text
    */
   extractSkills: async (text, maxSkills = 10) => {
-    const response = await api.post('/api/v1/ai/search/extract-skills/', {
+    const response = await api.post('/ai/search/extract-skills/', {
       text,
       max_skills: maxSkills
     });
