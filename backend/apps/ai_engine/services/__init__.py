@@ -27,6 +27,7 @@ from .circuit_breaker import (
     CircuitOpenError,
     openai_circuit,
 )
+from .search_service import AISearchService
 
 __all__ = [
     # Base classes
@@ -52,4 +53,6 @@ __all__ = [
     'CircuitState',
     'CircuitOpenError',
     'openai_circuit',
+    # Search Service
+    'AISearchService',
 ]

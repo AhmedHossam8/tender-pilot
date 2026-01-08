@@ -45,6 +45,12 @@ from apps.ai_engine.api.analytics_views import (
     FeatureUsageView,
     GenerateDailySummaryView,
 )
+from apps.ai_engine.api.search_views import (
+    UnifiedSearchView,
+    SimilarItemsView,
+    AutoCategorizeView,
+    ExtractSkillsView,
+)
 
 app_name = 'ai_engine'
 
@@ -183,5 +189,30 @@ urlpatterns = [
         'analytics/generate-summary/',
         GenerateDailySummaryView.as_view(),
         name='analytics-generate-summary'
+    ),
+    
+    # Search endpoints
+    path(
+        'search/',
+        UnifiedSearchView.as_view(),
+        name='unified-search'
+    ),
+    
+    path(
+        'search/similar/',
+        SimilarItemsView.as_view(),
+        name='similar-items'
+    ),
+    
+    path(
+        'search/auto-categorize/',
+        AutoCategorizeView.as_view(),
+        name='auto-categorize'
+    ),
+    
+    path(
+        'search/extract-skills/',
+        ExtractSkillsView.as_view(),
+        name='extract-skills'
     ),
 ]

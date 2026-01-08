@@ -15,11 +15,13 @@ from apps.users.views import (
     ClientStatsView,
     SkillListView,
 )
+from apps.users.api.v1.reviews import ReviewViewSet
 
 # Create a DRF router
 router = DefaultRouter()
 router.register("users", UserViewSet, basename="user")          # Admin CRUD
 router.register("profile", UserProfileViewSet, basename="profile")  # Read-only profile
+router.register("reviews", ReviewViewSet, basename="review")  # Reviews CRUD
 
 # Combine router URLs with action-based URLs
 urlpatterns = [
