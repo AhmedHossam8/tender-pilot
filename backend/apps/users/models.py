@@ -1,32 +1,31 @@
 from django.db import models
-from django.contrib.auth.models import (
-    AbstractBaseUser,
-    PermissionsMixin,
-    BaseUserManager
-)
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
+# ----------------------------
+# Custom User Manager
+# ----------------------------
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError("Email is required")
-
         email = self.normalize_email(email)
-        extra_fields.setdefault("role", User.Role.USER)
+        extra_fields.setdefault("role", "USER")
         extra_fields.setdefault("is_active", True)
-
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
     def create_superuser(self, email, password=None, **extra_fields):
-        extra_fields.setdefault("role", User.Role.ADMIN)
+        extra_fields.setdefault("role", "ADMIN")
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
 
-        if extra_fields.get("role") != User.Role.ADMIN:
+        if extra_fields.get("role") != "ADMIN":
             raise ValueError("Superuser must have role=ADMIN")
         if not extra_fields.get("is_staff"):
             raise ValueError("Superuser must have is_staff=True")
@@ -36,25 +35,9 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 
-class Skill(models.Model):
-    """Skills that can be associated with users and projects"""
-    name = models.CharField(max_length=100, unique=True)
-    category = models.CharField(
-        max_length=50,
-        blank=True,
-        help_text="Skill category (e.g., 'Programming', 'Design', 'Marketing')"
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ['name']
-        verbose_name = "Skill"
-        verbose_name_plural = "Skills"
-
-    def __str__(self):
-        return self.name
-
-
+# ----------------------------
+# User model
+# ----------------------------
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     full_name = models.CharField(max_length=255)
@@ -74,28 +57,18 @@ class User(AbstractBaseUser, PermissionsMixin):
         choices=Role.choices,
         default=Role.USER
     )
-
     user_type = models.CharField(
         max_length=20,
         choices=UserType.choices,
-        default=UserType.CLIENT,
-        help_text="Marketplace user type"
+        default=UserType.CLIENT
     )
-
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-
-    objects = CustomUserManager()
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
-    class Meta:
-        indexes = [
-            models.Index(fields=["email"]),
-            models.Index(fields=["role"]),
-            models.Index(fields=["user_type"]),
-        ]
+    objects = CustomUserManager()
 
     def __str__(self):
         return self.email
@@ -105,267 +78,100 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.role == self.Role.ADMIN
 
 
-class UserProfile(models.Model):
-    """Extended profile information for users"""
-    user = models.OneToOneField(
-        User,
-        on_delete=models.CASCADE,
-        related_name='profile'
-    )
-    bio = models.TextField(
-        blank=True,
-        help_text="About me / Professional bio"
-    )
-    headline = models.CharField(
-        max_length=200,
-        blank=True,
-        help_text="Professional tagline (e.g., 'Full-Stack Developer')"
-    )
-    skills = models.ManyToManyField(
-        Skill,
-        blank=True,
-        related_name='user_profiles'
-    )
-    hourly_rate = models.DecimalField(
-        max_digits=8,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        validators=[MinValueValidator(0)],
-        help_text="Hourly rate for service providers (USD)"
-    )
-    location = models.CharField(
-        max_length=255,
-        blank=True,
-        help_text="City, Country"
-    )
-    languages = models.JSONField(
-        default=list,
-        blank=True,
-        help_text="List of languages spoken"
-    )
-    portfolio_url = models.URLField(
-        blank=True,
-        help_text="External portfolio or website URL"
-    )
-    verified = models.BooleanField(
-        default=False,
-        help_text="Identity verified by platform"
-    )
-    ai_profile_score = models.IntegerField(
-        default=0,
-        validators=[MinValueValidator(0), MaxValueValidator(100)],
-        help_text="AI-calculated profile completeness score (0-100)"
-    )
-    avatar = models.ImageField(
-        upload_to='avatars/',
-        blank=True,
-        null=True,
-        help_text="Profile picture"
-    )
+# ----------------------------
+# Skill model
+# ----------------------------
+class Skill(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    category = models.CharField(max_length=50, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "User Profile"
-        verbose_name_plural = "User Profiles"
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+# ----------------------------
+# UserProfile model
+# ----------------------------
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    bio = models.TextField(blank=True)
+    headline = models.CharField(max_length=200, blank=True)
+    skills = models.ManyToManyField(Skill, blank=True, related_name='user_profiles')
+    hourly_rate = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True, validators=[MinValueValidator(0)])
+    location = models.CharField(max_length=255, blank=True)
+    languages = models.JSONField(default=list, blank=True)
+    portfolio_url = models.URLField(blank=True)
+    verified = models.BooleanField(default=False)
+    ai_profile_score = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)])
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"Profile: {self.user.email}"
 
     def calculate_profile_completeness(self):
-        """Calculate profile completeness score"""
         score = 0
-        fields_to_check = {
-            'bio': 15,
-            'headline': 10,
-            'location': 10,
-            'portfolio_url': 10,
-            'avatar': 15,
-        }
-        
+        fields_to_check = {'bio': 15, 'headline': 10, 'location': 10, 'portfolio_url': 10, 'avatar': 15}
         for field, points in fields_to_check.items():
             if getattr(self, field):
                 score += points
-        
-        # Skills (20 points max, 5 per skill up to 4)
-        skill_count = self.skills.count()
-        score += min(skill_count * 5, 20)
-        
-        # Languages (10 points max)
-        if self.languages and len(self.languages) > 0:
-            score += min(len(self.languages) * 5, 10)
-        
-        # Hourly rate (for providers, 10 points)
+        score += min(self.skills.count() * 5, 20)
+        score += min(len(self.languages) * 5, 10) if self.languages else 0
         if self.user.user_type in ['provider', 'both'] and self.hourly_rate:
             score += 10
-        
         return min(score, 100)
 
-    def save(self, *args, **kwargs):
-        """Auto-calculate profile score on save"""
-        self.ai_profile_score = self.calculate_profile_completeness()
-        super().save(*args, **kwargs)
+
+@receiver(post_save, sender=UserProfile)
+def update_profile_score(sender, instance, **kwargs):
+    score = instance.calculate_profile_completeness()
+    if instance.ai_profile_score != score:
+        instance.ai_profile_score = score
+        instance.save(update_fields=['ai_profile_score'])
 
 
+# ----------------------------
+# Review & Response models
+# ----------------------------
 class Review(models.Model):
-    """
-    Review model for rating users after project/booking completion
-    """
-    reviewer = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='reviews_given',
-        help_text='User who wrote the review'
-    )
-    reviewee = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='reviews_received',
-        help_text='User being reviewed'
-    )
-    
-    # Context (optional - one of these)
-    project = models.ForeignKey(
-        'projects.Project',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='reviews',
-        help_text='Related project if applicable'
-    )
-    booking = models.ForeignKey(
-        'services.Booking',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='reviews',
-        help_text='Related booking if applicable'
-    )
-    
-    # Review content
-    rating = models.IntegerField(
-        validators=[MinValueValidator(1), MaxValueValidator(5)],
-        help_text='Rating from 1-5 stars'
-    )
-    comment = models.TextField(
-        help_text='Review text'
-    )
-    
-    # AI analysis
-    ai_sentiment = models.FloatField(
-        null=True,
-        blank=True,
-        validators=[MinValueValidator(-1.0), MaxValueValidator(1.0)],
-        help_text='AI-analyzed sentiment score (-1 to 1)'
-    )
-    ai_sentiment_label = models.CharField(
-        max_length=20,
-        null=True,
-        blank=True,
-        choices=[
-            ('positive', 'Positive'),
-            ('neutral', 'Neutral'),
-            ('negative', 'Negative'),
-        ],
-        help_text='AI sentiment classification'
-    )
-    
-    # Visibility
-    is_public = models.BooleanField(
-        default=True,
-        help_text='Whether review is publicly visible'
-    )
-    is_flagged = models.BooleanField(
-        default=False,
-        help_text='Flagged for moderation'
-    )
-    
-    # Timestamps
+    reviewer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews_given')
+    reviewee = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews_received')
+    project = models.ForeignKey('projects.Project', on_delete=models.SET_NULL, null=True, blank=True, related_name='reviews')
+    booking = models.ForeignKey('services.Booking', on_delete=models.SET_NULL, null=True, blank=True, related_name='reviews')
+    rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    comment = models.TextField()
+    ai_sentiment = models.FloatField(null=True, blank=True, validators=[MinValueValidator(-1.0), MaxValueValidator(1.0)])
+    ai_sentiment_label = models.CharField(max_length=20, null=True, blank=True, choices=[('positive','Positive'),('neutral','Neutral'),('negative','Negative')])
+    is_public = models.BooleanField(default=True)
+    is_flagged = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         ordering = ['-created_at']
-        indexes = [
-            models.Index(fields=['reviewee', '-created_at']),
-            models.Index(fields=['reviewer', '-created_at']),
-            models.Index(fields=['rating']),
-        ]
-        # Prevent multiple reviews for same project/booking
         constraints = [
-            models.UniqueConstraint(
-                fields=['reviewer', 'project'],
-                condition=models.Q(project__isnull=False),
-                name='unique_project_review'
-            ),
-            models.UniqueConstraint(
-                fields=['reviewer', 'booking'],
-                condition=models.Q(booking__isnull=False),
-                name='unique_booking_review'
-            ),
+            models.UniqueConstraint(fields=['reviewer', 'project'], condition=models.Q(project__isnull=False), name='unique_project_review'),
+            models.UniqueConstraint(fields=['reviewer', 'booking'], condition=models.Q(booking__isnull=False), name='unique_booking_review'),
         ]
-    
+
     def __str__(self):
         return f"Review by {self.reviewer} for {self.reviewee} - {self.rating}★"
-    
-    @classmethod
-    def get_user_average_rating(cls, user_id):
-        """Calculate average rating for a user"""
-        result = cls.objects.filter(
-            reviewee_id=user_id,
-            is_public=True
-        ).aggregate(models.Avg('rating'))
-        return result['rating__avg'] or 0.0
-    
-    @classmethod
-    def get_user_review_count(cls, user_id):
-        """Get total number of reviews for a user"""
-        return cls.objects.filter(
-            reviewee_id=user_id,
-            is_public=True
-        ).count()
-    
-    @classmethod
-    def get_rating_distribution(cls, user_id):
-        """Get distribution of ratings (1-5 stars) for a user"""
-        reviews = cls.objects.filter(
-            reviewee_id=user_id,
-            is_public=True
-        ).values('rating').annotate(count=models.Count('rating'))
-        
-        distribution = {i: 0 for i in range(1, 6)}
-        for item in reviews:
-            distribution[item['rating']] = item['count']
-        
-        return distribution
 
 
 class ReviewResponse(models.Model):
-    """
-    Response to a review by the reviewee
-    """
-    review = models.OneToOneField(
-        Review,
-        on_delete=models.CASCADE,
-        related_name='response',
-        help_text='Review being responded to'
-    )
-    responder = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        help_text='User responding (usually the reviewee)'
-    )
-    response_text = models.TextField(
-        help_text='Response content'
-    )
-    
-    # Timestamps
+    review = models.OneToOneField(Review, on_delete=models.CASCADE, related_name='response')
+    responder = models.ForeignKey(User, on_delete=models.CASCADE)
+    response_text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     class Meta:
         ordering = ['-created_at']
-    
+
     def __str__(self):
         return f"Response by {self.responder} to review #{self.review.id}"

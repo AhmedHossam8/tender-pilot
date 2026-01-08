@@ -1,11 +1,12 @@
 from rest_framework import serializers
-from django.contrib.auth import get_user_model, authenticate
+from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import UserProfile, Skill, Review, ReviewResponse
 
 User = get_user_model()
 
 
+# ----------------- Skill Serializer -----------------
 class SkillSerializer(serializers.ModelSerializer):
     """Serializer for Skill model"""
     class Meta:
@@ -14,6 +15,7 @@ class SkillSerializer(serializers.ModelSerializer):
         read_only_fields = ('id',)
 
 
+# ----------------- User Profile Serializer -----------------
 class UserProfileSerializer(serializers.ModelSerializer):
     """Serializer for UserProfile model"""
     skills = SkillSerializer(many=True, read_only=True)
@@ -52,8 +54,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'verified', 'ai_profile_score', 'created_at', 'updated_at')
 
 
+# ----------------- User Serializer -----------------
 class UserSerializer(serializers.ModelSerializer):
-    """Basic user serializer with profile data"""
+    """Basic user serializer with profile"""
     profile = UserProfileSerializer(read_only=True)
 
     class Meta:
@@ -70,6 +73,7 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'email')
 
 
+# ----------------- Public Profile Serializer -----------------
 class PublicProfileSerializer(serializers.ModelSerializer):
     """Public-facing profile serializer (limited data)"""
     skills = SkillSerializer(many=True, read_only=True)
@@ -98,6 +102,25 @@ class PublicProfileSerializer(serializers.ModelSerializer):
         )
 
 
+# ----------------- Admin User Serializer -----------------
+class AdminUserSerializer(serializers.ModelSerializer):
+    profile = UserProfileSerializer(read_only=True)
+
+    class Meta:
+        model = User
+        fields = (
+            "id",
+            "email",
+            "full_name",
+            "role",
+            "user_type",
+            "is_active",
+            "profile",
+        )
+        read_only_fields = ("id", "email")
+
+
+# ----------------- Registration Serializer -----------------
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
     user_type = serializers.ChoiceField(
@@ -116,48 +139,31 @@ class RegisterSerializer(serializers.ModelSerializer):
             password=validated_data['password'],
             full_name=validated_data.get('full_name', ''),
             user_type=validated_data.get('user_type', User.UserType.CLIENT),
-            role=User.Role.REVIEWER
+            role=User.Role.USER
         )
-        # Create empty profile for the user
+        # Create empty profile
         UserProfile.objects.create(user=user)
         return user
-    
+
+
+# ----------------- Login Serializer -----------------
 class LoginSerializer(TokenObtainPairSerializer):
     username_field = 'email'
 
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
-
-        # Add custom claims
         token['role'] = user.role
         token['full_name'] = user.full_name
         token['user_type'] = user.user_type
-
         return token
 
 
-class AdminUserSerializer(serializers.ModelSerializer):
-    profile = UserProfileSerializer(read_only=True)
-
-    class Meta:
-        model = User
-        fields = (
-            "id",
-            "email",
-            "full_name",
-            "role",
-            "user_type",
-            "is_active",
-            "profile",
-        )
-
-
+# ----------------- Review Response Serializer -----------------
 class ReviewResponseSerializer(serializers.ModelSerializer):
-    """Serializer for ReviewResponse model"""
     responder_name = serializers.CharField(source='responder.full_name', read_only=True)
     responder_avatar = serializers.ImageField(source='responder.profile.avatar', read_only=True, allow_null=True)
-    
+
     class Meta:
         model = ReviewResponse
         fields = (
@@ -173,13 +179,13 @@ class ReviewResponseSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'responder', 'created_at', 'updated_at')
 
 
+# ----------------- Review Serializer -----------------
 class ReviewSerializer(serializers.ModelSerializer):
-    """Serializer for Review model"""
     reviewer_name = serializers.CharField(source='reviewer.full_name', read_only=True)
     reviewer_avatar = serializers.ImageField(source='reviewer.profile.avatar', read_only=True, allow_null=True)
     reviewee_name = serializers.CharField(source='reviewee.full_name', read_only=True)
     response = ReviewResponseSerializer(read_only=True)
-    
+
     class Meta:
         model = Review
         fields = (
@@ -202,24 +208,21 @@ class ReviewSerializer(serializers.ModelSerializer):
             'updated_at',
         )
         read_only_fields = ('id', 'reviewer', 'ai_sentiment', 'ai_sentiment_label', 'is_flagged', 'created_at', 'updated_at')
-    
+
     def validate_rating(self, value):
-        """Ensure rating is between 1 and 5"""
         if not 1 <= value <= 5:
             raise serializers.ValidationError("Rating must be between 1 and 5")
         return value
-    
+
     def validate(self, data):
-        """Ensure at least project or booking is specified"""
         if not data.get('project') and not data.get('booking'):
             raise serializers.ValidationError("Either project or booking must be specified")
         return data
 
 
+# ----------------- Review Summary Serializer -----------------
 class ReviewSummarySerializer(serializers.Serializer):
-    """Serializer for user review summary statistics"""
     average_rating = serializers.FloatField()
     total_reviews = serializers.IntegerField()
     rating_distribution = serializers.DictField()
     recent_reviews = ReviewSerializer(many=True)
-
