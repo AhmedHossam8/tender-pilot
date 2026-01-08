@@ -1,28 +1,36 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    PermissionsMixin,
+    BaseUserManager
+)
 from django.core.validators import MinValueValidator, MaxValueValidator
-
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
-            raise ValueError("An email address is required")
+            raise ValueError("Email is required")
 
         email = self.normalize_email(email)
+        extra_fields.setdefault("role", User.Role.USER)
+        extra_fields.setdefault("is_active", True)
+
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
     def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault("role", User.Role.ADMIN)
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
-        extra_fields.setdefault("user_type", "admin")
 
-        if extra_fields.get("is_staff") is not True:
+        if extra_fields.get("role") != User.Role.ADMIN:
+            raise ValueError("Superuser must have role=ADMIN")
+        if not extra_fields.get("is_staff"):
             raise ValueError("Superuser must have is_staff=True")
-        if extra_fields.get("is_superuser") is not True:
+        if not extra_fields.get("is_superuser"):
             raise ValueError("Superuser must have is_superuser=True")
 
         return self.create_user(email, password, **extra_fields)
@@ -53,27 +61,25 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     class Role(models.TextChoices):
         ADMIN = "ADMIN", "Admin"
-        PROPOSAL_MANAGER = "PROPOSAL_MANAGER", "Proposal Manager"
-        REVIEWER = "REVIEWER", "Reviewer"
-        WRITER = "WRITER", "Writer"
+        USER = "USER", "User"
 
     class UserType(models.TextChoices):
-        CLIENT = 'client', 'Client'
-        PROVIDER = 'provider', 'Service Provider'
-        BOTH = 'both', 'Both'
-        ADMIN = 'admin', 'Admin'
+        CLIENT = "client", "Client"
+        PROVIDER = "provider", "Service Provider"
+        BOTH = "both", "Both"
+        ADMIN = "admin", "Admin"
 
     role = models.CharField(
-        max_length=30,
+        max_length=10,
         choices=Role.choices,
-        default=Role.REVIEWER
+        default=Role.USER
     )
 
     user_type = models.CharField(
         max_length=20,
         choices=UserType.choices,
         default=UserType.CLIENT,
-        help_text="User type in the marketplace"
+        help_text="Marketplace user type"
     )
 
     is_active = models.BooleanField(default=True)
@@ -84,17 +90,19 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
-    def __str__(self):
-        return self.email
-
     class Meta:
-        verbose_name = "User"
-        verbose_name_plural = "Users"
         indexes = [
             models.Index(fields=["email"]),
             models.Index(fields=["role"]),
             models.Index(fields=["user_type"]),
         ]
+
+    def __str__(self):
+        return self.email
+
+    @property
+    def is_admin(self):
+        return self.role == self.Role.ADMIN
 
 
 class UserProfile(models.Model):
