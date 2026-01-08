@@ -32,7 +32,8 @@ const BookServicePage = () => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { user } = useAuthStore();
-
+    const canBookService =
+        user?.user_type === "client" || user?.user_type === "both";
     const [selectedPackage, setSelectedPackage] = useState("");
     const [scheduledFor, setScheduledFor] = useState("");
     const [isReviewing, setIsReviewing] = useState(false);
@@ -131,110 +132,120 @@ const BookServicePage = () => {
             </div>
 
             {/* Booking card */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>{t("services.bookPackage")}</CardTitle>
-                    <CardDescription>
-                        {t("services.bookPackageDescription")}
-                    </CardDescription>
-                </CardHeader>
+            {canBookService ? (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>{t("services.bookPackage")}</CardTitle>
+                        <CardDescription>
+                            {t("services.bookPackageDescription")}
+                        </CardDescription>
+                    </CardHeader>
 
-                <CardContent className="space-y-4">
-                    {/* Package select */}
-                    <div>
-                        <p className="text-sm font-medium mb-1">
-                            {t("services.packages")}
-                        </p>
-                        <Select
-                            value={selectedPackage}
-                            onValueChange={setSelectedPackage}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder={t("services.selectPackage")} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {service.packages?.length > 0 ? (
-                                    service.packages.map((pkg) => (
-                                        <SelectItem key={pkg.id} value={String(pkg.id)}>
-                                            {pkg.name} — ${pkg.price}
-                                        </SelectItem>
-                                    ))
-                                ) : (
-                                    <SelectItem value="" disabled>
-                                        {t("services.noPackagesAvailable")}
-                                    </SelectItem>
-                                )}
-                            </SelectContent>
-                        </Select>
-                    </div>
-
-                    {/* Schedule input */}
-                    <div>
-                        <p className="text-sm font-medium mb-1">
-                            {t("services.scheduledFor")}
-                        </p>
-                        <Input
-                            type="datetime-local"
-                            value={scheduledFor}
-                            onChange={(e) => setScheduledFor(e.target.value)}
-                        />
-                    </div>
-
-                    {isReviewing && selectedPackageObj && (
-                        <div className="mt-4 border-t pt-4 space-y-3">
-                            <p className="text-sm font-semibold">
-                                {t("services.reviewBooking")}
+                    <CardContent className="space-y-4">
+                        {/* Package select */}
+                        <div>
+                            <p className="text-sm font-medium mb-1">
+                                {t("services.packages")}
                             </p>
-                            <div className="text-sm space-y-1">
-                                <p>
-                                    <span className="font-medium">{t("services.package")}:</span>{" "}
-                                    {selectedPackageObj.name} — ${selectedPackageObj.price}
-                                </p>
-                                <p>
-                                    <span className="font-medium">{t("services.scheduledFor")}:</span>{" "}
-                                    {new Date(scheduledFor).toLocaleString()}
-                                </p>
-                            </div>
-                            <div className="rounded border bg-muted p-3 text-xs text-muted-foreground">
-                                <p className="font-semibold mb-1">
-                                    {t("services.paymentPlaceholderTitle")}
-                                </p>
-                                <p>{t("services.paymentPlaceholderDescription")}</p>
-                            </div>
+                            <Select
+                                value={selectedPackage}
+                                onValueChange={setSelectedPackage}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder={t("services.selectPackage")} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {service.packages?.length > 0 ? (
+                                        service.packages.map((pkg) => (
+                                            <SelectItem key={pkg.id} value={String(pkg.id)}>
+                                                {pkg.name} — ${pkg.price}
+                                            </SelectItem>
+                                        ))
+                                    ) : (
+                                        <SelectItem value="" disabled>
+                                            {t("services.noPackagesAvailable")}
+                                        </SelectItem>
+                                    )}
+                                </SelectContent>
+                            </Select>
                         </div>
-                    )}
-                </CardContent>
 
-                <CardFooter className="flex flex-col gap-2 sm:flex-row sm:justify-between">
-                    {isReviewing && (
+                        {/* Schedule input */}
+                        <div>
+                            <p className="text-sm font-medium mb-1">
+                                {t("services.scheduledFor")}
+                            </p>
+                            <Input
+                                type="datetime-local"
+                                value={scheduledFor}
+                                onChange={(e) => setScheduledFor(e.target.value)}
+                            />
+                        </div>
+
+                        {isReviewing && selectedPackageObj && (
+                            <div className="mt-4 border-t pt-4 space-y-3">
+                                <p className="text-sm font-semibold">
+                                    {t("services.reviewBooking")}
+                                </p>
+                                <div className="text-sm space-y-1">
+                                    <p>
+                                        <span className="font-medium">{t("services.package")}:</span>{" "}
+                                        {selectedPackageObj.name} — ${selectedPackageObj.price}
+                                    </p>
+                                    <p>
+                                        <span className="font-medium">{t("services.scheduledFor")}:</span>{" "}
+                                        {new Date(scheduledFor).toLocaleString()}
+                                    </p>
+                                </div>
+                                <div className="rounded border bg-muted p-3 text-xs text-muted-foreground">
+                                    <p className="font-semibold mb-1">
+                                        {t("services.paymentPlaceholderTitle")}
+                                    </p>
+                                    <p>{t("services.paymentPlaceholderDescription")}</p>
+                                </div>
+                            </div>
+                        )}
+                    </CardContent>
+
+                    <CardFooter className="flex flex-col gap-2 sm:flex-row sm:justify-between">
+                        {isReviewing && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="w-full sm:w-auto"
+                                onClick={() => setIsReviewing(false)}
+                                disabled={bookingMutation.isPending}
+                            >
+                                {t("common.back")}
+                            </Button>
+                        )}
                         <Button
-                            type="button"
-                            variant="outline"
                             className="w-full sm:w-auto"
-                            onClick={() => setIsReviewing(false)}
-                            disabled={bookingMutation.isPending}
+                            onClick={handleBooking}
+                            disabled={
+                                bookingMutation.isPending ||
+                                user?.id === service?.created_by?.id ||
+                                !canBookService // disable if user cannot book
+                            }
                         >
-                            {t("common.back")}
+                            {bookingMutation.isPending
+                                ? t("common.loading")
+                                : !canBookService
+                                    ? t("services.notAuthorized") // e.g., "You cannot book this service"
+                                    : user?.id === service?.created_by?.id
+                                        ? t("services.cannotBookOwnService")
+                                        : isReviewing
+                                            ? t("services.confirmAndPay")
+                                            : t("services.reviewAndContinue")}
                         </Button>
-                    )}
-                    <Button
-                        className="w-full sm:w-auto"
-                        onClick={handleBooking}
-                        disabled={
-                            bookingMutation.isPending ||
-                            user?.id === service?.created_by?.id
-                        }
-                    >
-                        {bookingMutation.isPending
-                            ? t("common.loading")
-                            : user?.id === service?.created_by?.id
-                            ? t("services.cannotBookOwnService")
-                            : isReviewing
-                            ? t("services.confirmAndPay")
-                            : t("services.reviewAndContinue")}
-                    </Button>
-                </CardFooter>
-            </Card>
+                    </CardFooter>
+
+                </Card>
+            ) : (
+                <p className="text-center text-gray-500 mt-4">
+                    {t("services.notAuthorized")}
+                </p>
+            )}
         </div>
     );
 };

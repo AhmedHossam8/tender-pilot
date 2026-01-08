@@ -9,11 +9,11 @@ export const serviceService = {
     delete: (id) => api.delete(`/services/services/${id}/`),
 
     // Service Packages
-    getPackages: () => api.get("/services/packages/"),
-    getPackageById: (id) => api.get(`/services/packages/${id}/`),
-    createPackage: (data) => api.post("/services/packages/", data),
-    updatePackage: (id, data) => api.patch(`/services/packages/${id}/`, data),
-    deletePackage: (id) => api.delete(`/services/packages/${id}/`),
+    // getPackages: () => api.get("/services/packages/"),
+    // getPackageById: (id) => api.get(`/services/packages/${id}/`),
+    // createPackage: (data) => api.post("/services/packages/", data),
+    // updatePackage: (id, data) => api.patch(`/services/packages/${id}/`, data),
+    // deletePackage: (id) => api.delete(`/services/packages/${id}/`),
 
     // Bookings
     getBookings: () => api.get("/services/bookings/"),

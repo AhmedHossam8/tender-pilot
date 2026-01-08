@@ -75,10 +75,12 @@ export const getDynamicNavigation = (userType, isClient, isProvider) => {
     );
   }
 
-  // Services - visible to all users (clients browse/book, providers manage)
-  baseNav.push(
-    { key: "sidebar.services", href: "/app/services", icon: Wrench },
-  );
+  // Services and Bookings - primarily for providers, but clients can browse
+  // if (isProvider && isProvider()) {
+    baseNav.push(
+      { key: "sidebar.services", href: "/app/services", icon: Wrench },
+    );
+  // }
 
   // Bookings - for tracking service bookings
   baseNav.push(

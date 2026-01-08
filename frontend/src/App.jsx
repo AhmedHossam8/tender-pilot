@@ -174,7 +174,7 @@ function App() {
               <Route path="/app/services/:id" element={<ServiceDetailPage />} />
               <Route path="/app/services/:id/book" element={<BookServicePage />} />
               <Route path="/app/bookings" element={<BookingsList />} />
-
+              
               {/* Messages */}
               <Route path="/app/messages" element={<MessagesList />} />
               <Route path="/app/messages/:id" element={<ChatPage />} />

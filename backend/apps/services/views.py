@@ -6,7 +6,7 @@ from .filters import ServiceFilter
 from .models import Service, ServicePackage, Booking
 from .serializers import ServiceSerializer, ServicePackageSerializer, BookingSerializer
 from rest_framework.permissions import IsAuthenticated
-
+from apps.users.models import User
 
 class ServiceViewSet(viewsets.ModelViewSet):
     queryset = Service.objects.all()
@@ -18,6 +18,9 @@ class ServiceViewSet(viewsets.ModelViewSet):
     ordering_fields = ["packages__price", "name"]
 
     def perform_create(self, serializer):
+        if self.request.user.user_type not in [User.UserType.PROVIDER, User.UserType.BOTH]:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("You must be a provider to create services.")
         serializer.save(created_by=self.request.user)
 
 
@@ -37,9 +40,32 @@ class BookingViewSet(viewsets.ModelViewSet):
     ordering_fields = ["scheduled_for", "status"]
 
     def get_queryset(self):
-        return Booking.objects.filter(user=self.request.user)
+        user = self.request.user
+    
+        # Admin sees everything
+        if user.is_superuser or user.user_type == User.UserType.ADMIN:
+            return Booking.objects.all()
+    
+        # Provider: bookings for their services
+        if user.user_type == User.UserType.PROVIDER:
+            return Booking.objects.filter(
+                package__service__created_by=user
+            )
+    
+        # Both: provider + client bookings
+        if user.user_type == User.UserType.BOTH:
+            return Booking.objects.filter(
+                models.Q(user=user) |
+                models.Q(package__service__created_by=user)
+            ).distinct()
+    
+        # Client: only own bookings
+        return Booking.objects.filter(user=user)
 
     def perform_create(self, serializer):
+        if self.request.user.user_type not in [User.UserType.CLIENT, User.UserType.BOTH]:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("You must be a client to book a service.")
         serializer.save(user=self.request.user)
 
     @action(detail=True, methods=["post"])

@@ -1,152 +1,157 @@
-import React from "react";
+import React, { useState } from "react";
+import { toast } from "sonner";
 import { useServices } from "../../hooks/useServices";
-import { useTranslation } from "react-i18next";
+import {
+    Button,
+    Input,
+    Textarea,
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from "@/components/ui";
 
-const ServicesCreate = ({ isOpen, onClose }) => {
-    const {
-        serviceData,
-        setServiceData,
-        packages,
-        addPackage,
-        removePackage,
-        handlePackageChange,
-        handleSubmit,
-        createServiceMutation,
-        aiSuggestedPackages,
-        applyAiSuggestedPackages,
-        optimizeServiceMutation,
-    } = useServices();
+function ServicesCreate({ isOpen, setOpen }) {
+    const { createServiceMutation } = useServices();
 
-    const { t } = useTranslation();
+    // Local form state for the service + packages
+    const [localServiceData, setLocalServiceData] = useState({
+        name: "",
+        description: "",
+    });
 
-    if (!isOpen) return null;
+    const [localPackages, setLocalPackages] = useState([
+        { price: "", duration: "00:01" },
+    ]);
+
+    const handlePackageFieldChange = (index, field, value) => {
+        const newPackages = [...localPackages];
+        newPackages[index][field] = value;
+        setLocalPackages(newPackages);
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
+        const formattedPackages = localPackages.map((pkg) => {
+            const [hours, minutes] = pkg.duration.split(":").map(Number);
+            return {
+                price: Number(pkg.price),
+                duration_hours: hours + minutes / 60,
+            };
+        });
+
+        createServiceMutation.mutate(
+            { serviceData: localServiceData, packages: formattedPackages },
+            {
+                onSuccess: () => {
+                    toast.success("Service created successfully!");
+                    setOpen(false); // close modal
+                    setLocalServiceData({ name: "", description: "" }); // reset form
+                    setLocalPackages([{ price: "", duration: "00:01" }]);
+                },
+                onError: () => toast.error("Failed to create service"),
+            }
+        );
+    };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start pt-20 z-50">
-            <div className="bg-white rounded p-6 w-full max-w-lg shadow-lg relative">
-                <button
-                    onClick={onClose}
-                    className="absolute top-2 right-2 text-red-600 font-bold text-xl"
-                >
-                    &times;
-                </button>
+        <Dialog open={isOpen} onOpenChange={setOpen}>
+            <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                    <DialogTitle>Create Service</DialogTitle>
+                    <DialogDescription>
+                        Fill in the details below to create a new service.
+                    </DialogDescription>
+                </DialogHeader>
 
-                <h2 className="text-xl font-bold mb-4">{t("services.create")}</h2>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <Input
+                        placeholder="Service Name"
+                        value={localServiceData.name}
+                        onChange={(e) =>
+                            setLocalServiceData({ ...localServiceData, name: e.target.value })
+                        }
+                        required
+                    />
 
-                <form onSubmit={(e) => handleSubmit(e, onClose)} className="space-y-4">
-                    <div>
-                        <label className="block font-semibold">Service Name</label>
-                        <input
-                            type="text"
-                            value={serviceData.name}
-                            onChange={(e) => setServiceData({ ...serviceData, name: e.target.value })}
-                            className="border p-2 rounded w-full"
-                        />
-                    </div>
+                    <Textarea
+                        placeholder="Description"
+                        value={localServiceData.description}
+                        onChange={(e) =>
+                            setLocalServiceData({
+                                ...localServiceData,
+                                description: e.target.value,
+                            })
+                        }
+                        rows={5}
+                    />
 
-                    <div>
-                        <label className="block font-semibold">{t("project.description")}</label>
-                        <textarea
-                            value={serviceData.description}
-                            onChange={(e) => setServiceData({ ...serviceData, description: e.target.value })}
-                            className="border p-2 rounded w-full"
-                        />
-                        <button
-                            type="button"
-                            onClick={() => optimizeServiceMutation.mutate()}
-                            disabled={
-                                optimizeServiceMutation.isLoading ||
-                                !serviceData.description.trim()
-                            }
-                            className="mt-2 text-sm text-blue-600 hover:text-blue-800 disabled:opacity-50"
-                        >
-                            {optimizeServiceMutation.isLoading
-                                ? t("services.aiImprovingDescription")
-                                : t("services.aiImproveDescription")}
-                        </button>
-                    </div>
-
-                    <div>
-                        <div className="flex items-center justify-between mb-2">
-                            <h3 className="font-bold">{t("services.packages")}</h3>
-                            {aiSuggestedPackages.length > 0 && (
-                                <button
+                    {localPackages.map((pkg, idx) => (
+                        <div key={idx} className="flex gap-2 items-center">
+                            <Input
+                                type="number"
+                                step="0.01"
+                                placeholder="Price"
+                                value={pkg.price}
+                                onChange={(e) =>
+                                    handlePackageFieldChange(idx, "price", e.target.value)
+                                }
+                                required
+                            />
+                            <Input
+                                type="time"
+                                step="60"
+                                value={pkg.duration}
+                                onChange={(e) =>
+                                    handlePackageFieldChange(idx, "duration", e.target.value)
+                                }
+                                required
+                            />
+                            {localPackages.length > 1 && (
+                                <Button
                                     type="button"
-                                    onClick={applyAiSuggestedPackages}
-                                    className="text-xs text-green-600 hover:text-green-800"
+                                    variant="destructive"
+                                    onClick={() =>
+                                        setLocalPackages(localPackages.filter((_, i) => i !== idx))
+                                    }
                                 >
-                                    {t("services.applyAiPackages")}
-                                </button>
+                                    Remove
+                                </Button>
                             )}
                         </div>
-                        {aiSuggestedPackages.length > 0 && (
-                            <div className="mb-3 rounded border border-dashed border-green-400 bg-green-50 p-2 text-xs text-green-800 space-y-1">
-                                <p className="font-semibold">
-                                    {t("services.aiSuggestedPackages")}
-                                </p>
-                                {aiSuggestedPackages.map((pkg, index) => (
-                                    <p key={index}>
-                                        <span className="font-medium">{pkg.name}</span>
-                                        {" — "}${pkg.price} · {pkg.duration_hours}h
-                                    </p>
-                                ))}
-                            </div>
-                        )}
-                        {packages.map((pkg, i) => (
-                            <div key={i} className="border p-2 rounded mb-2 space-y-2">
-                                <input
-                                    type="text"
-                                    placeholder="Package Name"
-                                    value={pkg.name}
-                                    onChange={(e) => handlePackageChange(i, "name", e.target.value)}
-                                    className="border p-1 rounded w-full"
-                                />
-                                <input
-                                    type="number"
-                                    placeholder="Price"
-                                    value={pkg.price}
-                                    onChange={(e) => handlePackageChange(i, "price", e.target.value)}
-                                    className="border p-1 rounded w-full"
-                                />
-                                <input
-                                    type="number"
-                                    placeholder="Duration (hours)"
-                                    value={pkg.duration_hours}
-                                    onChange={(e) => handlePackageChange(i, "duration_hours", e.target.value)}
-                                    className="border p-1 rounded w-full"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => removePackage(i)}
-                                    className="text-red-600"
-                                >
-                                    Remove Package
-                                </button>
-                            </div>
-                        ))}
+                    ))}
 
-                        <button
-                            type="button"
-                            onClick={addPackage}
-                            className="bg-blue-600 text-white px-4 py-2 rounded"
-                        >
-                            Add Package
-                        </button>
-                    </div>
-
-                    <button
-                        type="submit"
-                        className="bg-green-600 text-white px-6 py-2 rounded"
-                        disabled={createServiceMutation.isLoading}
+                    <Button
+                        type="button"
+                        onClick={() =>
+                            setLocalPackages([
+                                ...localPackages,
+                                { price: "", duration: "00:01" },
+                            ])
+                        }
+                        className="w-full"
+                        variant="outline"
                     >
-                        {createServiceMutation.isLoading
-                            ? t("common.loading")
-                            : t("services.create")}
-                    </button>
+                        + Add Package
+                    </Button>
+
+                    <Button
+                        type="submit"
+                        disabled={createServiceMutation.isLoading}
+                        variant="success"
+                        className="w-full mt-4"
+                    >
+                        {createServiceMutation.isLoading && (
+                            <LoadingSpinner size="sm" className="mr-2" />
+                        )}
+                        Create Service
+                    </Button>
                 </form>
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
-};
+}
 
 export default ServicesCreate;

@@ -30,17 +30,25 @@ export const useServices = () => {
     const [aiSuggestedPackages, setAiSuggestedPackages] = useState([]);
 
     const createServiceMutation = useMutation({
-        mutationFn: serviceService.create,
-        onSuccess: async (res) => {
-            const serviceId = res.data.id;
+        mutationFn: async ({ serviceData, packages }) => {
+            //Create service
+            const serviceRes = await serviceService.create(serviceData);
+            const serviceId = serviceRes.data.id;
 
-            for (const pkg of packages) {
-                await serviceService.createPackage({
-                    ...pkg,
-                    service: serviceId,
-                });
-            }
+            //Create packages (sequential or Promise.all)
+            await Promise.all(
+                packages.map(pkg =>
+                    serviceService.createPackage({
+                        ...pkg,
+                        service: serviceId,
+                    })
+                )
+            );
 
+            return serviceRes.data;
+        },
+
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["services"] });
             setServiceData({ name: "", description: "" });
             setPackages([]);
@@ -92,11 +100,16 @@ export const useServices = () => {
     // --- Submit service + packages ---
     const handleSubmit = (e, onSuccessClose) => {
         e.preventDefault();
-        if (!serviceData.name) return alert("Service name is required");
+        if (!serviceData.name) return;
 
-        createServiceMutation.mutate(serviceData, {
-            onSuccess: () => onSuccessClose?.(),
-        });
+        createServiceMutation.mutate(
+            { serviceData, packages },
+            {
+                onSuccess: () => {
+                    onSuccessClose?.();
+                },
+            }
+        );
     };
 
     const applyAiSuggestedPackages = () => {
