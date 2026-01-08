@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import UserProfile, Skill
+from .models import UserProfile, Skill, Review, ReviewResponse
 
 User = get_user_model()
 
@@ -151,3 +151,75 @@ class AdminUserSerializer(serializers.ModelSerializer):
             "is_active",
             "profile",
         )
+
+
+class ReviewResponseSerializer(serializers.ModelSerializer):
+    """Serializer for ReviewResponse model"""
+    responder_name = serializers.CharField(source='responder.full_name', read_only=True)
+    responder_avatar = serializers.ImageField(source='responder.profile.avatar', read_only=True, allow_null=True)
+    
+    class Meta:
+        model = ReviewResponse
+        fields = (
+            'id',
+            'review',
+            'responder',
+            'responder_name',
+            'responder_avatar',
+            'response_text',
+            'created_at',
+            'updated_at',
+        )
+        read_only_fields = ('id', 'responder', 'created_at', 'updated_at')
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    """Serializer for Review model"""
+    reviewer_name = serializers.CharField(source='reviewer.full_name', read_only=True)
+    reviewer_avatar = serializers.ImageField(source='reviewer.profile.avatar', read_only=True, allow_null=True)
+    reviewee_name = serializers.CharField(source='reviewee.full_name', read_only=True)
+    response = ReviewResponseSerializer(read_only=True)
+    
+    class Meta:
+        model = Review
+        fields = (
+            'id',
+            'reviewer',
+            'reviewer_name',
+            'reviewer_avatar',
+            'reviewee',
+            'reviewee_name',
+            'project',
+            'booking',
+            'rating',
+            'comment',
+            'ai_sentiment',
+            'ai_sentiment_label',
+            'is_public',
+            'is_flagged',
+            'response',
+            'created_at',
+            'updated_at',
+        )
+        read_only_fields = ('id', 'reviewer', 'ai_sentiment', 'ai_sentiment_label', 'is_flagged', 'created_at', 'updated_at')
+    
+    def validate_rating(self, value):
+        """Ensure rating is between 1 and 5"""
+        if not 1 <= value <= 5:
+            raise serializers.ValidationError("Rating must be between 1 and 5")
+        return value
+    
+    def validate(self, data):
+        """Ensure at least project or booking is specified"""
+        if not data.get('project') and not data.get('booking'):
+            raise serializers.ValidationError("Either project or booking must be specified")
+        return data
+
+
+class ReviewSummarySerializer(serializers.Serializer):
+    """Serializer for user review summary statistics"""
+    average_rating = serializers.FloatField()
+    total_reviews = serializers.IntegerField()
+    rating_distribution = serializers.DictField()
+    recent_reviews = ReviewSerializer(many=True)
+
