@@ -25,7 +25,7 @@ export default function Login() {
         try {
             await login(form);
             toast.success("Welcome back!");
-            navigate("/", { replace: true });
+            navigate("/app", { replace: true });
         } catch (err) {
             toast.error(
                 err?.response?.data?.detail || "Invalid email or password"

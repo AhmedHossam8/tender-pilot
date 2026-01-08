@@ -182,7 +182,7 @@ const ClientDashboard = () => {
         <h2 className="text-xl font-bold text-gray-900 mb-4">{t('dashboard.quickActions')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link
-            to="/projects/create"
+            to="/app/projects/create"
             className="flex items-center gap-3 p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
           >
             <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -228,7 +228,7 @@ const ClientDashboard = () => {
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-gray-900">{t('dashboard.recentProjects')}</h2>
-            <Link to="/projects" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+            <Link to="/app/projects" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
               {t('dashboard.viewAll')}
             </Link>
           </div>
@@ -239,7 +239,7 @@ const ClientDashboard = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               <p className="text-gray-500 mb-2">{t('dashboard.noProjects')}</p>
-              <Link to="/projects/create" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+              <Link to="/app/projects/create" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
                 {t('dashboard.postFirstProject')}
               </Link>
             </div>

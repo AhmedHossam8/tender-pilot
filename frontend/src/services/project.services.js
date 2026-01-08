@@ -25,6 +25,9 @@ export const projectService = {
   // Partially update an existing project
   patchProject: (id, data) => api.patch(`/projects/${id}/`, data),
 
+  // Update project status
+  updateProjectStatus: (id, status) => api.patch(`/projects/${id}/`, { status }),
+
   // Delete a project
   deleteProject: (id) => api.delete(`/projects/${id}/`),
 };

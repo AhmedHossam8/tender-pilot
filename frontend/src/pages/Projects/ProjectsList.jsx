@@ -189,7 +189,7 @@ function ProjectsList() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Link to={`/projects/${project.id}`}>
+                      <Link to={`/app/projects/${project.id}`}>
                         <Button size="icon" variant="ghost" disabled={isAnyLoading}>
                           <Eye className="h-4 w-4" />
                         </Button>

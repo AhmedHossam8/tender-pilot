@@ -28,16 +28,16 @@ import { messagingService } from "@/services/messaging.service";
 
 // Static navigation items for MobileNav backward compatibility
 export const navigationItems = [
-  { key: "sidebar.projects", href: "/projects", icon: FileText },
-  { key: "sidebar.messages", href: "/messages", icon: MessageSquare },
-  { key: "sidebar.services", href: "/services", icon: Wrench },
-  { key: "sidebar.bookings", href: "/bookings", icon: Calendar },
-  { key: "sidebar.bids", href: "/bids", icon: Briefcase },
-  { key: "sidebar.settings", href: "/settings", icon: Settings },
+  { key: "sidebar.projects", href: "/app/projects", icon: FileText },
+  { key: "sidebar.messages", href: "/app/messages", icon: MessageSquare },
+  { key: "sidebar.services", href: "/app/services", icon: Wrench },
+  { key: "sidebar.bookings", href: "/app/bookings", icon: Calendar },
+  { key: "sidebar.bids", href: "/app/bids", icon: Briefcase },
+  { key: "sidebar.settings", href: "/app/settings", icon: Settings },
 ];
 
 export const bottomNavigationItems = [
-  { key: "sidebar.help", href: "/help", icon: HelpCircle },
+  { key: "sidebar.help", href: "/app/help", icon: HelpCircle },
 ];
 
 // Helper function to build dynamic navigation based on user type
@@ -48,7 +48,7 @@ export const getDynamicNavigation = (userType, isClient, isProvider) => {
   if (isClient && isClient()) {
     baseNav.push({
       key: "sidebar.clientDashboard",
-      href: "/dashboard/client",
+      href: "/app/dashboard/client",
       icon: UserCircle,
       label: "Client Dashboard"
     });
@@ -57,7 +57,7 @@ export const getDynamicNavigation = (userType, isClient, isProvider) => {
   if (isProvider && isProvider()) {
     baseNav.push({
       key: "sidebar.providerDashboard",
-      href: "/dashboard/provider",
+      href: "/app/dashboard/provider",
       icon: Briefcase,
       label: "Provider Dashboard"
     });
@@ -65,12 +65,27 @@ export const getDynamicNavigation = (userType, isClient, isProvider) => {
 
   // Add common navigation items
   baseNav.push(
-    { key: "sidebar.projects", href: "/projects", icon: FileText },
-    { key: "sidebar.bids", href: "/bids", icon: ShoppingBag },
-    { key: "sidebar.services", href: "/services", icon: Wrench },
-    { key: "sidebar.bookings", href: "/bookings", icon: Calendar },
-    { key: "sidebar.messages", href: "/messages", icon: MessageSquare, showBadge: true },
-    { key: "sidebar.settings", href: "/settings", icon: Settings },
+    { key: "sidebar.projects", href: "/app/projects", icon: FileText },
+  );
+
+  // Bids - for both clients and providers
+  if (isClient && isClient() || isProvider && isProvider()) {
+    baseNav.push(
+      { key: "sidebar.bids", href: "/app/bids", icon: ShoppingBag },
+    );
+  }
+
+  // Services and Bookings - primarily for providers, but clients can browse
+  if (isProvider && isProvider()) {
+    baseNav.push(
+      { key: "sidebar.services", href: "/app/services", icon: Wrench },
+    );
+  }
+
+  baseNav.push(
+    { key: "sidebar.bookings", href: "/app/bookings", icon: Calendar },
+    { key: "sidebar.messages", href: "/app/messages", icon: MessageSquare, showBadge: true },
+    { key: "sidebar.settings", href: "/app/settings", icon: Settings },
   );
 
   return baseNav;
