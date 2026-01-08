@@ -72,19 +72,19 @@ const SearchBar = ({ className = '' }) => {
     e.preventDefault();
     if (query.trim()) {
       saveRecentSearch(query);
-      navigate(`/search?q=${encodeURIComponent(query)}`);
+      navigate(`/app/search?q=${encodeURIComponent(query)}`);
       setIsOpen(false);
     }
   };
 
   const handleSuggestionClick = (item) => {
     const routes = {
-      project: `/projects/${item.id}`,
-      service: `/services/${item.id}`,
-      provider: `/profiles/${item.id}`
+      project: `/app/projects/${item.id}`,
+      service: `/app/services/${item.id}`,
+      provider: `/app/profiles/${item.id}`
     };
     
-    navigate(routes[item.type] || '/search');
+    navigate(routes[item.type] || '/app/search');
     setQuery('');
     setIsOpen(false);
   };

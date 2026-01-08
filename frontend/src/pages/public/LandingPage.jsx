@@ -25,9 +25,16 @@ const LandingPage = () => {
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Link to="/login">
+              <Link to="/browse/services">
                 <Button size="lg" variant="outline" className="text-lg px-8 py-6">
-                  Sign In
+                  Browse Services
+                </Button>
+              </Link>
+            </div>
+            <div className="flex gap-4 justify-center mt-6">
+              <Link to="/browse/projects">
+                <Button variant="ghost" className="text-primary">
+                  View Projects →
                 </Button>
               </Link>
             </div>
