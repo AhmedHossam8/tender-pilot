@@ -189,3 +189,14 @@ class AIProvider(ABC):
         """
         # Override in specific provider implementations
         return 0.0
+
+class AIService:
+    def __init__(self):
+        self.client = client
+
+    def chat(self, prompt: str):
+        response = self.client.chat.completions.create(
+            model="gpt-5-nano",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return response.choices[0].message.content

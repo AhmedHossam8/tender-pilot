@@ -71,22 +71,9 @@ export const getDynamicNavigation = (userType, isClient, isProvider) => {
   // Add common navigation items
   baseNav.push(
     { key: "sidebar.projects", href: "/projects", icon: FileText },
-    { key: "sidebar.proposals", href: "/proposals", icon: FolderOpen },
-  );
-
-  // Add services for providers
-  if (isProvider && isProvider()) {
-    baseNav.push({
-      key: "sidebar.services",
-      href: "/services",
-      icon: ShoppingBag,
-      label: "Services"
-    });
-  }
-
-  baseNav.push(
+    { key: "sidebar.services", href: "/services", icon: Wrench },
+    { key: "sidebar.bookings", href: "/bookings", icon: Calendar },
     { key: "sidebar.messages", href: "/messages", icon: MessageSquare, showBadge: true },
-    { key: "sidebar.documents", href: "/documents", icon: Building2 },
     { key: "sidebar.team", href: "/team", icon: Users },
     { key: "sidebar.settings", href: "/settings", icon: Settings },
   );

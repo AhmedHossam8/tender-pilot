@@ -5,7 +5,7 @@ Provides semantic search, unified search, and auto-categorization
 from typing import List, Dict, Any, Optional
 from django.db.models import Q, QuerySet
 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
-from .ai_base import AIService
+from .base import AIService
 import logging
 
 logger = logging.getLogger(__name__)
@@ -17,7 +17,7 @@ class AISearchService(AIService):
     """
     
     def __init__(self, provider_type: str = "gemini"):
-        super().__init__(provider_type)
+        super().__init__()
         self.max_results = 50
     
     def semantic_search(
