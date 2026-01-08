@@ -280,7 +280,19 @@
     "actions": "Actions",
     "noBookings": "No bookings found",
     "statusUpdated": "Booking status updated",
-    "statusUpdateError": "Failed to update booking status"
+    "statusUpdateError": "Failed to update booking status",
+    "changeStatus": "Change Status",
+    "viewDetails": "View Details",
+    "createConversation": "Create Conversation",
+    "conversationCreated": "Conversation created successfully",
+    "conversationError": "Failed to create conversation",
+    "selectNewStatus": "Select new status",
+    "currentStatus": "Current status",
+    "updateStatus": "Update Status",
+    "statusPending": "Pending",
+    "statusConfirmed": "Confirmed",
+    "statusCompleted": "Completed",
+    "statusCancelled": "Cancelled"
   },
   "dashboard": {
     "title": "Client Dashboard",

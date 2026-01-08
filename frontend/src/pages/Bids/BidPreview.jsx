@@ -17,7 +17,7 @@ const BidPreview = () => {
                     <p className="text-muted-foreground mb-4">
                         {t("bid.previewPlaceholder", "Bid preview functionality will be implemented in future iterations.")}
                     </p>
-                    <Button onClick={() => navigate("/bids")}>
+                    <Button onClick={() => navigate("/app/bids")}>
                         {t("common.goBack", "Go Back")}
                     </Button>
                 </CardContent>

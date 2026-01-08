@@ -35,13 +35,10 @@ export const useServices = () => {
             const serviceRes = await serviceService.create(serviceData);
             const serviceId = serviceRes.data.id;
 
-            //Create packages (sequential or Promise.all)
+            //Create packages using nested routing
             await Promise.all(
                 packages.map(pkg =>
-                    serviceService.createPackage({
-                        ...pkg,
-                        service: serviceId,
-                    })
+                    serviceService.createPackage(serviceId, pkg)
                 )
             );
 

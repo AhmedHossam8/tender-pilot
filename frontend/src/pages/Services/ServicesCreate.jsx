@@ -11,6 +11,7 @@ import {
     DialogTitle,
     DialogDescription,
 } from "@/components/ui";
+import { Loader2 } from "lucide-react";
 
 function ServicesCreate({ isOpen, setOpen }) {
     const { createServiceMutation } = useServices();
@@ -22,7 +23,7 @@ function ServicesCreate({ isOpen, setOpen }) {
     });
 
     const [localPackages, setLocalPackages] = useState([
-        { price: "", duration: "00:01" },
+        { price: "", duration_hours: "" },
     ]);
 
     const handlePackageFieldChange = (index, field, value) => {
@@ -34,24 +35,28 @@ function ServicesCreate({ isOpen, setOpen }) {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        const formattedPackages = localPackages.map((pkg) => {
-            const [hours, minutes] = pkg.duration.split(":").map(Number);
-            return {
-                price: Number(pkg.price),
-                duration_hours: hours + minutes / 60,
-            };
-        });
+        const formattedPackages = localPackages.map((pkg, idx) => ({
+            name: `Package ${idx + 1}`,
+            price: Number(pkg.price),
+            duration_hours: Number(pkg.duration_hours),
+        }));
 
         createServiceMutation.mutate(
             { serviceData: localServiceData, packages: formattedPackages },
             {
                 onSuccess: () => {
                     toast.success("Service created successfully!");
-                    setOpen(false); // close modal
-                    setLocalServiceData({ name: "", description: "" }); // reset form
-                    setLocalPackages([{ price: "", duration: "00:01" }]);
+                    // Defer state updates to avoid setState during render warning
+                    setTimeout(() => {
+                        setLocalServiceData({ name: "", description: "" });
+                        setLocalPackages([{ price: "", duration_hours: "" }]);
+                        setOpen(false);
+                    }, 0);
                 },
-                onError: () => toast.error("Failed to create service"),
+                onError: (error) => {
+                    console.error("Service creation error:", error);
+                    toast.error("Failed to create service");
+                },
             }
         );
     };
@@ -93,21 +98,26 @@ function ServicesCreate({ isOpen, setOpen }) {
                             <Input
                                 type="number"
                                 step="0.01"
-                                placeholder="Price"
+                                min="0"
+                                placeholder="Price ($)"
                                 value={pkg.price}
                                 onChange={(e) =>
                                     handlePackageFieldChange(idx, "price", e.target.value)
                                 }
                                 required
+                                className="flex-1"
                             />
                             <Input
-                                type="time"
-                                step="60"
-                                value={pkg.duration}
+                                type="number"
+                                step="0.5"
+                                min="0.5"
+                                placeholder="Hours"
+                                value={pkg.duration_hours}
                                 onChange={(e) =>
-                                    handlePackageFieldChange(idx, "duration", e.target.value)
+                                    handlePackageFieldChange(idx, "duration_hours", e.target.value)
                                 }
                                 required
+                                className="flex-1"
                             />
                             {localPackages.length > 1 && (
                                 <Button
@@ -128,7 +138,7 @@ function ServicesCreate({ isOpen, setOpen }) {
                         onClick={() =>
                             setLocalPackages([
                                 ...localPackages,
-                                { price: "", duration: "00:01" },
+                                { price: "", duration_hours: "" },
                             ])
                         }
                         className="w-full"
@@ -144,7 +154,7 @@ function ServicesCreate({ isOpen, setOpen }) {
                         className="w-full mt-4"
                     >
                         {createServiceMutation.isLoading && (
-                            <LoadingSpinner size="sm" className="mr-2" />
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         )}
                         Create Service
                     </Button>

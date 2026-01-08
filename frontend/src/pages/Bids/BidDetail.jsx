@@ -86,7 +86,7 @@ const BidDetail = () => {
             <div className="max-w-4xl mx-auto space-y-6">
                 <div className="flex justify-between items-center">
                     <h1 className="text-3xl font-bold">{t("bid.details", "Bid Details")}</h1>
-                    <Button variant="outline" onClick={() => navigate("/bids")}>
+                    <Button variant="outline" onClick={() => navigate("/app/bids")}>
                         {t("common.goBack", "Go Back")}
                     </Button>
                 </div>

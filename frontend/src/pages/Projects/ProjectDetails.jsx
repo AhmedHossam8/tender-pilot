@@ -75,7 +75,7 @@ export default function ProjectDetail() {
       setDeleting(true);
       await deleteProject.mutateAsync(id);
       toast.success(t("project.deleteSuccess"));
-      navigate("/projects");
+      navigate("/app/projects");
     } catch {
       toast.error(t("project.deleteError"));
     } finally {
