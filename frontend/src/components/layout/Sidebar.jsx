@@ -17,20 +17,24 @@ import {
   Briefcase,
   ShoppingBag,
   UserCircle,
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/contexts/authStore";
+import { Badge } from "@/components/ui/Badge";
+import { useQuery } from "@tanstack/react-query";
+import { messagingService } from "@/services/messaging.service";
 
 // Static navigation items for MobileNav backward compatibility
 export const navigationItems = [
   { key: "sidebar.dashboard", href: "/", icon: LayoutDashboard },
   { key: "aiEngine.dashboard", href: "/ai/dashboard", icon: Sparkles },
   { key: "sidebar.projects", href: "/projects", icon: FileText },
-  // { key: "sidebar.proposals", href: "/proposals", icon: FolderOpen },
-  // { key: "sidebar.documents", href: "/documents", icon: Building2 },
-  { key: "sidebar.services", href: "/services", icon: Wrench },  
-  { key: "sidebar.bookings", href: "/bookings", icon: Calendar },  { key: "sidebar.team", href: "/team", icon: Users },
+  { key: "sidebar.messages", href: "/messages", icon: MessageSquare },
+  { key: "sidebar.services", href: "/services", icon: Wrench },
+  { key: "sidebar.bookings", href: "/bookings", icon: Calendar },
+  { key: "sidebar.team", href: "/team", icon: Users },
   { key: "sidebar.settings", href: "/settings", icon: Settings },
 ];
 
@@ -47,18 +51,18 @@ export const getDynamicNavigation = (userType, isClient, isProvider) => {
 
   // Add user type specific dashboards
   if (isClient && isClient()) {
-    baseNav.push({ 
-      key: "sidebar.clientDashboard", 
-      href: "/dashboard/client", 
+    baseNav.push({
+      key: "sidebar.clientDashboard",
+      href: "/dashboard/client",
       icon: UserCircle,
       label: "Client Dashboard"
     });
   }
 
   if (isProvider && isProvider()) {
-    baseNav.push({ 
-      key: "sidebar.providerDashboard", 
-      href: "/dashboard/provider", 
+    baseNav.push({
+      key: "sidebar.providerDashboard",
+      href: "/dashboard/provider",
       icon: Briefcase,
       label: "Provider Dashboard"
     });
@@ -72,15 +76,16 @@ export const getDynamicNavigation = (userType, isClient, isProvider) => {
 
   // Add services for providers
   if (isProvider && isProvider()) {
-    baseNav.push({ 
-      key: "sidebar.services", 
-      href: "/services", 
+    baseNav.push({
+      key: "sidebar.services",
+      href: "/services",
       icon: ShoppingBag,
       label: "Services"
     });
   }
 
   baseNav.push(
+    { key: "sidebar.messages", href: "/messages", icon: MessageSquare, showBadge: true },
     { key: "sidebar.documents", href: "/documents", icon: Building2 },
     { key: "sidebar.team", href: "/team", icon: Users },
     { key: "sidebar.settings", href: "/settings", icon: Settings },
@@ -94,14 +99,21 @@ function Sidebar({ collapsed, onToggleCollapse, isRtl }) {
   const { t } = useTranslation();
   const { userType, isClient, isProvider } = useAuthStore();
 
-  const navigation = getDynamicNavigation(userType, isClient, isProvider).map(item => ({ 
-    ...item, 
-    name: item.label || t(item.key) 
+  // Fetch unread count
+  const { data: unreadData } = useQuery({
+    queryKey: ['unread-count'],
+    queryFn: () => messagingService.getUnreadCount().then(res => res.data),
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
+
+  const navigation = getDynamicNavigation(userType, isClient, isProvider).map(item => ({
+    ...item,
+    name: item.label || t(item.key)
   }));
-  
-  const bottomNavigation = bottomNavigationItems.map(item => ({ 
-    ...item, 
-    name: t(item.key) 
+
+  const bottomNavigation = bottomNavigationItems.map(item => ({
+    ...item,
+    name: t(item.key)
   }));
 
   return (
@@ -126,19 +138,34 @@ function Sidebar({ collapsed, onToggleCollapse, isRtl }) {
       <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
         {navigation.map((item) => {
           const isActive = location.pathname === item.href;
+          const unreadCount = item.showBadge ? unreadData?.unread_count : 0;
+
           return (
             <NavLink
               key={item.name}
               to={item.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors relative",
                 isActive
                   ? "bg-primary text-white"
                   : "text-secondary-foreground/70 hover:bg-secondary-foreground/10 hover:text-white"
               )}
             >
               <item.icon className={cn("h-5 w-5", collapsed && "mx-auto")} />
-              {!collapsed && <span>{item.name}</span>}
+              {!collapsed && (
+                <span className="flex-1">{item.name}</span>
+              )}
+              {item.showBadge && unreadCount > 0 && (
+                <Badge
+                  variant="destructive"
+                  className={cn(
+                    "h-5 min-w-5 flex items-center justify-center text-xs",
+                    collapsed && "absolute -top-1 -right-1"
+                  )}
+                >
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </Badge>
+              )}
             </NavLink>
           );
         })}

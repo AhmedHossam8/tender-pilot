@@ -54,6 +54,9 @@ import { EditProfilePage, PublicProfilePage } from "./pages/Profile";
 // Search pages
 import SearchResultsPage from "./pages/search/SearchResultsPage";
 
+// Messages pages
+import { MessagesList, ChatPage } from "./pages/messages";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -202,6 +205,10 @@ function App() {
               <Route path="/services" element={<ServicesList />} />
               <Route path="/services/:id/book" element={<BookServicePage />} />
               <Route path="/bookings" element={<BookingsList />} />
+
+              {/* Messages */}
+              <Route path="/messages" element={<MessagesList />} />
+              <Route path="/messages/:id" element={<ChatPage />} />
             </Route>
 
             <Route path="/unauthorized" element={<div>Unauthorized</div>} />
