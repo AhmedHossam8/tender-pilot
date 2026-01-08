@@ -58,7 +58,7 @@ const MessagesList = () => {
       ) : (
         <div className="space-y-3">
           {conversations.map((conv) => (
-            <Link key={conv.id} to={`/messages/${conv.id}`} className="block">
+            <Link key={conv.id} to={`/app/messages/${conv.id}`} className="block">
               <Card className={cn(
                 "hover:shadow-md transition-shadow cursor-pointer",
                 conv.unread_count > 0 && "border-primary"

@@ -58,7 +58,7 @@ const BookServicePage = () => {
         onSuccess: () => {
             toast.success(t("services.bookingSuccess"));
             queryClient.invalidateQueries(["bookings"]);
-            navigate("/bookings");
+            navigate("/app/bookings");
         },
         onError: (err) => {
             toast.error(

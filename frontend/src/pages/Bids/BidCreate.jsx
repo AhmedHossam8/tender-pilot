@@ -149,7 +149,7 @@ const BidCreate = () => {
                         )}
                     </Button>
                     <Button 
-                        onClick={() => navigate("/bids")} 
+                        onClick={() => navigate("/app/bids")} 
                         className="w-full mt-2"
                         variant="outline"
                     >

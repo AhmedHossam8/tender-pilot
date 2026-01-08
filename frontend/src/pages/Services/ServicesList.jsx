@@ -80,7 +80,7 @@ const ServicesList = () => {
             {canCreateService && (
                 <ServicesCreate
                     isOpen={showModal}
-                    onClose={() => setShowModal(false)}
+                    setOpen={setShowModal}
                 />
             )}
         </div>

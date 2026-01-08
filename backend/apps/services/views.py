@@ -29,6 +29,21 @@ class ServicePackageViewSet(viewsets.ModelViewSet):
     serializer_class = ServicePackageSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        """Filter packages by service_id from URL"""
+        service_id = self.kwargs.get('service_pk')
+        if service_id:
+            return ServicePackage.objects.filter(service_id=service_id)
+        return ServicePackage.objects.all()
+
+    def perform_create(self, serializer):
+        """Auto-set service from URL parameter"""
+        service_id = self.kwargs.get('service_pk')
+        if service_id:
+            serializer.save(service_id=service_id)
+        else:
+            serializer.save()
+
 
 class BookingViewSet(viewsets.ModelViewSet):
     queryset = Booking.objects.all()

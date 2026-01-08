@@ -67,7 +67,7 @@ const BidList = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">{t("Bids")}</h1>
         {user?.role === "provider" && (
-          <Link to="/bids/create">
+          <Link to="/app/bids/create">
             <Button>
               <Plus className="h-4 w-4 ml-2 rtl:ml-0 rtl:mr-2" />
               {t("Submit Bid")}

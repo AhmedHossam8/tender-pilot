@@ -17,7 +17,7 @@ class ServicePackage(models.Model):
     service = models.ForeignKey(Service, related_name='packages', on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    duration_hours = models.PositiveIntegerField()  # or minutes if you prefer
+    duration_hours = models.DecimalField(max_digits=5, decimal_places=2)  # Supports fractional hours like 1.5
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
