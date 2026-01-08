@@ -27,16 +27,16 @@ const BidList = () => {
   const { t, i18n } = useTranslation();
   const { user } = useAuthStore((state) => state.user);
   const role = useAuthStore((state) => state.role);
-  const { data: bids = [], isLoading, isError, error } = useBids();
+  const { data: bids, isLoading, isError, error } = useBids();
 
-  // Local state for deletion
+  // Local state for deletion - ensure it's always an array
   const [bidList, setBidList] = useState([]);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [selectedBid, setSelectedBid] = useState(null);
 
   // Initialize local state once after bids load
   useEffect(() => {
-    if (!isLoading && !isError && bidList.length === 0) {
+    if (!isLoading && !isError && Array.isArray(bids)) {
       setBidList(bids);
     }
   }, [bids, isLoading, isError]);
@@ -56,7 +56,7 @@ const BidList = () => {
   if (isError || error)
     return <EmptyState title={t("bid.loadError", "Failed to load bids")} />;
 
-  if (!bidList || bidList.length === 0)
+  if (!Array.isArray(bidList) || bidList.length === 0)
     return <EmptyState title={t("bid.noBids", "No bids found")} />;
 
   return (
