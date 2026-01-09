@@ -1,10 +1,18 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from apps.projects.models import Project
 
 User = get_user_model()
 
 
 class Conversation(models.Model):
+    project = models.ForeignKey(
+        "projects.Project",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="conversations"
+    )
     participants = models.ManyToManyField(
         User,
         through='ConversationParticipant',

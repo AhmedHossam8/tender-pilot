@@ -31,6 +31,9 @@ const BidCreate = () => {
     const [proposedAmount, setProposedAmount] = useState("");
     const [proposedTimeline, setProposedTimeline] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const availableProjects = projects.filter(
+        (p) => p.status === "open" && !p.is_owner
+    );
 
     const handleSubmit = async () => {
         if (!selectedProject) {
@@ -71,13 +74,14 @@ const BidCreate = () => {
     if (isLoading) return <LoadingSpinner text={t("bid.loadingProjects", "Loading projects...")} />;
     if (error) return <EmptyState title={t("bid.loadError", "Failed to load projects")} />;
 
-    if (!projects?.length)
+    if (!availableProjects.length) {
         return (
             <EmptyState
-                title={t("bid.noProjects", "No projects available")}
-                description={t("bid.noProjectsDescription", "There are no open projects to bid on at the moment.")}
+                title="No open projects"
+                description="There are no open projects available for bidding."
             />
         );
+    }
 
     return (
         <>
@@ -95,7 +99,7 @@ const BidCreate = () => {
                                 <SelectValue placeholder={t("bid.selectProjectPlaceholder", "Choose a project...")} />
                             </SelectTrigger>
                             <SelectContent>
-                                {projects.map((project) => (
+                                {availableProjects.map((project) => (
                                     <SelectItem key={project.id} value={project.id.toString()}>
                                         {project.title}
                                     </SelectItem>
@@ -136,10 +140,10 @@ const BidCreate = () => {
                     />
                 </CardContent>
                 <CardFooter className="block">
-                    <Button 
-                        onClick={handleSubmit} 
-                        className="w-full" 
-                        variant="success" 
+                    <Button
+                        onClick={handleSubmit}
+                        className="w-full"
+                        variant="success"
                         disabled={isSubmitting}
                     >
                         {isSubmitting ? (
@@ -148,8 +152,8 @@ const BidCreate = () => {
                             t("bid.submitBid", "Submit Bid")
                         )}
                     </Button>
-                    <Button 
-                        onClick={() => navigate("/bids")} 
+                    <Button
+                        onClick={() => navigate("/bids")}
                         className="w-full mt-2"
                         variant="outline"
                     >
