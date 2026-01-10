@@ -8,10 +8,15 @@ import { Footer } from "@/components/layout/Footer";
 import { Toaster } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/contexts/authStore";
+import { useMessages } from "@/hooks/useMessages"; // <-- import your hook
 
 function AppLayout({ showFooter = false }) {
   const { i18n } = useTranslation();
-  const { user } = useAuthStore(); // ✅ REAL USER FROM STORE
+  const { user } = useAuthStore();
+
+  const { unreadCountQuery } = useMessages(); // <-- get unread count
+
+  const unreadCount = unreadCountQuery?.data ?? 0; // <-- default to 0
 
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
@@ -31,6 +36,7 @@ function AppLayout({ showFooter = false }) {
           collapsed={sidebarCollapsed}
           onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
           isRtl={isRtl}
+          unreadCount={unreadCount} // <-- pass safely
         />
       </div>
 
@@ -39,6 +45,7 @@ function AppLayout({ showFooter = false }) {
         isOpen={mobileNavOpen}
         onClose={() => setMobileNavOpen(false)}
         isRtl={isRtl}
+        unreadCount={unreadCount} // <-- pass safely
       />
 
       {/* Main content */}
@@ -54,7 +61,7 @@ function AppLayout({ showFooter = false }) {
               : "lg:pl-64"
         )}
       >
-        <Header onMenuClick={() => setMobileNavOpen(true)} user={user} />
+        <Header onMenuClick={() => setMobileNavOpen(true)} user={user} unreadCount={unreadCount} />
 
         <main className="flex-1 p-4 md:p-6">
           <Outlet />
@@ -63,7 +70,6 @@ function AppLayout({ showFooter = false }) {
         {showFooter && <Footer />}
       </div>
 
-      {/* Keep only ONE toaster globally */}
       <Toaster position="top-right" richColors />
     </div>
   );

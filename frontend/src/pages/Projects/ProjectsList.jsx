@@ -34,7 +34,6 @@ import ProjectEditModal from "./ProjectEditModal";
 
 function ProjectsList() {
   const { t } = useTranslation();
-  const { user } = useAuthStore((state) => state.user);
 
   const [searchValue, setSearchValue] = useState("");
   const [activeFilters, setActiveFilters] = useState({});
@@ -47,6 +46,9 @@ function ProjectsList() {
   const { projects = [], isLoading, isError } = useProjects();
   const { data: categories, isLoading: categoriesLoading } = useCategories();
   const { data: skills, isLoading: skillsLoading } = useSkills();
+
+  const auth = useAuthStore();
+  const canCreateProject = auth.isClient();
 
   const isAnyLoading = isLoading || categoriesLoading || skillsLoading;
 
@@ -162,15 +164,17 @@ function ProjectsList() {
               Manage and track all your projects
             </p>
           </div>
-          <ProjectCreateModal
-            trigger={
-              <Button size="lg" disabled={isAnyLoading}>
-                <Plus className="h-5 w-5 mr-2" />
-                {t("project.create") || "Create Project"}
-              </Button>
-            }
-            onSuccess={() => window.location.reload()}
-          />
+          {canCreateProject && (
+            <ProjectCreateModal
+              trigger={
+                <Button size="lg" disabled={isAnyLoading}>
+                  <Plus className="h-5 w-5 mr-2" />
+                  {t("project.create")}
+                </Button>
+              }
+              onSuccess={() => queryClient.invalidateQueries(["projects"])}
+            />
+          )}
         </div>
 
         {/* Search & Filters */}
@@ -253,7 +257,7 @@ function ProjectsList() {
                               </Button>
                             </Link>
 
-                            {project.is_owner && (
+                            {project.is_owner && project.status === "open" && (
                               <>
                                 <Button
                                   size="sm"

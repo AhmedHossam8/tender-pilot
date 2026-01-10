@@ -56,7 +56,9 @@ const BidsList = () => {
 
       // Fetch bids from API
       const response = await bidService.getBids(params);
-      setBids(response.data);
+      // Handle both array and paginated response formats
+      const bidsData = Array.isArray(response.data) ? response.data : (response.data?.results ?? []);
+      setBids(bidsData);
     } catch (err) {
       console.error('Error loading bids:', err);
       setError('Failed to load bids. Please try again.');

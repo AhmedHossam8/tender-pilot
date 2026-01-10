@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from apps.bids.views import BidViewSet, BidMilestoneViewSet, BidAttachmentViewSet
 
 router = DefaultRouter()
-router.register(r'bids', BidViewSet, basename='bid')
+router.register(r'', BidViewSet, basename='bid')
 router.register(r'milestones', BidMilestoneViewSet, basename='bid-milestone')
 router.register(r'attachments', BidAttachmentViewSet, basename='bid-attachment')
 

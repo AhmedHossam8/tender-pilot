@@ -104,6 +104,8 @@ class BidViewSet(viewsets.ModelViewSet):
             "status": "shortlisted" | "accepted" | "rejected" | "withdrawn",
             "reason": "Optional reason for the status change"
         }
+        
+        When a bid is accepted, all other bids for the same project are automatically rejected.
         """
         bid = self.get_object()
         serializer = BidStatusChangeSerializer(
@@ -122,6 +124,24 @@ class BidViewSet(viewsets.ModelViewSet):
                     action=new_status,
                     extra_info=reason
                 )
+                
+                # If accepting a bid, automatically reject all other bids for this project
+                if new_status == 'accepted':
+                    other_bids = Bid.objects.filter(
+                        project=bid.project
+                    ).exclude(id=bid.id).exclude(status__in=['rejected', 'withdrawn'])
+                    
+                    for other_bid in other_bids:
+                        try:
+                            other_bid.change_status(
+                                new_status='rejected',
+                                user=request.user,
+                                action='auto_reject',
+                                extra_info='Automatically rejected because another bid was accepted'
+                            )
+                        except ValueError:
+                            # Skip if transition not allowed
+                            pass
                 
                 # Return updated bid
                 response_serializer = BidDetailSerializer(bid)

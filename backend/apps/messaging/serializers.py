@@ -56,6 +56,7 @@ class ConversationSerializer(serializers.ModelSerializer):
 
 class CreateConversationSerializer(serializers.Serializer):
     participants = serializers.ListField(child=serializers.IntegerField())
+    project_id = serializers.IntegerField(required=False)
 
     def validate_participants(self, value):
         # Remove duplicates and ensure users exist
@@ -70,7 +71,8 @@ class CreateConversationSerializer(serializers.Serializer):
         if user.id not in participants_ids:
             participants_ids.append(user.id)
 
-        conversation = Conversation.objects.create()
+        project_id = validated_data.get("project_id")
+        conversation = Conversation.objects.create(project_id=project_id)
 
         # Create participants safely
         for uid in participants_ids:

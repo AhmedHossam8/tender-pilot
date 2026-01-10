@@ -106,7 +106,7 @@ class AIMatchingService:
                         cached_match = MatchingCache.get_match_score(project.id, provider.id)
                         if cached_match:
                             cached_match['provider_id'] = provider.id
-                            cached_match['provider_name'] = f"{provider.first_name} {provider.last_name}".strip() or provider.email
+                            cached_match['provider_name'] = provider.full_name or provider.email
                             cached_match['cached'] = True
                             results.append(cached_match)
                             continue
@@ -121,7 +121,7 @@ class AIMatchingService:
                         match_result['cached'] = False
                         result = {
                             'provider_id': provider.id,
-                            'provider_name': f"{provider.first_name} {provider.last_name}".strip() or provider.email,
+                            'provider_name': provider.full_name or provider.email,
                             **match_result
                         }
                         results.append(result)
@@ -325,7 +325,7 @@ class AIMatchingService:
         """
         # TODO: Extract from UserProfile once implemented
         return {
-            'name': f"{provider.first_name} {provider.last_name}".strip() or provider.email,
+            'name': provider.full_name or provider.email,
             'bio': '',  # TODO: Get from profile
             'skills': [],  # TODO: Get from profile
             'hourly_rate': 0,  # TODO: Get from profile

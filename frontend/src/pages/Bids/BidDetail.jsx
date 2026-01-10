@@ -1,86 +1,100 @@
-import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { useAuthStore } from "@/contexts/authStore";
-import { LoadingSpinner, EmptyState } from "@/components/common";
-import { getBidById, changeBidStatus, withdrawBid } from "../../services/bid.service";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
+import bidService from '@/services/bid.service';
+import { projectService } from "../../services/project.services";
+import { useChangeBidStatus } from "@/hooks/useBids";
+import { useAuthStore } from "@/contexts/authStore";
+
 import {
     Card,
     CardHeader,
     CardTitle,
     CardContent,
     Button,
-    StatusBadge,
+    Badge,
+    Skeleton,
 } from "@/components/ui";
 
-const BidDetail = () => {
-    const { t } = useTranslation();
-    const { id } = useParams();
+export default function BidDetail() {
+    const { id } = useParams(); // bid id
     const navigate = useNavigate();
-    const { user } = useAuthStore();
+    const auth = useAuthStore();
 
-    const [bid, setBid] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [isUpdating, setIsUpdating] = useState(false);
+    const changeBidStatus = useChangeBidStatus();
 
-    useEffect(() => {
-        const fetchBid = async () => {
-            try {
-                setIsLoading(true);
-                const response = await getBidById(id);
-                setBid(response.data);
-            } catch (err) {
-                console.error("Error fetching bid:", err);
-                setError(err);
-            } finally {
-                setIsLoading(false);
-            }
-        };
+    /* =======================
+       Fetch Bid
+    ======================= */
+    const {
+        data: bid,
+        isLoading,
+        isError,
+        refetch,
+    } = useQuery({
+        queryKey: ["bid", id],
+        queryFn: async () => (await bidService.getBid(id)).data,
+    });
 
-        fetchBid();
-    }, [id]);
+    if (isLoading) {
+        return <Skeleton className="h-40 w-full max-w-3xl mx-auto" />;
+    }
 
-    const handleStatusChange = async (newStatus, reason = "") => {
-        setIsUpdating(true);
+    if (isError || !bid) {
+        return (
+            <p className="text-center text-red-500">
+                Failed to load bid
+            </p>
+        );
+    }
+
+    /* =======================
+       Flags
+    ======================= */
+    const isClient = auth.isClient();
+    const isProvider = auth.isProvider();
+
+    const isOwnerClient = bid.project?.is_owner;
+    const isBidOwner = bid.is_owner;
+
+    const isPending = bid.status === "pending";
+    const isAccepted = bid.status === "accepted";
+    const isRejected = bid.status === "rejected";
+
+    /* =======================
+       Actions
+    ======================= */
+    const handleDecision = async (status) => {
         try {
-            const response = await changeBidStatus(id, newStatus, reason);
-            setBid(response.data.bid);
-            toast.success(t("bid.statusUpdated", "Bid status updated successfully"));
-        } catch (err) {
-            console.error("Error updating status:", err);
-            toast.error(t("bid.statusUpdateError", "Failed to update bid status"));
-        } finally {
-            setIsUpdating(false);
+            await changeBidStatus.mutateAsync({ id: bid.id, status });
+
+            if (status === "accepted") {
+                await projectService.updateProjectStatus(
+                    bid.project.id,
+                    "in_progress"
+                );
+            }
+
+            toast.success(`Bid ${status}`);
+            refetch();
+        } catch {
+            toast.error("Failed to update bid");
         }
     };
 
     const handleWithdraw = async () => {
-        if (!window.confirm(t("bid.confirmWithdraw", "Are you sure you want to withdraw this bid?"))) {
-            return;
-        }
-
-        setIsUpdating(true);
         try {
-            const response = await withdrawBid(id);
-            setBid(response.data.bid);
-            toast.success(t("bid.withdrawn", "Bid withdrawn successfully"));
-        } catch (err) {
-            console.error("Error withdrawing bid:", err);
-            toast.error(t("bid.withdrawError", "Failed to withdraw bid"));
-        } finally {
-            setIsUpdating(false);
+            await bidService.withdrawBid(bid.id);
+            toast.success("Bid withdrawn");
+            navigate(`/projects/${bid.project.id}`);
+        } catch {
+            toast.error("Failed to withdraw bid");
         }
     };
 
-    if (isLoading) return <LoadingSpinner text={t("common.loading", "Loading...")} />;
-    if (error) return <EmptyState title={t("bid.loadError", "Failed to load bid")} />;
-    if (!bid) return <EmptyState title={t("bid.noBid", "Bid not found")} />;
-
-    const isProvider = bid.service_provider?.id === user?.id;
-    const isClient = bid.project?.created_by === user?.id;
-
+    /* =======================
+       UI
+    ======================= */
     return (
         <div className="p-8 min-h-screen bg-background">
             <div className="max-w-4xl mx-auto space-y-6">
@@ -136,75 +150,58 @@ const BidDetail = () => {
                                 {bid.cover_letter}
                             </div>
                         </div>
+                    )}
 
-                        {bid.milestones && bid.milestones.length > 0 && (
-                            <div>
-                                <h3 className="font-semibold mb-2">Milestones</h3>
-                                <div className="space-y-2">
-                                    {bid.milestones.map((milestone, index) => (
-                                        <div key={index} className="border p-3 rounded-md">
-                                            <div className="font-medium">{milestone.title}</div>
-                                            <div className="text-sm text-muted-foreground">{milestone.description}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+                    <div>
+                        <strong>Cover Letter:</strong>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                            {bid.cover_letter}
+                        </p>
+                    </div>
+                </CardContent>
+            </Card>
 
-                        <div className="flex gap-2 pt-4 border-t">
-                            {isProvider && bid.status === "pending" && (
-                                <Button 
-                                    variant="destructive" 
-                                    onClick={handleWithdraw}
-                                    disabled={isUpdating}
-                                >
-                                    Withdraw Bid
-                                </Button>
-                            )}
-                            
-                            {isClient && bid.status === "pending" && (
-                                <>
-                                    <Button 
-                                        variant="default" 
-                                        onClick={() => handleStatusChange("shortlisted")}
-                                        disabled={isUpdating}
-                                    >
-                                        Shortlist
-                                    </Button>
-                                    <Button 
-                                        variant="destructive" 
-                                        onClick={() => handleStatusChange("rejected")}
-                                        disabled={isUpdating}
-                                    >
-                                        Reject
-                                    </Button>
-                                </>
-                            )}
-                            
-                            {isClient && bid.status === "shortlisted" && (
-                                <>
-                                    <Button 
-                                        variant="success" 
-                                        onClick={() => handleStatusChange("accepted")}
-                                        disabled={isUpdating}
-                                    >
-                                        Accept Bid
-                                    </Button>
-                                    <Button 
-                                        variant="destructive" 
-                                        onClick={() => handleStatusChange("rejected")}
-                                        disabled={isUpdating}
-                                    >
-                                        Reject
-                                    </Button>
-                                </>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+            {/* =======================
+                CLIENT ACTIONS
+            ======================= */}
+            {isClient && isOwnerClient && isPending && (
+                <div className="flex gap-3">
+                    <Button
+                        onClick={() => handleDecision("accepted")}
+                        variant="success"
+                    >
+                        Accept Bid
+                    </Button>
+
+                    <Button
+                        onClick={() => handleDecision("rejected")}
+                        variant="destructive"
+                    >
+                        Reject Bid
+                    </Button>
+                </div>
+            )}
+
+            {/* =======================
+                PROVIDER ACTIONS
+            ======================= */}
+            {isProvider && isBidOwner && isPending && (
+                <Button
+                    variant="destructive"
+                    onClick={handleWithdraw}
+                >
+                    Withdraw Bid
+                </Button>
+            )}
+
+            {/* =======================
+                LOCKED STATE
+                ======================= */}
+            {!isPending && (
+                <p className="text-sm text-muted-foreground">
+                    This bid is locked and can no longer be modified.
+                </p>
+            )}
         </div>
     );
-};
-
-export default BidDetail;
+}

@@ -1,8 +1,17 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { projectService } from "../../services/project.services";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
+
+import { projectService } from "../../services/project.services";
+import { useProjects } from "../../hooks/useProjects";
+import { useProjectMatches } from "../../hooks/useProjectMatches";
+import { useBids, useChangeBidStatus } from "../../hooks/useBids";
+import { useAuthStore } from "@/contexts/authStore";
+import { messagingService } from "@/services/messaging.service";
+import { createBid } from "../../services/bid.service";
+
 import {
   Button,
   Card,
@@ -10,63 +19,143 @@ import {
   CardTitle,
   CardContent,
   Skeleton,
-  SkeletonCard,
   SkeletonList,
-  SkeletonText,
+  Badge,
 } from "@/components/ui";
-import { ConfirmDialog, LoadingSpinner } from "@/components/common";
-import { useProjects } from "../../hooks/useProjects";
-import { useAuthStore } from "@/contexts/authStore";
-import { useTranslation } from "react-i18next";
+import { ConfirmDialog } from "@/components/common";
+import { StatusBadge } from "@/components/ui";
+
 import ProjectEditModal from "./ProjectEditModal";
-import { useProjectMatches } from "../../hooks/useProjectMatches";
 
 export default function ProjectDetail() {
-  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
-  const formatStatus = (status) => {
-    switch (status) {
-      case 'in_progress':
-        return 'In Progress';
-      case 'completed':
-        return 'Completed';
-      case 'open':
-        return 'Open';
-      case 'deleted':
-        return 'Deleted';
-      default:
-        return status;
-    }
-  };
+  const { t } = useTranslation();
+  const auth = useAuthStore();
+
   const [editOpen, setEditOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [updateStatusLoading, setUpdateStatusLoading] = useState(false);
+  const [statusLoading, setStatusLoading] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
 
-  // Fetch project
+  /* =======================
+     Fetch Project
+  ======================= */
   const { data: project, isLoading, isError, refetch } = useQuery({
     queryKey: ["project", id],
-    queryFn: async () => {
-      const res = await projectService.getProject(id);
-      return res.data;
+    queryFn: async () => (await projectService.getProject(id)).data,
+  });
+
+  /* =======================
+     Derived Flags
+  ======================= */
+  const flags = useMemo(() => {
+    if (!project) return {};
+    return {
+      isOwner: project.is_owner,
+      isOpen: project.status === "open",
+      isInProgress: project.status === "in_progress",
+      isCompleted: project.status === "completed",
+      isClient: auth.isClient(),
+      isProvider: auth.isProvider(),
+    };
+  }, [project, auth]);
+
+  /* =======================
+   Bids
+  ======================= */
+  const { data: bidsData, isLoading: bidsLoading, refetch: refetchBids } = useBids({ project: id });
+  // Handle both array and paginated response formats
+  const bids = Array.isArray(bidsData) ? bidsData : (bidsData?.results ?? []);
+
+  // Check if current provider has already applied
+  const hasApplied = bids.some(bid => bid.service_provider === auth.user?.id || bid.service_provider_id === auth.user?.id);
+
+  // Mutation to submit a new bid
+  const { mutateAsync: createBidMutation, isLoading: creatingBid } = useMutation({
+    mutationFn: (bidData) => createBid(bidData),
+    onSuccess: () => {
+      toast.success(t("Bid submitted successfully"));
+      refetchBids();      // refresh bids list
+      refetch();          // refresh project data if needed
+    },
+    onError: (error) => {
+      const errorMessage = error.response?.data?.error || 
+                          error.response?.data?.non_field_errors?.[0] ||
+                          error.response?.data?.message ||
+                          t("Failed to submit bid");
+      toast.error(errorMessage);
     },
   });
 
-  // Fetch AI matched providers
-  const { data: matchesData, isLoading: matchesLoading } = useProjectMatches(id);
-  const matches = matchesData?.matches ?? []; // ensure array
+  // Handler to submit a simple bid (you can later open a modal for detailed info)
+  const handleSubmitBid = async () => {
+    if (!auth.user) return toast.error(t("You must be logged in"));
 
-  const updateStatus = async (projectId, newStatus) => {
+    await createBidMutation({
+      project: id,
+      cover_letter: "Hello, I would like to work on this project.", // You can make this dynamic via a modal/input
+      proposed_amount: 1000,   // Replace with actual input value if needed
+      proposed_timeline: 7,    // Replace with actual input value if needed
+    });
+  };
+
+
+  /* =======================
+     AI Matches
+  ======================= */
+  const {
+    data: matchesData,
+    refetch: refetchMatches,
+    isLoading: matchesLoading,
+  } = useProjectMatches(id);
+
+  const matches = matchesData?.matches ?? [];
+
+  /* =======================
+     Messaging - Project Conversation
+  ======================= */
+  const { data: projectConversation } = useQuery({
+    queryKey: ["project-conversation", id],
+    queryFn: async () => {
+      const conversations = await messagingService.getConversations().then(res => res.data.results);
+      return conversations.find(conv => conv.project?.id?.toString() === id.toString());
+    },
+  });
+
+  const { data: unreadCount = 0 } = useQuery({
+    queryKey: ["unread-count", projectConversation?.id],
+    queryFn: async () => {
+      if (!projectConversation?.id) return 0;
+      try {
+        const data = await messagingService.getUnreadCount().then(res => res.data);
+        const convUnread = data?.conversations?.find(c => c.id === projectConversation.id);
+        return convUnread?.unread_count ?? 0;
+      } catch (error) {
+        console.error('Failed to fetch unread count:', error);
+        return 0;
+      }
+    },
+    enabled: !!projectConversation?.id,
+    retry: 1,
+  });
+
+  /* =======================
+     Actions
+  ======================= */
+  const { deleteProject } = useProjects();
+
+  const updateProjectStatus = async (newStatus) => {
     try {
-      setUpdateStatusLoading(true);
-      await projectService.updateProjectStatus(projectId, newStatus);
-      toast.success(t("project.statusUpdated", "Project status updated successfully"));
-      refetch(); // Refresh project data
-    } catch (error) {
-      toast.error(t("project.statusUpdateError", "Failed to update project status"));
+      setStatusLoading(true);
+      await projectService.updateProjectStatus(id, newStatus);
+      toast.success(t("Project status updated"));
+      refetch();
+    } catch {
+      toast.error(t("Failed to update project status"));
     } finally {
-      setUpdateStatusLoading(false);
+      setStatusLoading(false);
     }
   };
 
@@ -77,61 +166,53 @@ export default function ProjectDetail() {
       toast.success(t("project.deleteSuccess"));
       navigate("/app/projects");
     } catch {
-      toast.error(t("project.deleteError"));
+      toast.error(t("Failed to delete project"));
     } finally {
       setDeleting(false);
     }
   };
 
+  const handleBidDecision = async (bidId, status) => {
+    try {
+      await changeBidStatus.mutateAsync({ id: bidId, status });
+      if (status === "accepted") await updateProjectStatus("in_progress");
+      toast.success(`${t("Bid")} ${status}`);
+    } catch {
+      toast.error(t("Failed to update bid"));
+    }
+  };
+
+  const handleAIAnalysis = async () => {
+    try {
+      setAiLoading(true);
+      await projectService.aiAnalysis(id);
+      toast.success(t("AI analysis completed"));
+    } catch {
+      toast.error(t("AI analysis failed"));
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  /* =======================
+     Loading / Error
+  ======================= */
   if (isLoading || !project) {
     return (
       <div className="max-w-4xl mx-auto space-y-6">
-        {/* Project Info Skeleton */}
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-8 w-1/3" />
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <SkeletonText lines={3} />
-            <div className="grid grid-cols-2 gap-4">
-              <Skeleton className="h-4 w-1/2" />
-              <Skeleton className="h-4 w-1/2" />
-              <Skeleton className="h-4 w-1/2" />
-              <Skeleton className="h-4 w-1/2" />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Actions Skeleton */}
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-1/4" />
-          </CardHeader>
-          <CardContent className="flex gap-3">
-            <Skeleton className="h-10 w-28" />
-            <Skeleton className="h-10 w-32" />
-            <Skeleton className="h-10 w-24" />
-            <Skeleton className="h-10 w-24" />
-          </CardContent>
-        </Card>
-
-        {/* AI Matched Providers Skeleton */}
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-1/3" />
-          </CardHeader>
-          <CardContent>
-            <SkeletonList items={3} />
-          </CardContent>
-        </Card>
+        <Skeleton className="h-8 w-1/3" />
+        <SkeletonList items={4} />
       </div>
     );
   }
 
   if (isError) {
-    return <p className="text-center text-red-500">{t("project.loadError")}</p>;
+    return <p className="text-center text-red-500">{t("Failed to load project")}</p>;
   }
 
+  /* =======================
+     UI
+  ======================= */
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Project Info */}
@@ -139,44 +220,13 @@ export default function ProjectDetail() {
         <CardHeader>
           <CardTitle>{project.title}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3">
           <p className="text-muted-foreground">{project.description}</p>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <strong>Budget:</strong> ${project.budget ?? "-"}
-            </div>
-            <div>
-              <strong>Category:</strong> {project.category_name || project.category?.name || "-"}
-            </div>
-            <div>
-              <strong>Status:</strong> {formatStatus(project.status)}
-            </div>
-            <div>
-              <strong>Visibility:</strong> {project.visibility}
-            </div>
-            <div>
-              <strong>Created At:</strong> {new Date(project.created_at).toLocaleDateString()}
-            </div>
-          </div>
-
-          {/* Skills */}
-          <div>
-            <strong>Skills:</strong>
-            {project.skills_names?.length ? (
-              <ul className="list-disc ml-6 mt-2">
-                {project.skills_names.map((skill, index) => (
-                  <li key={index}>{skill}</li>
-                ))}
-              </ul>
-            ) : project.skills?.length ? (
-              <ul className="list-disc ml-6 mt-2">
-                {project.skills.map((s) => (
-                  <li key={s.id}>{s.name}</li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-muted-foreground mt-1">-</p>
-            )}
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div><strong>{t("Budget")}:</strong> ${project.budget ?? "-"}</div>
+            <div><strong>{t("Status")}:</strong> {project.status}</div>
+            <div><strong>{t("Category")}:</strong> {project.category_name ?? "-"}</div>
+            <div><strong>{t("Created")}:</strong> {new Date(project.created_at).toLocaleDateString()}</div>
           </div>
         </CardContent>
       </Card>
@@ -184,68 +234,132 @@ export default function ProjectDetail() {
       {/* Actions */}
       <Card>
         <CardHeader>
-          <CardTitle>{t("project.actions")}</CardTitle>
+          <CardTitle>{t("Actions")}</CardTitle>
         </CardHeader>
-        <CardContent className="flex gap-3">
-          <Button disabled={updateStatusLoading || project.status !== 'open'} onClick={() => updateStatus(id, 'in_progress')}>Start Project</Button>
-          <Button disabled={updateStatusLoading || project.status !== 'in_progress'} onClick={() => updateStatus(id, 'completed')}>Complete Project</Button>
-          <Button onClick={() => setEditOpen(true)}>{t("project.edit")}</Button>
-          <Button
-            variant="destructive"
-            onClick={() => setShowDeleteConfirm(true)}
-            disabled={deleting}
-          >
-            {deleting && <LoadingSpinner size="sm" className="mr-2" />}
-            {t("project.delete")}
-          </Button>
-        </CardContent>
-      </Card>
+        <CardContent className="flex flex-wrap gap-3">
+          {flags.isProvider && flags.isOpen && !hasApplied && (
+            <Button onClick={handleSubmitBid} disabled={creatingBid}>
+              {creatingBid ? t("Submitting...") : t("Submit Bid")}
+            </Button>
+          )}
 
-      {/* AI Matched Providers */}
-      <Card>
-        <CardHeader>
-          <CardTitle>AI Matched Providers</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {matchesLoading ? (
-            <SkeletonList items={3} />
-          ) : matches.length === 0 ? (
-            <p className="text-muted-foreground">No matches found.</p>
-          ) : (
-            <ul className="space-y-2">
-              {matches.map((match) => (
-                <li key={match.provider_id || match.id} className="border p-2 rounded">
-                  <div className="flex justify-between">
-                    <span className="font-medium">{match.provider_name || match.name}</span>
-                    {match.match_score !== undefined && (
-                      <span className="text-sm text-gray-500">
-                        Score: {match.match_score}%
-                      </span>
-                    )}
-                  </div>
-                  {match.recommendation && <p className="text-sm mt-1">{match.recommendation}</p>}
-                </li>
-              ))}
-            </ul>
+          {flags.isOwner && flags.isOpen && (
+            <>
+              <Button onClick={() => setEditOpen(true)}>{t("Edit")}</Button>
+              <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)}>
+                {t("Delete")}
+              </Button>
+            </>
+          )}
+
+          {flags.isOwner && flags.isInProgress && (
+            <Button
+              disabled={statusLoading}
+              onClick={() => updateProjectStatus("completed")}
+            >
+              {t("Mark as Completed")}
+            </Button>
+          )}
+
+          {flags.isInProgress && projectConversation?.id && (
+            <Button onClick={() => navigate(`/messages/${projectConversation.id}`)}>
+              {t("Chat with Provider")}
+              {unreadCount > 0 && (
+                <Badge variant="destructive" className="ml-2">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </Badge>
+              )}
+            </Button>
           )}
         </CardContent>
       </Card>
 
-      {/* Edit Modal */}
+      {/* AI Assistance */}
+      {flags.isOwner && flags.isOpen && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("AI Assistance")}</CardTitle>
+          </CardHeader>
+          <CardContent className="flex gap-3">
+            <Button disabled={aiLoading} onClick={handleAIAnalysis}>
+              {t("Analyze Project")}
+            </Button>
+            <Button disabled={matchesLoading} onClick={refetchMatches}>
+              {t("Match Providers")}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Bids */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("Bids")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {bidsLoading ? (
+            <SkeletonList items={3} />
+          ) : bids.length === 0 ? (
+            <p className="text-muted-foreground">{t("No bids yet.")}</p>
+          ) : (
+            <div className="space-y-4">
+              {bids.map((bid) => (
+                <div key={bid.id} className="border rounded-lg p-4 space-y-2">
+                  <div className="flex justify-between">
+                    <div>
+                      <p className="font-semibold">{bid.service_provider_name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        ${bid.proposed_amount} • {bid.proposed_timeline} days
+                      </p>
+                    </div>
+                    <StatusBadge status={bid.status} />
+                  </div>
+
+                  <p className="text-sm">{bid.cover_letter}</p>
+
+                  {bid.ai_score && (
+                    <p className="text-xs text-muted-foreground">
+                      AI Score: {bid.ai_score}%
+                    </p>
+                  )}
+
+                  {flags.isClient && flags.isOpen && (
+                    <div className="flex gap-2 pt-2">
+                      <Button size="sm" onClick={() => handleBidDecision(bid.id, "accepted")}>
+                        {t("Accept")}
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => handleBidDecision(bid.id, "shortlisted")}>
+                        {t("Shortlist")}
+                      </Button>
+                      <Button size="sm" variant="destructive" onClick={() => handleBidDecision(bid.id, "rejected")}>
+                        {t("Reject")}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Modals */}
       <ProjectEditModal
         open={editOpen}
         onOpenChange={setEditOpen}
         project={project}
-        onSuccess={() => setEditOpen(false)}
+        onSuccess={() => {
+          setEditOpen(false);
+          refetch();
+        }}
       />
 
-      {/* Delete Confirm */}
       <ConfirmDialog
         open={showDeleteConfirm}
         onOpenChange={setShowDeleteConfirm}
-        title={t("project.confirmDeleteTitle")}
-        description={t("project.confirmDeleteDescription")}
-        confirmLabel={t("confirm.delete")}
+        title={t("Delete Project")}
+        description={t("Are you sure you want to delete this project?")}
+        confirmLabel={t("Delete")}
         variant="destructive"
         loading={deleting}
         onConfirm={handleDelete}

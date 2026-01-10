@@ -272,7 +272,7 @@ const ClientDashboard = () => {
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-gray-900">{t('dashboard.recentBookings')}</h2>
-            <Link to="/bookings" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+            <Link to="/app/bookings" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
               {t('dashboard.viewAll')}
             </Link>
           </div>

@@ -27,6 +27,9 @@ export const getBidById = async (id) => {
   return api.get(`/bids/${id}/`);
 };
 
+// Alias for backwards compatibility
+export const getBid = getBidById;
+
 /**
  * Create a new bid
  * @param {Object} bidData - Bid creation data
@@ -59,7 +62,7 @@ export const updateBid = async (id, bidData) => {
  * @returns {Promise} Updated bid
  */
 export const changeBidStatus = async (id, status, reason = "") => {
-  return api.post(`/v1/bids/${id}/change-status/`, { status, reason });
+  return api.post(`/bids/${id}/change-status/`, { status, reason });
 };
 
 /**
@@ -69,7 +72,7 @@ export const changeBidStatus = async (id, status, reason = "") => {
  * @returns {Promise} Updated bid
  */
 export const withdrawBid = async (id, reason = "") => {
-  return api.post(`/v1/bids/${id}/withdraw/`, { reason });
+  return api.post(`/bids/${id}/withdraw/`, { reason });
 };
 
 /**

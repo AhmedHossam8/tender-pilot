@@ -91,12 +91,18 @@ class Bid(models.Model):
             models.Index(fields=['ai_score']),
         ]
         ordering = ['-created_at']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['project', 'service_provider'],
+                name='unique_bid_per_project_provider'
+            )
+        ]
 
     # Define valid status transitions
     STATUS_TRANSITIONS = {
         BidStatus.PENDING: [BidStatus.SHORTLISTED, BidStatus.REJECTED, BidStatus.WITHDRAWN],
         BidStatus.SHORTLISTED: [BidStatus.ACCEPTED, BidStatus.REJECTED, BidStatus.WITHDRAWN],
-        BidStatus.ACCEPTED: [],  # Terminal state
+        BidStatus.ACCEPTED: [BidStatus.REJECTED],  # Allow reversing acceptance
         BidStatus.REJECTED: [],  # Terminal state
         BidStatus.WITHDRAWN: [],  # Terminal state
     }

@@ -7,34 +7,14 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { User, Clock } from 'lucide-react';
 
-const MessagesList = () => {
+const MessagesList = ({ providerId, projectId }) => {
   const { t } = useTranslation();
   const { conversationsQuery, unreadCountQuery, createConversationMutation } = useMessages();
-
-  const { data: conversations, isLoading: isLoadingConversations, error } = conversationsQuery;
+  const { data: conversations, isLoading: isLoadingConversations } = conversationsQuery;
   const { data: unreadCount } = unreadCountQuery;
+  const navigate = useNavigate();
 
-  if (isLoadingConversations) {
-    return (
-      <div className="container mx-auto p-4 space-y-4">
-        <Skeleton className="h-10 w-64" />
-        {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-24 w-full" />
-        ))}
-      </div>
-    );
-  }
-
-  const formatTimestamp = (timestamp) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffInMs = now - date;
-    const diffInHours = diffInMs / (1000 * 60 * 60);
-    if (diffInHours < 24) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-    return date.toLocaleDateString();
-  };
+  if (isLoadingConversations) return <Skeleton />;
 
   return (
     <div className="container mx-auto p-4 max-w-4xl">
@@ -53,7 +33,17 @@ const MessagesList = () => {
           title={t('messages.noConversations', 'No conversations yet')}
           description={t('messages.noMessages', 'Start a conversation to see messages here.')}
           actionLabel={t('messages.startConversation', 'Start Conversation')}
-          action={() => createConversationMutation.mutate([/* participant IDs here */])}
+          action={() => {
+            if (!providerId) return toast.error("No provider selected");
+
+            createConversationMutation.mutate([providerId], {
+              onSuccess: (data) => {
+                toast.success("Conversation started!");
+                navigate(`/messages/${data.data.id}`);
+              },
+              onError: () => toast.error("Failed to start conversation"),
+            });
+          }}
         />
       ) : (
         <div className="space-y-3">

@@ -1,24 +1,27 @@
-from rest_framework import serializers, viewsets
+from django.db import models
+from django.core.exceptions import ObjectDoesNotExist
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters import rest_framework as filters
 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
+import logging
+
 from .models import Project, ProjectRequirement
+from apps.bids.models import Bid
 from .serializers import (
     ProjectSerializer,
     ProjectRequirementSerializer,
     ProjectCreateSerializer,
 )
-from rest_framework import status
-from django.core.exceptions import ObjectDoesNotExist
-from .permissions import IsProjectOwnerOrReadOnly
+from .permissions import IsProjectOwnerOrAssignedProvider, IsProjectOwnerOrReadOnly
 from apps.ai_engine.services.analysis_service import ProjectAnalysisService
 from apps.ai_engine.services.matching_service import AIMatchingService
 from apps.ai_engine.permissions import CanUseAI
-from apps.ai_engine.decorators import ai_rate_limit
-import logging
+from apps.messaging.models import Conversation
 
 logger = logging.getLogger(__name__)
+
 
 # ------------------------
 # Filters
@@ -49,16 +52,29 @@ class ProjectViewSet(viewsets.ModelViewSet):
         .exclude(status="deleted")
     )
 
-    permission_classes = [IsProjectOwnerOrReadOnly]
+    permission_classes = [IsProjectOwnerOrAssignedProvider]
     filterset_class = ProjectFilter
     ordering_fields = ["created_at", "budget"]
     search_fields = ["title", "description"]
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        user = self.request.user
+        queryset = super().get_queryset().exclude(status="deleted")
+
         if self.action == 'list':
-            # For list view, only show user's own projects
-            return queryset.filter(created_by=self.request.user)
+            # Everyone sees open or public projects
+            return queryset.filter(
+                models.Q(status='open') | models.Q(visibility='public')
+            )
+
+        if self.action in ['retrieve', 'update', 'partial_update']:
+            # Owner, open projects, or assigned providers
+            return queryset.filter(
+                models.Q(created_by=user) |
+                models.Q(status='open') |
+                models.Q(bids__service_provider=user, bids__status='accepted', status='in_progress')
+            ).distinct()
+
         return queryset
 
     def get_serializer_class(self):
@@ -73,12 +89,23 @@ class ProjectViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         if instance.status == "closed":
             raise serializers.ValidationError("Closed projects cannot be modified.")
-        serializer.save(created_by=self.request.user)
+        serializer.save()
 
     def perform_destroy(self, instance):
         instance.status = "deleted"
         instance.save()
 
+    # ------------------------
+    # Helper
+    # ------------------------
+    def create_conversation_for_project(self, project, provider):
+        conversation, created = Conversation.objects.get_or_create(project=project)
+        conversation.participants.add(project.created_by, provider)
+        return conversation
+
+    # ------------------------
+    # Custom actions
+    # ------------------------
     @action(detail=True, methods=["post"])
     def bulk_requirements(self, request, pk=None):
         project = self.get_object()
@@ -97,40 +124,11 @@ class ProjectViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'], permission_classes=[CanUseAI], url_path='ai-analysis')
     # @ai_rate_limit(rate='10/h')
     def ai_analysis(self, request, pk=None):
-        """
-        Generate AI analysis for a project.
-
-        POST /api/v1/projects/{id}/ai-analysis/
-
-        Request Body:
-        {
-            "force_refresh": false,
-            "analysis_depth": "standard",  // quick|standard|detailed
-            "include_documents": true
-        }
-
-        Response:
-        {
-            "request_id": "uuid",
-            "analysis": {
-                "summary": "...",
-                "key_requirements": [...],
-                "estimated_complexity": "medium",
-                "recommended_actions": [...]
-            },
-            "tokens_used": 1234,
-            "cost": 0.0037,
-            "cached": false
-        }
-        """
         project = self.get_object()
-
-        # Extract parameters
         force_refresh = request.data.get('force_refresh', False)
         analysis_depth = request.data.get('analysis_depth', 'standard')
 
         try:
-            # Use the AI Analysis Service
             service = ProjectAnalysisService()
             result = service.analyze_project(
                 project_id=str(project.id),
@@ -139,7 +137,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 analysis_depth=analysis_depth
             )
 
-            # Update project with AI summary
             if 'analysis' in result and 'summary' in result['analysis']:
                 project.ai_summary = result['analysis']['summary']
                 project.save(update_fields=['ai_summary'])
@@ -148,16 +145,11 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         except ValueError as e:
             logger.error(f"Project analysis validation error: {e}")
-            return Response(
-                {'error': str(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             logger.error(f"Project analysis failed: {e}", exc_info=True)
-            return Response(
-                {'error': 'AI analysis failed. Please try again later.'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({'error': 'AI analysis failed. Please try again later.'},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=True, methods=['get'], permission_classes=[CanUseAI], url_path='match-providers')
     def match_providers(self, request, pk=None):
@@ -168,17 +160,15 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         try:
             matching_service = AIMatchingService()
-
             provider_ids = None
             if only_applicants:
-                # Only match providers who applied
                 provider_ids = project.bids.all().values_list('service_provider_id', flat=True)
 
             matches = matching_service.match_providers_to_project(
                 project=project,
                 limit=limit,
                 use_cache=use_cache,
-                provider_ids=provider_ids  # <-- filtered providers
+                provider_ids=provider_ids
             )
 
             return Response({
@@ -190,162 +180,47 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         except Exception as e:
             logger.error(f"Provider matching failed: {e}", exc_info=True)
-            return Response(
-                {'error': 'Failed to match providers. Please try again later.'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({'error': 'Failed to match providers. Please try again later.'},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @action( detail=True, methods=['get'], url_path='ai-insights')
-    def ai_insights(self, request, pk=None):
-        """
-        Get AI-powered insights about the project.
+    @action(detail=True, methods=['post'])
+    def apply(self, request, pk=None):
+        project = self.get_object()
+        provider = request.user
 
-        GET /api/v1/projects/{id}/ai-insights/
+        if project.status != "open":
+            return Response({"error": "Cannot apply to a project that is not open."}, status=400)
 
-        Returns cached AI analysis data if available.
-        """
+        if project.bids.filter(service_provider=provider).exists():
+            return Response({"error": "You have already applied for this project."}, status=400)
+
+        bid = project.bids.create(service_provider=provider)
+        return Response({"status": "applied", "bid_id": bid.id}, status=201)
+
+    @action(detail=True, methods=['post'])
+    def choose_provider(self, request, pk=None):
         project = self.get_object()
 
-        # Check for existing AI analysis
-        from apps.ai_engine.models import AIRequest, AIResponse, AIRequestStatus
+        if project.created_by != request.user:
+            return Response({"error": "Only the owner can choose a provider."}, status=403)
 
-        latest_request = (
-            AIRequest.objects
-            .filter(
-                content_type='project',
-                object_id=str(project.id),
-                status=AIRequestStatus.COMPLETED,
-                prompt_name='project_analysis'
-            )
-            .select_related('response')
-            .order_by('-created_at')
-            .first()
-        )
-
-        if not latest_request:
-            return Response({
-                'has_analysis': False,
-                'message': 'No AI analysis available yet. Run analysis first.'
-            }, status=status.HTTP_200_OK)
-
+        provider_id = request.data.get("provider_id")
         try:
-            import json
-            analysis = json.loads(latest_request.response.content)
+            bid = project.bids.get(service_provider_id=provider_id)
+        except Bid.DoesNotExist:
+            return Response({"error": "This provider has not applied."}, status=404)
 
-            return Response({
-                'has_analysis': True,
-                'analyzed_at': latest_request.created_at,
-                'analysis': analysis,
-                'tokens_used': latest_request.response.total_tokens,
-                'confidence_score': latest_request.response.confidence_score
-            }, status=status.HTTP_200_OK)
+        project.status = "in_progress"
+        project.save()
+        bid.status = 'accepted'
+        bid.save()
+        project.bids.exclude(id=bid.id).update(status='rejected')
 
-        except Exception as e:
-            logger.error(f"Failed to retrieve AI insights: {e}")
-            return Response({
-                'has_analysis': True,
-                'error': 'Failed to parse AI analysis'
-            }, status=status.HTTP_200_OK)
+        # Create conversation
+        self.create_conversation_for_project(project, bid.service_provider)
 
+        return Response({"status": "provider_chosen", "provider_id": provider_id}, status=200)
 
-    @action(detail=True, methods=['get'], url_path='requirements-summary')
-    def requirements_summary(self, request, pk=None):
-        """
-        Get AI-generated summary of project requirements.
-
-        GET /api/v1/projects/{id}/requirements-summary/
-
-        Useful for quick overview of what the project needs.
-        """
-        project = self.get_object()
-
-        # Get latest AI analysis
-        from apps.ai_engine.models import AIRequest, AIRequestStatus
-        import json
-
-        latest_request = (
-            AIRequest.objects
-            .filter(
-                content_type='project',
-                object_id=str(project.id),
-                status=AIRequestStatus.COMPLETED,
-                prompt_name='project_analysis'
-            )
-            .select_related('response')
-            .order_by('-created_at')
-            .first()
-        )
-
-        if not latest_request:
-            # Generate basic summary from project data
-            requirements = project.requirements.all()
-            return Response({
-                'has_ai_summary': False,
-                'requirements_count': requirements.count(),
-                'requirements': [
-                    {'id': r.id, 'description': r.description}
-                    for r in requirements
-                ]
-            })
-
-        try:
-            analysis = json.loads(latest_request.response.content)
-            key_requirements = analysis.get('key_requirements', [])
-
-            return Response({
-                'has_ai_summary': True,
-                'summary': analysis.get('summary', ''),
-                'key_requirements': key_requirements,
-                'complexity': analysis.get('estimated_complexity', 'unknown'),
-                'analyzed_at': latest_request.created_at
-            })
-
-        except Exception as e:
-            logger.error(f"Failed to get requirements summary: {e}")
-            return Response(
-                {'error': 'Failed to retrieve requirements summary'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-
-    @action(detail=False, methods=['get'], url_path='ai-recommendations')
-    def ai_recommendations(self, request):
-        """
-        Get AI-powered project recommendations for the current user.
-
-        GET /api/v1/projects/ai-recommendations/
-
-        Suggests projects that match user's skills and interests.
-        """
-        # This would require user profile with skills
-        # For now, return projects with high match scores
-
-        user = request.user
-
-        # Get user's projects to understand preferences
-        user_projects = Project.objects.filter(created_by=user)
-
-        # Get open projects excluding user's own
-        open_projects = (
-            Project.objects
-            .filter(status='open')
-            .exclude(created_by=user)
-            .select_related('category')
-            .prefetch_related('skills')
-            .order_by('-created_at')[:20]
-        )
-
-        # TODO: Use AI to rank these based on user profile
-        # For now, return simple list
-
-        from apps.projects.serializers import ProjectSerializer
-        serializer = ProjectSerializer(open_projects, many=True)
-
-        return Response({
-            'recommendations': serializer.data,
-            'count': len(serializer.data),
-            'note': 'AI-powered ranking coming soon'
-        })
 
 # ------------------------
 # Project Requirements
