@@ -102,20 +102,29 @@ export default function BidDetail() {
                 );
             }
 
-            toast.success(`Bid ${status}`);
-            refetch();
-        } catch {
-            toast.error("Failed to update bid");
+            // Query invalidation is handled by the mutation hook
+            // Show toast after all async operations complete
+            setTimeout(() => {
+                toast.success(`Bid ${status}`);
+            }, 0);
+        } catch (error) {
+            setTimeout(() => {
+                toast.error("Failed to update bid");
+            }, 0);
         }
     };
 
     const handleWithdraw = async () => {
         try {
             await bidService.withdrawBid(bid.id);
-            toast.success("Bid withdrawn");
-            navigate(`/projects/${bid.project.id}`);
-        } catch {
-            toast.error("Failed to withdraw bid");
+            setTimeout(() => {
+                toast.success("Bid withdrawn");
+                navigate(`/projects/${bid.project.id}`);
+            }, 0);
+        } catch (error) {
+            setTimeout(() => {
+                toast.error("Failed to withdraw bid");
+            }, 0);
         }
     };
 
