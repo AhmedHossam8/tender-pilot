@@ -96,47 +96,59 @@ export default function BidDetail() {
        UI
     ======================= */
     return (
-        <div className="max-w-3xl mx-auto space-y-6">
-            <Card>
-                <CardHeader className="flex flex-row justify-between items-center">
-                    <CardTitle>Bid Details</CardTitle>
+        <div className="p-8 min-h-screen bg-background">
+            <div className="max-w-4xl mx-auto space-y-6">
+                <div className="flex justify-between items-center">
+                    <h1 className="text-3xl font-bold">{t("bid.details", "Bid Details")}</h1>
+                    <Button variant="outline" onClick={() => navigate("/app/bids")}>
+                        {t("common.goBack", "Go Back")}
+                    </Button>
+                </div>
 
-                    {isAccepted && (
-                        <Badge variant="success">🏆 Winning Bid</Badge>
-                    )}
-                </CardHeader>
+                <Card>
+                    <CardHeader>
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <CardTitle>{bid.project_title || "Project"}</CardTitle>
+                                <p className="text-sm text-muted-foreground mt-2">
+                                    Submitted by: {bid.service_provider?.first_name} {bid.service_provider?.last_name}
+                                </p>
+                            </div>
+                            <StatusBadge status={bid.status} />
+                        </div>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <h3 className="font-semibold text-sm text-muted-foreground">Proposed Amount</h3>
+                                <p className="text-2xl font-bold">${bid.proposed_amount}</p>
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-sm text-muted-foreground">Timeline</h3>
+                                <p className="text-2xl font-bold">{bid.proposed_timeline} days</p>
+                            </div>
+                        </div>
 
-                <CardContent className="space-y-4">
-                    <div>
-                        <strong>Project:</strong>{" "}
-                        <span
-                            className="underline cursor-pointer"
-                            onClick={() => navigate(`/projects/${bid.project.id}`)}
-                        >
-                            {bid.project.title}
-                        </span>
-                    </div>
+                        {bid.ai_score && (
+                            <div>
+                                <h3 className="font-semibold text-sm text-muted-foreground mb-2">AI Match Score</h3>
+                                <div className="flex items-center gap-2">
+                                    <div className="flex-1 bg-secondary h-2 rounded-full overflow-hidden">
+                                        <div 
+                                            className="h-full bg-primary" 
+                                            style={{ width: `${bid.ai_score}%` }}
+                                        ></div>
+                                    </div>
+                                    <span className="font-semibold">{bid.ai_score}/100</span>
+                                </div>
+                            </div>
+                        )}
 
-                    <div>
-                        <strong>Provider:</strong> {bid.service_provider_name}
-                    </div>
-
-                    <div>
-                        <strong>Amount:</strong> ${bid.proposed_amount}
-                    </div>
-
-                    <div>
-                        <strong>Timeline:</strong> {bid.proposed_timeline} days
-                    </div>
-
-                    <div>
-                        <strong>Status:</strong>{" "}
-                        <Badge>{bid.status}</Badge>
-                    </div>
-
-                    {bid.ai_score && (
-                        <div className="text-sm text-muted-foreground">
-                            AI Score: {bid.ai_score}%
+                        <div>
+                            <h3 className="font-semibold mb-2">Cover Letter</h3>
+                            <div className="bg-secondary p-4 rounded-md whitespace-pre-wrap">
+                                {bid.cover_letter}
+                            </div>
                         </div>
                     )}
 

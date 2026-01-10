@@ -264,7 +264,15 @@ const BidList = () => {
       className={`p-8 min-h-screen bg-background ${i18n.language === "ar" ? "rtl" : "ltr"}`}
     >
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">{t("Bids on My Projects")}</h1>
+        <h1 className="text-3xl font-bold">{t("Bids")}</h1>
+        {user?.role === "provider" && (
+          <Link to="/app/bids/create">
+            <Button>
+              <Plus className="h-4 w-4 ml-2 rtl:ml-0 rtl:mr-2" />
+              {t("Submit Bid")}
+            </Button>
+          </Link>
+        )}
       </div>
 
       <Card>

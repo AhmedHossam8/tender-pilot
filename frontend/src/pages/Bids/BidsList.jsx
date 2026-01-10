@@ -110,7 +110,7 @@ const BidsList = () => {
    * Navigate to create bid page.
    */
   const handleCreateBid = () => {
-    navigate('/bids/create');
+    navigate('/app/bids/create');
   };
 
   return (

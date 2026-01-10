@@ -163,8 +163,8 @@ export default function ProjectDetail() {
     try {
       setDeleting(true);
       await deleteProject.mutateAsync(id);
-      toast.success(t("Project deleted"));
-      navigate("/projects");
+      toast.success(t("project.deleteSuccess"));
+      navigate("/app/projects");
     } catch {
       toast.error(t("Failed to delete project"));
     } finally {

@@ -152,8 +152,8 @@ const BidCreate = () => {
                             t("bid.submitBid", "Submit Bid")
                         )}
                     </Button>
-                    <Button
-                        onClick={() => navigate("/bids")}
+                    <Button 
+                        onClick={() => navigate("/app/bids")} 
                         className="w-full mt-2"
                         variant="outline"
                     >

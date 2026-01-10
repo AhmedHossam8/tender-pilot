@@ -8,12 +8,12 @@ export const serviceService = {
     update: (id, data) => api.patch(`/services/services/${id}/`, data),
     delete: (id) => api.delete(`/services/services/${id}/`),
 
-    // Service Packages
-    // getPackages: () => api.get("/services/packages/"),
-    // getPackageById: (id) => api.get(`/services/packages/${id}/`),
-    // createPackage: (data) => api.post("/services/packages/", data),
-    // updatePackage: (id, data) => api.patch(`/services/packages/${id}/`, data),
-    // deletePackage: (id) => api.delete(`/services/packages/${id}/`),
+    // Service Packages (nested under service)
+    getPackages: (serviceId) => api.get(`/services/services/${serviceId}/packages/`),
+    getPackageById: (serviceId, pkgId) => api.get(`/services/services/${serviceId}/packages/${pkgId}/`),
+    createPackage: (serviceId, data) => api.post(`/services/services/${serviceId}/packages/`, data),
+    updatePackage: (serviceId, pkgId, data) => api.patch(`/services/services/${serviceId}/packages/${pkgId}/`, data),
+    deletePackage: (serviceId, pkgId) => api.delete(`/services/services/${serviceId}/packages/${pkgId}/`),
 
     // Bookings
     getBookings: () => api.get("/services/bookings/"),

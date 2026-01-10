@@ -46,11 +46,54 @@ const MessagesList = ({ providerId, projectId }) => {
           }}
         />
       ) : (
-        conversations.map((conv) => (
-          <Link key={conv.id} to={`/messages/${conv.id}`}>
-            {/* render conversation card */}
-          </Link>
-        ))
+        <div className="space-y-3">
+          {conversations.map((conv) => (
+            <Link key={conv.id} to={`/app/messages/${conv.id}`} className="block">
+              <Card className={cn(
+                "hover:shadow-md transition-shadow cursor-pointer",
+                conv.unread_count > 0 && "border-primary"
+              )}>
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        <span className="font-semibold truncate">
+                          {conv.participants.map(p => p.user).join(', ') || `Conversation ${conv.id}`}
+                        </span>
+                      </div>
+
+                      {conv.last_message ? (
+                        <div className="text-sm text-muted-foreground">
+                          <span className="font-medium">{conv.last_message.sender}:</span>{' '}
+                          <span className="truncate">{conv.last_message.content}</span>
+                        </div>
+                      ) : (
+                        <div className="text-sm text-muted-foreground italic">
+                          {t('messages.noMessages', 'No messages yet')}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex flex-col items-end gap-2 ml-4">
+                      {conv.last_message && (
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
+                          <Clock className="h-3 w-3" />
+                          {formatTimestamp(conv.last_message.timestamp)}
+                        </div>
+                      )}
+                      {conv.unread_count > 0 && (
+                        <Badge variant="destructive" className="h-6 min-w-6">
+                          {conv.unread_count > 99 ? '99+' : conv.unread_count}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
       )}
     </div>
   );
