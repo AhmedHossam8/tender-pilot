@@ -100,8 +100,17 @@ function Sidebar({ collapsed, onToggleCollapse, isRtl }) {
   // Fetch unread count
   const { data: unreadData } = useQuery({
     queryKey: ['unread-count'],
-    queryFn: () => messagingService.getUnreadCount().then(res => res.data),
+    queryFn: async () => {
+      try {
+        const res = await messagingService.getUnreadCount();
+        return res?.data ?? { count: 0 };
+      } catch (error) {
+        console.error('Failed to fetch unread count:', error);
+        return { count: 0 };
+      }
+    },
     refetchInterval: 30000, // Refetch every 30 seconds
+    retry: 1,
   });
 
   const navigation = getDynamicNavigation(userType, isClient, isProvider).map(item => ({

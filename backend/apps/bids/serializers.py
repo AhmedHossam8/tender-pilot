@@ -74,7 +74,7 @@ class ServiceProviderBasicSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ['id', 'email', 'first_name', 'last_name']
+        fields = ['id', 'email', 'full_name']
         read_only_fields = fields
 
 
@@ -103,6 +103,7 @@ class BidListSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'id',
             'project_title',
+            'service_provider',
             'service_provider_name',
             'status_display',
             'ai_score',
@@ -113,7 +114,7 @@ class BidListSerializer(serializers.ModelSerializer):
     def get_service_provider_name(self, obj):
         """Get the service provider's full name"""
         if obj.service_provider:
-            return f"{obj.service_provider.first_name} {obj.service_provider.last_name}".strip() or obj.service_provider.email
+            return obj.service_provider.full_name or obj.service_provider.email
         return "Unknown"
 
 
@@ -188,6 +189,24 @@ class BidCreateSerializer(serializers.ModelSerializer):
         if value <= 0:
             raise serializers.ValidationError("Proposed timeline must be at least 1 day")
         return value
+    
+    def validate(self, data):
+        """Validate that the provider hasn't already submitted a bid for this project"""
+        request = self.context.get('request')
+        if request and request.user:
+            project = data.get('project')
+            # Check if user already has a bid for this project
+            existing_bid = Bid.objects.filter(
+                project=project,
+                service_provider=request.user
+            ).exists()
+            
+            if existing_bid:
+                raise serializers.ValidationError(
+                    "You have already submitted a bid for this project."
+                )
+        
+        return data
     
     def create(self, validated_data):
         """Create bid with milestones"""

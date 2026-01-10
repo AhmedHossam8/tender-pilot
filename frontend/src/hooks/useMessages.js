@@ -20,9 +20,16 @@ export const useMessages = () => {
     const unreadCountQuery = useQuery({
         queryKey: ['unread-count'],
         queryFn: async () => {
-            const count = await messagingService.getUnreadCount();
-            return count ?? 0; // always return number
+            try {
+                const count = await messagingService.getUnreadCount();
+                return count ?? 0; // always return number
+            } catch (error) {
+                console.error('Failed to fetch unread count:', error);
+                return 0; // Return 0 on error
+            }
         },
+        retry: 1,
+        retryDelay: 1000,
     });
 
     const createConversationMutation = useMutation({

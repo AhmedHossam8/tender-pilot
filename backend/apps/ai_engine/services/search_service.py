@@ -237,7 +237,7 @@ class AISearchService(AIService):
                 rank=SearchRank(search_vector, search_query)
             ).filter(
                 Q(search=search_query) | 
-                Q(user__first_name__icontains=query) |
+                Q(user__full_name__icontains=query) |
                 Q(user__last_name__icontains=query)
             )
             

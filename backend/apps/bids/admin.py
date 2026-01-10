@@ -42,7 +42,7 @@ class BidAdmin(admin.ModelAdmin):
     search_fields = [
         'project__title',
         'service_provider__email',
-        'service_provider__first_name',
+        'service_provider__full_name',
         'service_provider__last_name',
         'cover_letter',
     ]

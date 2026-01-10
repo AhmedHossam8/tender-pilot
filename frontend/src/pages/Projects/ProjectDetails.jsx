@@ -66,10 +66,11 @@ export default function ProjectDetail() {
    Bids
   ======================= */
   const { data: bidsData, isLoading: bidsLoading, refetch: refetchBids } = useBids({ project: id });
-  const bids = bidsData?.results ?? [];
+  // Handle both array and paginated response formats
+  const bids = Array.isArray(bidsData) ? bidsData : (bidsData?.results ?? []);
 
   // Check if current provider has already applied
-  const hasApplied = bids.some(bid => bid.service_provider_id === auth.user?.id);
+  const hasApplied = bids.some(bid => bid.service_provider === auth.user?.id || bid.service_provider_id === auth.user?.id);
 
   // Mutation to submit a new bid
   const { mutateAsync: createBidMutation, isLoading: creatingBid } = useMutation({
@@ -79,7 +80,13 @@ export default function ProjectDetail() {
       refetchBids();      // refresh bids list
       refetch();          // refresh project data if needed
     },
-    onError: () => toast.error(t("Failed to submit bid")),
+    onError: (error) => {
+      const errorMessage = error.response?.data?.error || 
+                          error.response?.data?.non_field_errors?.[0] ||
+                          error.response?.data?.message ||
+                          t("Failed to submit bid");
+      toast.error(errorMessage);
+    },
   });
 
   // Handler to submit a simple bid (you can later open a modal for detailed info)
@@ -121,11 +128,17 @@ export default function ProjectDetail() {
     queryKey: ["unread-count", projectConversation?.id],
     queryFn: async () => {
       if (!projectConversation?.id) return 0;
-      const data = await messagingService.getUnreadCount().then(res => res.data);
-      const convUnread = data?.conversations?.find(c => c.id === projectConversation.id);
-      return convUnread?.unread_count ?? 0;
+      try {
+        const data = await messagingService.getUnreadCount().then(res => res.data);
+        const convUnread = data?.conversations?.find(c => c.id === projectConversation.id);
+        return convUnread?.unread_count ?? 0;
+      } catch (error) {
+        console.error('Failed to fetch unread count:', error);
+        return 0;
+      }
     },
     enabled: !!projectConversation?.id,
+    retry: 1,
   });
 
   /* =======================

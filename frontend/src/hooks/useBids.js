@@ -26,7 +26,11 @@ export const useBids = (params = {}) => {
   return useQuery({
     queryKey: ['bids', params],
     queryFn: () => bidService.getBids(params),
-    select: (response) => response.data,
+    select: (response) => {
+      // Handle both array and paginated response formats
+      const data = response.data;
+      return Array.isArray(data) ? data : (data?.results ?? []);
+    },
   });
 };
 
@@ -105,11 +109,11 @@ export const useChangeBidStatus = () => {
     onSuccess: (response, variables) => {
       queryClient.invalidateQueries({ queryKey: ['bid', variables.id] });
       queryClient.invalidateQueries({ queryKey: ['bids'] });
-      toast.success('Bid status updated!');
+      // Don't show toast here - let the component handle it
     },
     onError: (error) => {
-      const message = error.response?.data?.error || 'Failed to change status';
-      toast.error(message);
+      // Don't show toast here - let the component handle it with better context
+      throw error;
     },
   });
 };
