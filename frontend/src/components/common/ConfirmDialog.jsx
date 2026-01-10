@@ -30,10 +30,11 @@ function ConfirmDialog({
     if (onConfirm) {
       await onConfirm()
     }
-    onOpenChange?.(false)
+    // Don't auto-close - let parent handle closing after async operation
   }
 
   const handleCancel = () => {
+    if (loading) return; // Prevent cancel during loading
     onCancel?.()
     onOpenChange?.(false)
   }

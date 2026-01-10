@@ -132,14 +132,24 @@ class AISearchService(AIService):
         
         # Apply text search
         if query:
+            # Try full-text search first, fallback to icontains
             search_vector = SearchVector('title', weight='A') + \
                           SearchVector('description', weight='B')
             search_query = SearchQuery(query)
             
-            qs = qs.annotate(
+            qs_fulltext = qs.annotate(
                 search=search_vector,
                 rank=SearchRank(search_vector, search_query)
-            ).filter(search=search_query).order_by('-rank')
+            ).filter(search=search_query)
+            
+            # If no full-text results, use icontains
+            if not qs_fulltext.exists():
+                qs = qs.filter(
+                    Q(title__icontains=query) |
+                    Q(description__icontains=query)
+                ).order_by('-created_at')
+            else:
+                qs = qs_fulltext.order_by('-rank')
         
         # Apply filters
         if filters.get('category'):            qs = qs.filter(category=filters['category'])
@@ -186,14 +196,24 @@ class AISearchService(AIService):
         
         # Apply text search
         if query:
+            # Try full-text search first, fallback to icontains
             search_vector = SearchVector('name', weight='A') + \
                           SearchVector('description', weight='B')
             search_query = SearchQuery(query)
             
-            qs = qs.annotate(
+            qs_fulltext = qs.annotate(
                 search=search_vector,
                 rank=SearchRank(search_vector, search_query)
-            ).filter(search=search_query).order_by('-rank')
+            ).filter(search=search_query)
+            
+            # If no full-text results, use icontains
+            if not qs_fulltext.exists():
+                qs = qs.filter(
+                    Q(name__icontains=query) |
+                    Q(description__icontains=query)
+                ).order_by('-created_at')
+            else:
+                qs = qs_fulltext.order_by('-rank')
         
         # Limit results
         qs = qs[:limit]
@@ -203,7 +223,7 @@ class AISearchService(AIService):
             {
                 'id': s.id,
                 'type': 'service',
-                'title': s.name,
+                'name': s.name,
                 'description': s.description[:200] if s.description else '',
                 'provider': s.created_by.full_name if s.created_by else None,
                 'provider_id': s.created_by.id if s.created_by else None,
@@ -228,26 +248,29 @@ class AISearchService(AIService):
         
         # Apply text search
         if query:
+            # Try full-text search with user name fallback
             search_vector = SearchVector('bio', weight='A') + \
-                          SearchVector('title', weight='B')
+                          SearchVector('headline', weight='B')
             search_query = SearchQuery(query)
             
-            qs = qs.annotate(
+            qs_fulltext = qs.annotate(
                 search=search_vector,
                 rank=SearchRank(search_vector, search_query)
-            ).filter(
-                Q(search=search_query) | 
-                Q(user__full_name__icontains=query) |
-                Q(user__last_name__icontains=query)
-            )
+            ).filter(search=search_query)
             
-            # Order by rank if text search is used
-            if qs.filter(search=search_query).exists():
-                qs = qs.order_by('-rank', '-profile_completeness')
+            # If no full-text results, use icontains on multiple fields
+            if not qs_fulltext.exists():
+                qs = qs.filter(
+                    Q(user__full_name__icontains=query) |
+                    Q(bio__icontains=query) |
+                    Q(headline__icontains=query)
+                ).order_by('-ai_profile_score')
             else:
-                qs = qs.order_by('-profile_completeness')
+                # Also include name matches
+                qs_names = qs.filter(user__full_name__icontains=query)
+                qs = (qs_fulltext | qs_names).distinct().order_by('-rank', '-ai_profile_score')
         else:
-            qs = qs.order_by('-profile_completeness')
+            qs = qs.order_by('-ai_profile_score')
         
         # Apply filters
         if filters.get('skills'):
@@ -268,10 +291,10 @@ class AISearchService(AIService):
                 'id': p.user.id,
                 'type': 'provider',
                 'name': p.user.full_name,
-                'title': p.title,
+                'headline': p.headline,
                 'bio': p.bio[:200] if p.bio else '',
                 'hourly_rate': float(p.hourly_rate) if p.hourly_rate else None,
-                'profile_completeness': p.profile_completeness,
+                'ai_profile_score': p.ai_profile_score,
                 'skills': [skill.name for skill in p.skills.all()[:5]],
                 'location': p.location,
                 'avatar': p.avatar.url if p.avatar else None,

@@ -206,6 +206,7 @@ export const getAIMatchScore = async (projectId, providerId) => {
 
 export default {
   getBids,
+  getBid,
   getBidById,
   createBid,
   updateBid,

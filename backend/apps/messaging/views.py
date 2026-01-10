@@ -73,4 +73,4 @@ class UnreadCountView(viewsets.ViewSet):
                 total_unread += participant.conversation.messages.filter(timestamp__gt=participant.last_read_at).count()
             else:
                 total_unread += participant.conversation.messages.count()
-        return Response({'unread_count': total_unread})
+        return Response({'count': total_unread})
