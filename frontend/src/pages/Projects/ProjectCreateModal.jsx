@@ -3,6 +3,7 @@ import { useProjects } from "../../hooks/useProjects";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useCategories, useSkills } from "@/hooks/useCore";
+import { Loader2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui";
 import {
   Button,
@@ -152,7 +153,7 @@ function ProjectCreateModal({ trigger, onSuccess }) {
           </Select>
 
           <Button type="submit" disabled={createProject.isPending}>
-            {createProject.isPending && <LoadingSpinner size="sm" className="mr-2" />}
+            {createProject.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             Create Project
           </Button>
         </form>

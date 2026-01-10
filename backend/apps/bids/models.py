@@ -100,7 +100,7 @@ class Bid(models.Model):
 
     # Define valid status transitions
     STATUS_TRANSITIONS = {
-        BidStatus.PENDING: [BidStatus.SHORTLISTED, BidStatus.REJECTED, BidStatus.WITHDRAWN],
+        BidStatus.PENDING: [BidStatus.SHORTLISTED, BidStatus.ACCEPTED, BidStatus.REJECTED, BidStatus.WITHDRAWN],
         BidStatus.SHORTLISTED: [BidStatus.ACCEPTED, BidStatus.REJECTED, BidStatus.WITHDRAWN],
         BidStatus.ACCEPTED: [BidStatus.REJECTED],  # Allow reversing acceptance
         BidStatus.REJECTED: [],  # Terminal state

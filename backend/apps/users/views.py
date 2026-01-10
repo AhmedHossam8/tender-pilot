@@ -148,10 +148,72 @@ class AdminUserDetailAPIView(RetrieveUpdateDestroyAPIView):
     # throttle_classes = [AdminThrottle]
 
     def destroy(self, request, *args, **kwargs):
-         user = self.get_object()
-         user.is_active = False
-         user.save()
-         return Response(
-        {"detail": "User deactivated successfully"},
-        status=204
-    )
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ChangePasswordView(APIView):
+    """Change user password"""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        current_password = request.data.get('current_password')
+        new_password = request.data.get('new_password')
+
+        if not current_password or not new_password:
+            return Response(
+                {'error': 'Current password and new password are required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Verify current password
+        if not user.check_password(current_password):
+            return Response(
+                {'error': 'Current password is incorrect'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validate new password
+        if len(new_password) < 8:
+            return Response(
+                {'error': 'New password must be at least 8 characters'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Set new password
+        user.set_password(new_password)
+        user.save()
+
+        return Response(
+            {'message': 'Password changed successfully'},
+            status=status.HTTP_200_OK
+        )
+
+
+class UpdateUserInfoView(APIView):
+    """Update basic user information"""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request):
+        user = request.user
+        data = request.data
+
+        # Update allowed fields
+        if 'full_name' in data:
+            user.full_name = data['full_name']
+        
+        if 'email' in data:
+            # Check if email is already taken by another user
+            if User.objects.filter(email=data['email']).exclude(id=user.id).exists():
+                return Response(
+                    {'error': 'Email is already taken'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            user.email = data['email']
+
+        user.save()
+
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)

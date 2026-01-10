@@ -14,6 +14,8 @@ from apps.users.views import (
     ProviderStatsView,
     ClientStatsView,
     SkillListView,
+    ChangePasswordView,
+    UpdateUserInfoView,
 )
 from apps.users.api.v1.reviews import ReviewViewSet
 
@@ -34,6 +36,8 @@ urlpatterns = [
     path('profile/', ProfileAPIView.as_view(), name='current_profile'),
     path('me/', UpdateReadApiView.as_view(), name='user_me'),
     path('me/profile/', UserProfileDetailView.as_view(), name='my_profile_detail'),
+    path('me/change-password/', ChangePasswordView.as_view(), name='change_password'),
+    path('me/update-info/', UpdateUserInfoView.as_view(), name='update_user_info'),
     
     # Public profiles and stats
     path('profiles/<int:user_id>/', PublicProfileView.as_view(), name='public_profile'),
