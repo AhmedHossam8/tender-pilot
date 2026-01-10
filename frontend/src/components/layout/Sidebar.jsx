@@ -103,7 +103,7 @@ function Sidebar({ collapsed, onToggleCollapse, isRtl }) {
     queryFn: async () => {
       try {
         const res = await messagingService.getUnreadCount();
-        return res?.data ?? { count: 0 };
+        return res ?? { count: 0 };
       } catch (error) {
         console.error('Failed to fetch unread count:', error);
         return { count: 0 };
@@ -111,6 +111,7 @@ function Sidebar({ collapsed, onToggleCollapse, isRtl }) {
     },
     refetchInterval: 30000, // Refetch every 30 seconds
     retry: 1,
+    enabled: true,
   });
 
   const navigation = getDynamicNavigation(userType, isClient, isProvider).map(item => ({

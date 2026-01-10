@@ -9,13 +9,18 @@ const SearchService = {
    * Unified search across projects, services, and providers
    */
   search: async (query, options = {}) => {
-    const params = new URLSearchParams({
-      q: query,
-      ...options
-    });
-    
-    const response = await api.get(`/ai/search/?${params.toString()}`);
-    return response.data;
+    try {
+      const params = new URLSearchParams({
+        q: query,
+        ...options
+      });
+      
+      const response = await api.get(`/ai/search/?${params.toString()}`);
+      return response.data || { projects: [], services: [], providers: [] };
+    } catch (error) {
+      console.error('Search error:', error);
+      return { projects: [], services: [], providers: [] };
+    }
   },
 
   /**

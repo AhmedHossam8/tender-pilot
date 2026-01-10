@@ -64,10 +64,10 @@ export const messagingService = {
     try {
       const res = await api.get('/messaging/unread-count/');
       // Ensure count is always a number
-      return res?.data?.count ?? 0;
+      return { count: res?.data?.count ?? 0 };
     } catch (err) {
       console.error("Failed to fetch unread count", err);
-      return 0;
+      return { count: 0 };
     }
   },
 };

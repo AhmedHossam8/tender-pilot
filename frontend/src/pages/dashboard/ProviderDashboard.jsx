@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../../contexts/authStore';
 import DashboardCard from '../../components/dashboard/DashboardCard';
 import SkillBadge from '../../components/profile/SkillBadge';
 import { toast } from 'sonner';
+import { serviceService } from '../../services/services.service';
+import bidService from '../../services/bid.service';
 
 /**
  * ProviderDashboard
@@ -23,44 +26,53 @@ const ProviderDashboard = () => {
     averageRating: 0,
   });
 
-  // Placeholder data - will be replaced when services/bids modules are ready
-  const [recentServices] = useState([]);
-  const [recentBids] = useState([]);
+  // Fetch services
+  const { data: servicesData, isLoading: servicesLoading } = useQuery({
+    queryKey: ['my-services'],
+    queryFn: async () => {
+      const response = await serviceService.getAll();
+      return response.data?.results || response.data || [];
+    },
+    onError: (error) => {
+      console.error('Error loading services:', error);
+    },
+  });
+
+  // Fetch bids - get only sent bids for provider
+  const { data: bidsData, isLoading: bidsLoading } = useQuery({
+    queryKey: ['my-bids'],
+    queryFn: async () => {
+      const response = await bidService.getBids({ type: 'sent' });
+      return response.data?.results || response.data || [];
+    },
+    onError: (error) => {
+      console.error('Error loading bids:', error);
+    },
+  });
 
   useEffect(() => {
-    loadDashboardData();
-  }, [user]);
-
-  const loadDashboardData = async () => {
-    try {
-      setLoading(true);
+    if (servicesData && bidsData) {
+      const services = servicesData || [];
+      const bids = bidsData || [];
       
-      // TODO: Replace with actual API calls when services/bids are implemented
-      // const servicesRes = await serviceService.getMyServices();
-      // const bidsRes = await bidService.getMyBids();
-      // const statsRes = await userService.getProviderStats(user.id);
-      
-      // For now, use placeholder data
       setStats({
-        activeServices: 0,
-        totalServices: 0,
-        activeBids: 0,
-        totalBids: 0,
-        acceptedBids: 0,
-        completedProjects: 0,
-        totalEarnings: 0,
-        averageRating: 0,
+        activeServices: services.filter(s => s.is_active).length,
+        totalServices: services.length,
+        activeBids: bids.filter(b => b.status === 'pending').length,
+        totalBids: bids.length,
+        acceptedBids: bids.filter(b => b.status === 'accepted').length,
+        completedProjects: 0, // TODO: Get from projects API
+        totalEarnings: 0, // TODO: Calculate from completed projects
+        averageRating: profile?.average_rating || 0,
       });
-      
-    } catch (error) {
-      console.error('Error loading dashboard:', error);
-      toast.error('Failed to load dashboard data');
-    } finally {
       setLoading(false);
     }
-  };
+  }, [servicesData, bidsData, profile]);
 
-  if (loading) {
+  const recentServices = servicesData?.slice(0, 3) || [];
+  const recentBids = bidsData?.slice(0, 3) || [];
+
+  if (loading || servicesLoading || bidsLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-center items-center h-64">
@@ -100,7 +112,7 @@ const ProviderDashboard = () => {
               </p>
               <div className="mt-2">
                 <Link
-                  to="/profile/edit"
+                  to="/app/settings"
                   className="text-sm font-medium text-yellow-700 underline hover:text-yellow-600"
                 >
                   Update Profile →
@@ -217,7 +229,7 @@ const ProviderDashboard = () => {
         <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Link
-            to="/services/create"
+            to="/app/services/create"
             className="flex flex-col items-center gap-2 p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
           >
             <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -243,7 +255,7 @@ const ProviderDashboard = () => {
           </Link>
 
           <Link
-            to="/bids"
+            to="/app/bids"
             className="flex flex-col items-center gap-2 p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
           >
             <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -256,7 +268,7 @@ const ProviderDashboard = () => {
           </Link>
 
           <Link
-            to="/profile/edit"
+            to="/app/settings"
             className="flex flex-col items-center gap-2 p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
           >
             <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -288,7 +300,7 @@ const ProviderDashboard = () => {
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-gray-900">My Services</h2>
-            <Link to="/services" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+            <Link to="/app/services" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
               View All
             </Link>
           </div>
@@ -299,28 +311,34 @@ const ProviderDashboard = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
               <p className="text-gray-500 mb-2">No services yet</p>
-              <Link to="/services/create" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+              <Link to="/app/services/create" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
                 Create your first service
               </Link>
             </div>
           ) : (
             <div className="space-y-3">
               {recentServices.map((service) => (
-                <div key={service.id} className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
+                <Link
+                  key={service.id}
+                  to={`/app/services/${service.id}`}
+                  className="block p-4 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors"
+                >
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-semibold text-gray-900">{service.title}</h3>
-                    <span className="text-sm font-bold text-gray-900">${service.price}</span>
+                    <h3 className="font-semibold text-gray-900">{service.name}</h3>
+                    <span className="text-sm font-bold text-gray-900">
+                      {service.packages?.[0]?.price ? `$${service.packages[0].price}` : 'N/A'}
+                    </span>
                   </div>
                   <p className="text-sm text-gray-600 mb-2 line-clamp-2">{service.description}</p>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500">{service.views} views</span>
+                    <span className="text-xs text-gray-500">{service.packages?.length || 0} packages</span>
                     <span className={`text-xs px-2 py-1 rounded-full ${
                       service.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                     }`}>
                       {service.is_active ? 'Active' : 'Inactive'}
                     </span>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
@@ -330,7 +348,7 @@ const ProviderDashboard = () => {
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-gray-900">Recent Bids</h2>
-            <Link to="/bids" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+            <Link to="/app/bids" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
               View All
             </Link>
           </div>
@@ -348,14 +366,20 @@ const ProviderDashboard = () => {
           ) : (
             <div className="space-y-3">
               {recentBids.map((bid) => (
-                <div key={bid.id} className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
+                <Link
+                  key={bid.id}
+                  to={`/app/bids/${bid.id}`}
+                  className="block p-4 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors"
+                >
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-semibold text-gray-900">{bid.project}</h3>
-                    <span className="text-sm font-bold text-gray-900">${bid.amount}</span>
+                    <h3 className="font-semibold text-gray-900">{bid.project_title || 'Project'}</h3>
+                    <span className="text-sm font-bold text-gray-900">${bid.proposed_amount}</span>
                   </div>
-                  <p className="text-sm text-gray-600 mb-2 line-clamp-2">{bid.coverLetter}</p>
+                  <p className="text-sm text-gray-600 mb-2 line-clamp-2">{bid.cover_letter}</p>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500">{bid.submittedAt}</span>
+                    <span className="text-xs text-gray-500">
+                      {new Date(bid.created_at).toLocaleDateString()}
+                    </span>
                     <span className={`text-xs px-2 py-1 rounded-full ${
                       bid.status === 'accepted' ? 'bg-green-100 text-green-800' :
                       bid.status === 'rejected' ? 'bg-red-100 text-red-800' :
@@ -365,7 +389,7 @@ const ProviderDashboard = () => {
                       {bid.status}
                     </span>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}

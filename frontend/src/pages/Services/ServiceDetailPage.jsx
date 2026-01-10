@@ -37,17 +37,25 @@ const ServiceDetailPage = () => {
     const deleteMutation = useMutation({
         mutationFn: () => serviceService.delete(id),
         onSuccess: () => {
-            toast.success("Service deleted successfully");
             queryClient.invalidateQueries(["services"]);
-            navigate("/app/services");
+            // Close dialog first, then show toast and navigate
+            setConfirmDialogOpen(false);
+            setTimeout(() => {
+                toast.success("Service deleted successfully");
+                navigate("/app/services");
+            }, 100);
         },
         onError: () => {
-            toast.error("Failed to delete service");
+            setConfirmDialogOpen(false);
+            setTimeout(() => {
+                toast.error("Failed to delete service");
+            }, 100);
         },
     });
 
-    const handleDelete = () => {
-        deleteMutation.mutate();
+    const handleDelete = async () => {
+        // Don't close dialog immediately, wait for mutation
+        await deleteMutation.mutateAsync();
     };
 
     if (isLoading) {
@@ -103,6 +111,7 @@ const ServiceDetailPage = () => {
                             confirmLabel="Delete"
                             variant="destructive"
                             onConfirm={handleDelete}
+                            loading={deleteMutation.isPending}
                         />
                     </>
                 )}

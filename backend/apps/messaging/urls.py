@@ -4,8 +4,8 @@ from .views import ConversationViewSet, UnreadCountView
 
 router = DefaultRouter()
 router.register(r'conversations', ConversationViewSet, basename='conversations')
-router.register(r'unread-count', UnreadCountView, basename='unread-count')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('unread-count/', UnreadCountView.as_view({'get': 'list'}), name='unread-count'),
 ]

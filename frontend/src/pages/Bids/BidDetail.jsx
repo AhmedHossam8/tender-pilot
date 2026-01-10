@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import bidService from '@/services/bid.service';
 import { projectService } from "../../services/project.services";
 import { useChangeBidStatus } from "@/hooks/useBids";
@@ -15,11 +16,13 @@ import {
     Badge,
     Skeleton,
 } from "@/components/ui";
+import { StatusBadge } from "@/components/ui/Badge";
 
 export default function BidDetail() {
     const { id } = useParams(); // bid id
     const navigate = useNavigate();
     const auth = useAuthStore();
+    const { t } = useTranslation();
 
     const changeBidStatus = useChangeBidStatus();
 
@@ -30,10 +33,20 @@ export default function BidDetail() {
         data: bid,
         isLoading,
         isError,
+        error,
         refetch,
     } = useQuery({
         queryKey: ["bid", id],
-        queryFn: async () => (await bidService.getBid(id)).data,
+        queryFn: async () => {
+            try {
+                const response = await bidService.getBid(id);
+                console.log("Bid response:", response);
+                return response.data;
+            } catch (err) {
+                console.error("Failed to fetch bid:", err);
+                throw err;
+            }
+        },
     });
 
     if (isLoading) {
@@ -42,9 +55,23 @@ export default function BidDetail() {
 
     if (isError || !bid) {
         return (
-            <p className="text-center text-red-500">
-                Failed to load bid
-            </p>
+            <div className="text-center p-8">
+                <p className="text-red-500 text-lg mb-2">
+                    Failed to load bid
+                </p>
+                {error && (
+                    <p className="text-sm text-muted-foreground">
+                        {error?.response?.data?.detail || error?.message || "Unknown error"}
+                    </p>
+                )}
+                <Button 
+                    variant="outline" 
+                    onClick={() => navigate("/app/bids")}
+                    className="mt-4"
+                >
+                    Back to Bids
+                </Button>
+            </div>
         );
     }
 
@@ -146,62 +173,55 @@ export default function BidDetail() {
 
                         <div>
                             <h3 className="font-semibold mb-2">Cover Letter</h3>
-                            <div className="bg-secondary p-4 rounded-md whitespace-pre-wrap">
+                            <div className="bg-muted/50 text-foreground p-4 rounded-md whitespace-pre-wrap border">
                                 {bid.cover_letter}
                             </div>
                         </div>
-                    )}
+                    </CardContent>
+                </Card>
 
-                    <div>
-                        <strong>Cover Letter:</strong>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                            {bid.cover_letter}
-                        </p>
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* =======================
-                CLIENT ACTIONS
-            ======================= */}
-            {isClient && isOwnerClient && isPending && (
-                <div className="flex gap-3">
-                    <Button
-                        onClick={() => handleDecision("accepted")}
-                        variant="success"
-                    >
-                        Accept Bid
-                    </Button>
-
-                    <Button
-                        onClick={() => handleDecision("rejected")}
-                        variant="destructive"
-                    >
-                        Reject Bid
-                    </Button>
-                </div>
-            )}
-
-            {/* =======================
-                PROVIDER ACTIONS
-            ======================= */}
-            {isProvider && isBidOwner && isPending && (
-                <Button
-                    variant="destructive"
-                    onClick={handleWithdraw}
-                >
-                    Withdraw Bid
-                </Button>
-            )}
-
-            {/* =======================
-                LOCKED STATE
+                {/* =======================
+                    CLIENT ACTIONS
                 ======================= */}
-            {!isPending && (
-                <p className="text-sm text-muted-foreground">
-                    This bid is locked and can no longer be modified.
-                </p>
-            )}
+                {isClient && isOwnerClient && isPending && (
+                    <div className="flex gap-3">
+                        <Button
+                            onClick={() => handleDecision("accepted")}
+                            variant="success"
+                        >
+                            Accept Bid
+                        </Button>
+
+                        <Button
+                            onClick={() => handleDecision("rejected")}
+                            variant="destructive"
+                        >
+                            Reject Bid
+                        </Button>
+                    </div>
+                )}
+
+                {/* =======================
+                    PROVIDER ACTIONS
+                ======================= */}
+                {isProvider && isBidOwner && isPending && (
+                    <Button
+                        variant="destructive"
+                        onClick={handleWithdraw}
+                    >
+                        Withdraw Bid
+                    </Button>
+                )}
+
+                {/* =======================
+                    LOCKED STATE
+                ======================= */}
+                {!isPending && (
+                    <p className="text-sm text-muted-foreground">
+                        This bid is locked and can no longer be modified.
+                    </p>
+                )}
+            </div>
         </div>
     );
 }
