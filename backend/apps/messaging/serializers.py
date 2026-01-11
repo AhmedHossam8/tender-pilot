@@ -228,6 +228,22 @@ class CreateConversationSerializer(serializers.Serializer):
 class SendMessageSerializer(serializers.Serializer):
     content = serializers.CharField(max_length=10000)
 
+    def validate(self, attrs):
+        conversation = self.context['conversation']
+        user = self.context['request'].user
+
+        is_participant = ConversationParticipant.objects.filter(
+            conversation=conversation,
+            user=user
+        ).exists()
+
+        if not is_participant:
+            raise serializers.ValidationError(
+                "You are not a participant in this conversation."
+            )
+
+        return attrs
+
     def create(self, validated_data):
         conversation = self.context['conversation']
         user = self.context['request'].user
@@ -237,8 +253,6 @@ class SendMessageSerializer(serializers.Serializer):
             sender=user,
             content=validated_data['content']
         )
-        
-        # Update conversation's updated_at timestamp
+
         conversation.save(update_fields=['updated_at'])
-        
         return message
