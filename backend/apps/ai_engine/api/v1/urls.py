@@ -51,6 +51,15 @@ from apps.ai_engine.api.search_views import (
     AutoCategorizeView,
     ExtractSkillsView,
 )
+from apps.ai_engine.api.v1.bid_views import (
+    AnalyzeBidStrengthView,
+    RealtimeBidSuggestionsView,
+    OptimizeBidPricingView,
+    PredictBidSuccessView,
+    PersonalizedRecommendationsView,
+    TrendingOpportunitiesView,
+    ClientProjectOptimizationView,
+)
 
 app_name = 'ai_engine'
 
@@ -214,5 +223,49 @@ urlpatterns = [
         'search/extract-skills/',
         ExtractSkillsView.as_view(),
         name='extract-skills'
+    ),
+    
+    # Bid Optimization endpoints
+    path(
+        'bids/<int:bid_id>/analyze-strength/',
+        AnalyzeBidStrengthView.as_view(),
+        name='bid-analyze-strength'
+    ),
+    
+    path(
+        'bids/realtime-suggestions/',
+        RealtimeBidSuggestionsView.as_view(),
+        name='bid-realtime-suggestions'
+    ),
+    
+    path(
+        'bids/<int:bid_id>/optimize-pricing/',
+        OptimizeBidPricingView.as_view(),
+        name='bid-optimize-pricing'
+    ),
+    
+    path(
+        'bids/<int:bid_id>/predict-success/',
+        PredictBidSuccessView.as_view(),
+        name='bid-predict-success'
+    ),
+    
+    # Smart Recommendations endpoints
+    path(
+        'recommendations/for-me/',
+        PersonalizedRecommendationsView.as_view(),
+        name='recommendations-for-me'
+    ),
+    
+    path(
+        'recommendations/trending/',
+        TrendingOpportunitiesView.as_view(),
+        name='recommendations-trending'
+    ),
+    
+    path(
+        'recommendations/optimize-project/<int:project_id>/',
+        ClientProjectOptimizationView.as_view(),
+        name='recommendations-optimize-project'
     ),
 ]

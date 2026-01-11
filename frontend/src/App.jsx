@@ -41,6 +41,7 @@ import BookingsList from "@/pages/Services/BookingsList";
 
 // AI pages
 import { AIDashboard, AIResultPanel } from "./pages/ai";
+import AIAnalyticsDashboard from "./pages/Analytics/AIAnalyticsDashboard";
 
 // Dashboard pages
 import { ClientDashboard, ProviderDashboard } from "./pages/dashboard";
@@ -107,6 +108,14 @@ function App() {
 
               {/* AI */}
               <Route path="/app/ai/dashboard" element={<AIDashboard />} />
+              <Route 
+                path="/app/ai/analytics" 
+                element={
+                  <RoleGuard allowed={["admin"]}>
+                    <AIAnalyticsDashboard />
+                  </RoleGuard>
+                } 
+              />
               <Route path="/app/ai/results/:responseId" element={<AIResultPanel />} />
 
               {/* Search */}

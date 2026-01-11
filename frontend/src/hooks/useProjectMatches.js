@@ -4,7 +4,7 @@ import { projectMatchingService } from "../services/projectMatching.services";
 export const useProjectMatches = (projectId, options = {}) => {
   const { limit = 10, useCache = true, onlyApplicants = true } = options;
 
-  const { data = {}, isLoading, isError, error } = useQuery({
+  const { data = {}, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["projectMatches", projectId],
     queryFn: async () => {
       const res = await projectMatchingService.getMatches(projectId, {
@@ -12,10 +12,17 @@ export const useProjectMatches = (projectId, options = {}) => {
         use_cache: useCache,
         only_applicants: onlyApplicants,
       });
-      return res.data.matches || [];
+      return res.data || { matches: [] };
     },
     enabled: !!projectId, // only fetch if projectId exists
   });
 
-  return { matches: data, isLoading, isError, error };
+  return { 
+    data,
+    matches: data?.matches || [], 
+    isLoading, 
+    isError, 
+    error, 
+    refetch 
+  };
 };

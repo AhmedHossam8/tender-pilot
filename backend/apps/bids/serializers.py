@@ -97,6 +97,7 @@ class BidListSerializer(serializers.ModelSerializer):
             'status',
             'status_display',
             'ai_score',
+            'ai_feedback',
             'created_at',
             'updated_at',
         ]

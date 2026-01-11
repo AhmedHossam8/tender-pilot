@@ -18,6 +18,7 @@ import {
   ShoppingBag,
   UserCircle,
   MessageSquare,
+  Brain,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useTranslation } from "react-i18next";
@@ -88,6 +89,13 @@ export const getDynamicNavigation = (userType, isClient, isProvider) => {
     { key: "sidebar.messages", href: "/app/messages", icon: MessageSquare, showBadge: true },
     { key: "sidebar.settings", href: "/app/settings", icon: Settings },
   );
+
+  // Admin-only features
+  if (userType === 'admin') {
+    baseNav.push(
+      { key: "sidebar.aiAnalytics", href: "/app/ai/analytics", icon: Brain, label: "AI Analytics" },
+    );
+  }
 
   return baseNav;
 };

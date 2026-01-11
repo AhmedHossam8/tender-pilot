@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../../contexts/authStore';
 import DashboardCard from '../../components/dashboard/DashboardCard';
 import SkillBadge from '../../components/profile/SkillBadge';
 import { toast } from 'sonner';
 import { serviceService } from '../../services/services.service';
 import bidService from '../../services/bid.service';
+import { usePersonalizedRecommendations, useTrendingOpportunities } from '../../hooks/useRecommendations';
+import { Sparkles, TrendingUp, RefreshCw } from 'lucide-react';
+import { RecommendationSkeleton } from '../../components/common/LoadingSkeleton';
+import { Button } from '@/components/ui';
 
 /**
  * ProviderDashboard
@@ -14,6 +18,7 @@ import bidService from '../../services/bid.service';
  */
 const ProviderDashboard = () => {
   const { user, profile } = useAuthStore();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     activeServices: 0,
@@ -25,6 +30,24 @@ const ProviderDashboard = () => {
     totalEarnings: 0,
     averageRating: 0,
   });
+
+  // Fetch AI recommendations
+  const { data: recommendations, isLoading: recommendationsLoading, refetch: refetchRecommendations } = usePersonalizedRecommendations({ limit: 5 });
+  const { data: trending, isLoading: trendingLoading, refetch: refetchTrending } = useTrendingOpportunities({ limit: 3 });
+
+  // Handler for refreshing recommendations
+  const handleRefreshRecommendations = async () => {
+    toast.info('Refreshing recommendations...');
+    await refetchRecommendations();
+    toast.success('Recommendations updated');
+  };
+
+  // Handler for refreshing trending opportunities
+  const handleRefreshTrending = async () => {
+    toast.info('Refreshing trending opportunities...');
+    await refetchTrending();
+    toast.success('Trending opportunities updated');
+  };
 
   // Fetch services
   const { data: servicesData, isLoading: servicesLoading } = useQuery({
@@ -340,6 +363,125 @@ const ProviderDashboard = () => {
                   </div>
                 </Link>
               ))}
+            </div>
+          )}
+        </div>
+
+        {/* AI Recommended Projects */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900 flex items-center">
+              <Sparkles className="mr-2 h-5 w-5 text-purple-500" />
+              Recommended for You
+            </h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRefreshRecommendations}
+              disabled={recommendationsLoading}
+              className="flex items-center gap-1"
+            >
+              <RefreshCw className={`h-4 w-4 ${recommendationsLoading ? 'animate-spin' : ''}`} />
+              <span className="text-sm">Refresh</span>
+            </Button>
+          </div>
+          
+          {recommendationsLoading ? (
+            <RecommendationSkeleton count={3} />
+          ) : recommendations?.recommendations?.length > 0 ? (
+            <div className="space-y-3">
+              {recommendations.recommendations.map((rec) => (
+                <Link
+                  key={rec.project.id}
+                  to={`/app/projects/${rec.project.id}`}
+                  className="block p-4 border-l-4 border-purple-400 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-semibold text-gray-900">{rec.project.title}</h3>
+                    <span className="text-sm font-bold text-purple-600">
+                      {(rec.match_score * 100).toFixed(0)}% Match
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2 line-clamp-2">{rec.project.description}</p>
+                  <div className="flex items-center gap-4 mt-2">
+                    {rec.project.budget_min && rec.project.budget_max && (
+                      <span className="text-sm text-green-600 font-medium">
+                        ${rec.project.budget_min} - ${rec.project.budget_max}
+                      </span>
+                    )}
+                    {rec.matching_skills?.length > 0 && (
+                      <span className="text-xs text-gray-500">
+                        {rec.matching_skills.slice(0, 3).join(', ')}
+                      </span>
+                    )}
+                  </div>
+                  {rec.reasoning && (
+                    <p className="text-xs text-gray-500 mt-2 italic">{rec.reasoning}</p>
+                  )}
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <Sparkles className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500">No recommendations available yet</p>
+              <p className="text-sm text-gray-400 mt-1">Complete your profile to get better matches</p>
+            </div>
+          )}
+        </div>
+
+        {/* Trending Opportunities */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900 flex items-center">
+              <TrendingUp className="mr-2 h-5 w-5 text-orange-500" />
+              Trending Opportunities
+            </h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRefreshTrending}
+              disabled={trendingLoading}
+              className="flex items-center gap-1"
+            >
+              <RefreshCw className={`h-4 w-4 ${trendingLoading ? 'animate-spin' : ''}`} />
+              <span className="text-sm">Refresh</span>
+            </Button>
+          </div>
+          
+          {trendingLoading ? (
+            <RecommendationSkeleton count={3} />
+          ) : trending?.trending?.length > 0 ? (
+            <div className="space-y-3">
+              {trending.trending.map((item) => (
+                <Link
+                  key={item.project.id}
+                  to={`/app/projects/${item.project.id}`}
+                  className="block p-4 border border-orange-200 rounded-lg hover:border-orange-400 hover:bg-orange-50 transition-colors"
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-semibold text-gray-900">{item.project.title}</h3>
+                    <span className="text-xs px-2 py-1 rounded-full bg-orange-100 text-orange-800">
+                      🔥 Trending
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2 line-clamp-2">{item.project.description}</p>
+                  <div className="flex items-center gap-4 mt-2 text-sm">
+                    <span className="text-gray-500">👁️ {item.view_count} views</span>
+                    <span className="text-gray-500">📝 {item.bid_count} bids</span>
+                    {item.average_bid && (
+                      <span className="text-green-600 font-medium">
+                        Avg bid: ${item.average_bid}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <TrendingUp className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <p className="text-gray-500">No trending projects at the moment</p>
             </div>
           )}
         </div>

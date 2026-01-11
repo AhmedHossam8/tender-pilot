@@ -3,14 +3,14 @@ Google Gemini Provider Implementation
 
 This module implements the AIProvider interface for Google's Gemini API,
 supporting Gemini Pro, Gemini Pro Vision, and other Gemini models.
+Uses the google-genai SDK (v0.8.0+).
 """
 
 import logging
 from typing import Optional, Dict, Any, List
 
-import google.generativeai as genai
-from google.generativeai.types import GenerationConfig
-from google.api_core import exceptions as google_exceptions
+from google import genai
+from google.genai import types
 
 from .base import (
     AIProvider,
@@ -62,6 +62,7 @@ class GeminiProvider(AIProvider):
     
     Supports Gemini Pro and Gemini Flash models.
     Includes token estimation, cost estimation, and comprehensive error handling.
+    Uses the google-genai SDK (v0.8.0+).
     """
     
     provider_type = AIProviderType.GEMINI
@@ -83,17 +84,9 @@ class GeminiProvider(AIProvider):
         super().__init__(api_key, default_model)
         self.timeout = timeout
         
-        # Configure the Gemini API
-        genai.configure(api_key=api_key)
-        
-        # Initialize model
-        self._models: Dict[str, genai.GenerativeModel] = {}
+        # Create the client
+        self.client = genai.Client(api_key=api_key)
     
-    def _get_model(self, model_name: str) -> genai.GenerativeModel:
-        """Get or create a Gemini model instance."""
-        if model_name not in self._models:
-            self._models[model_name] = genai.GenerativeModel(model_name)
-        return self._models[model_name]
     
     def generate(
         self,
@@ -101,6 +94,8 @@ class GeminiProvider(AIProvider):
         system_prompt: Optional[str] = None,
         model: Optional[str] = None,
         config: Optional[AIGenerationConfig] = None,
+        max_tokens: Optional[int] = None,
+        temperature: Optional[float] = None,
         **kwargs
     ) -> AIResponse:
         """
@@ -111,6 +106,8 @@ class GeminiProvider(AIProvider):
             system_prompt: Optional system prompt for context
             model: Model to use (defaults to default_model)
             config: Generation configuration
+            max_tokens: Maximum tokens to generate
+            temperature: Sampling temperature
             **kwargs: Additional arguments
             
         Returns:
@@ -119,80 +116,87 @@ class GeminiProvider(AIProvider):
         model_name = model or self.default_model
         
         try:
-            gemini_model = self._get_model(model_name)
-            
             # Build the generation config
-            generation_config = GenerationConfig(
-                temperature=config.temperature if config else 0.7,
-                max_output_tokens=config.max_tokens if config else 2000,
-                top_p=config.top_p if config else 1.0,
-            )
+            gen_config = {
+                "temperature": temperature if temperature is not None else (config.temperature if config else 0.7),
+                "max_output_tokens": max_tokens or (config.max_tokens if config else 2000),
+                "top_p": config.top_p if config else 1.0,
+            }
             
             # Combine system prompt with user prompt if provided
             full_prompt = prompt
             if system_prompt:
                 full_prompt = f"{system_prompt}\n\n{prompt}"
             
-            # Generate response
-            response = gemini_model.generate_content(
-                full_prompt,
-                generation_config=generation_config,
+            # Generate response using the new SDK
+            response = self.client.models.generate_content(
+                model=model_name,
+                contents=full_prompt,
+                config=types.GenerateContentConfig(**gen_config)
             )
             
-            # Extract token counts (Gemini provides these in usage_metadata)
+            # Extract text from response
+            content_text = response.text if hasattr(response, 'text') else ""
+            
+            # Extract token counts if available
             input_tokens = 0
             output_tokens = 0
             
             if hasattr(response, 'usage_metadata') and response.usage_metadata:
-                input_tokens = getattr(response.usage_metadata, 'prompt_token_count', 0)
-                output_tokens = getattr(response.usage_metadata, 'candidates_token_count', 0)
+                usage = response.usage_metadata
+                input_tokens = getattr(usage, 'prompt_token_count', 0)
+                output_tokens = getattr(usage, 'candidates_token_count', 0)
             else:
                 # Estimate tokens if not provided
                 input_tokens = self.count_tokens(full_prompt, model_name)
-                output_tokens = self.count_tokens(response.text, model_name) if response.text else 0
+                output_tokens = self.count_tokens(content_text, model_name) if content_text else 0
             
             # Get finish reason
             finish_reason = "stop"
-            if response.candidates and response.candidates[0].finish_reason:
-                finish_reason = str(response.candidates[0].finish_reason.name).lower()
+            if hasattr(response, 'candidates') and response.candidates:
+                if hasattr(response.candidates[0], 'finish_reason'):
+                    finish_reason = str(response.candidates[0].finish_reason).lower()
             
             return AIResponse(
-                content=response.text or "",
+                content=content_text,
                 model=model_name,
                 input_tokens=input_tokens,
                 output_tokens=output_tokens,
                 total_tokens=input_tokens + output_tokens,
                 finish_reason=finish_reason,
-                raw_response={"text": response.text, "model": model_name},
+                raw_response={"text": content_text, "model": model_name},
             )
             
-        except google_exceptions.ResourceExhausted as e:
-            logger.warning(f"Gemini rate limit: {e}")
-            raise AIRateLimitError(
-                message="Google API rate limit exceeded",
-                provider="gemini",
-                retry_after=60,
-            )
-        except google_exceptions.InvalidArgument as e:
-            logger.error(f"Gemini invalid argument: {e}")
-            raise AIProviderError(
-                message=f"Invalid request: {str(e)}",
-                provider="gemini",
-            )
-        except google_exceptions.PermissionDenied as e:
-            logger.error(f"Gemini authentication error: {e}")
-            raise AIAuthenticationError(
-                message="Invalid Google API key",
-                provider="gemini",
-            )
-        except google_exceptions.DeadlineExceeded as e:
-            logger.warning(f"Gemini timeout: {e}")
-            raise AITimeoutError(
-                message="Request timed out",
-                provider="gemini",
-                timeout=self.timeout,
-            )
         except Exception as e:
+            error_msg = str(e).lower()
+            
+            # Handle rate limits
+            if 'rate limit' in error_msg or 'quota' in error_msg or 'resource_exhausted' in error_msg:
+                logger.warning(f"Gemini rate limit: {e}")
+                raise AIRateLimitError(
+                    message="Google API rate limit exceeded",
+                    provider="gemini",
+                    retry_after=60,
+                )
+            
+            # Handle authentication errors
+            if 'authentication' in error_msg or 'api key' in error_msg or 'permission' in error_msg:
+                logger.error(f"Gemini authentication error: {e}")
+                raise AIAuthenticationError(
+                    message="Invalid Google API key",
+                    provider="gemini",
+                )
+            
+            # Handle timeout errors
+            if 'timeout' in error_msg or 'deadline' in error_msg:
+                logger.warning(f"Gemini timeout: {e}")
+                raise AITimeoutError(
+                    message="Request timed out",
+                    provider="gemini",
+                    timeout=self.timeout,
+                )
+            
+            # Generic error
             logger.error(f"Gemini error: {e}")
             raise AIProviderError(
                 message=f"Gemini API error: {str(e)}",

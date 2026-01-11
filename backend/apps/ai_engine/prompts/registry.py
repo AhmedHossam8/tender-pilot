@@ -23,6 +23,11 @@ from .tender_analysis import (
     QUICK_SUMMARY_PROMPT,
     REQUIREMENT_EXTRACTION_PROMPT,
 )
+from .project_analysis import (
+    PROJECT_ANALYSIS_PROMPT,
+    QUICK_PROJECT_SUMMARY_PROMPT,
+    PROJECT_REQUIREMENT_EXTRACTION_PROMPT,
+)
 from .compliance_check import (
     COMPLIANCE_CHECK_PROMPT,
     QUICK_COMPLIANCE_PROMPT,
@@ -291,10 +296,15 @@ class PromptRegistry:
 def _register_all_prompts():
     """Register all built-in prompts."""
     
-    # Tender Analysis Prompts
+    # Tender Analysis Prompts (legacy)
     PromptRegistry.register(TENDER_ANALYSIS_PROMPT)
     PromptRegistry.register(QUICK_SUMMARY_PROMPT)
     PromptRegistry.register(REQUIREMENT_EXTRACTION_PROMPT)
+    
+    # Project Analysis Prompts (new)
+    PromptRegistry.register(PROJECT_ANALYSIS_PROMPT)
+    PromptRegistry.register(QUICK_PROJECT_SUMMARY_PROMPT)
+    PromptRegistry.register(PROJECT_REQUIREMENT_EXTRACTION_PROMPT)
     
     # Compliance Check Prompts
     PromptRegistry.register(COMPLIANCE_CHECK_PROMPT)
