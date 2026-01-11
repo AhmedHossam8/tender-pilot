@@ -19,6 +19,7 @@ from apps.ai_engine.services.analysis_service import ProjectAnalysisService
 from apps.ai_engine.services.matching_service import AIMatchingService
 from apps.ai_engine.permissions import CanUseAI
 from apps.messaging.models import Conversation
+from apps.messaging.serializers import ConversationSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -72,6 +73,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
             return queryset.filter(
                 models.Q(created_by=user) |
                 models.Q(status='open') |
+                models.Q(status='completed') |
                 models.Q(bids__service_provider=user, bids__status='accepted', status='in_progress')
             ).distinct()
 
@@ -220,6 +222,45 @@ class ProjectViewSet(viewsets.ModelViewSet):
         self.create_conversation_for_project(project, bid.service_provider)
 
         return Response({"status": "provider_chosen", "provider_id": provider_id}, status=200)
+    
+    # ------------------------
+    # Conversation action
+    # ------------------------
+    @action(detail=True, methods=["post"], url_path="start-conversation")
+    def start_conversation(self, request, pk=None):
+        """
+        Start a conversation between project owner and provider for this project.
+        If a conversation already exists, return it.
+        """
+        project = self.get_object()
+        user = request.user
+
+        # Determine the participant: if user is owner, provider must be sent in body
+        if project.created_by == user:
+            provider_id = request.data.get("provider_id")
+            if not provider_id:
+                return Response({"error": "Provider ID is required."}, status=400)
+            try:
+                provider = project.bids.get(status="accepted", service_provider_id=provider_id).service_provider
+            except Bid.DoesNotExist:
+                return Response({"error": "Provider not found or not accepted for this project."}, status=404)
+        else:
+            # user is provider
+            provider = user
+            if project.created_by != project.created_by:
+                owner = project.created_by
+
+        # Check if conversation exists
+        conversation = Conversation.objects.filter(project=project).first()
+        if conversation:
+            serializer = ConversationSerializer(conversation, context={'request': request})
+            return Response(serializer.data)
+
+        # Create new conversation
+        conversation = Conversation.objects.create(project=project)
+        conversation.participants.add(project.created_by, provider)
+        serializer = ConversationSerializer(conversation, context={'request': request})
+        return Response(serializer.data, status=201)
 
 
 # ------------------------

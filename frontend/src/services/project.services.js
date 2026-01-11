@@ -30,4 +30,8 @@ export const projectService = {
 
   // Delete a project
   deleteProject: (id) => api.delete(`/projects/${id}/`),
+
+  startConversation: (projectId, providerId) => {
+    return api.post(`/projects/${projectId}/start-conversation/`, { provider_id: providerId });
+  },
 };

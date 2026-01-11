@@ -32,6 +32,7 @@ export default function ProjectDetail() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const auth = useAuthStore();
+  const queryClient = useQueryClient();
 
   const [editOpen, setEditOpen] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -66,51 +67,51 @@ export default function ProjectDetail() {
    Bids
   ======================= */
   const { data: bidsData, isLoading: bidsLoading, refetch: refetchBids } = useBids({ project: id });
-  // Handle both array and paginated response formats
+  const changeBidStatus = useChangeBidStatus();
+
   const bids = Array.isArray(bidsData) ? bidsData : (bidsData?.results ?? []);
 
-  // Check if current provider has already applied
-  const hasApplied = bids.some(bid => bid.service_provider === auth.user?.id || bid.service_provider_id === auth.user?.id);
+  const hasApplied = bids.some(
+    bid => bid.service_provider === auth.user?.id || bid.service_provider_id === auth.user?.id
+  );
 
-  // Mutation to submit a new bid
+  const acceptedBid = bids.find(bid => bid.status === "accepted");
+  const assignedProviderId = acceptedBid?.service_provider;
+
+  /* =======================
+   Create Bid
+  ======================= */
   const { mutateAsync: createBidMutation, isLoading: creatingBid } = useMutation({
     mutationFn: (bidData) => createBid(bidData),
     onSuccess: () => {
       toast.success(t("Bid submitted successfully"));
-      refetchBids();      // refresh bids list
-      refetch();          // refresh project data if needed
+      refetchBids();
+      refetch();
     },
     onError: (error) => {
-      const errorMessage = error.response?.data?.error || 
-                          error.response?.data?.non_field_errors?.[0] ||
-                          error.response?.data?.message ||
-                          t("Failed to submit bid");
+      const errorMessage =
+        error.response?.data?.error ||
+        error.response?.data?.non_field_errors?.[0] ||
+        error.response?.data?.message ||
+        t("Failed to submit bid");
       toast.error(errorMessage);
     },
   });
 
-  // Handler to submit a simple bid (you can later open a modal for detailed info)
   const handleSubmitBid = async () => {
     if (!auth.user) return toast.error(t("You must be logged in"));
-
     await createBidMutation({
       project: id,
-      cover_letter: "Hello, I would like to work on this project.", // You can make this dynamic via a modal/input
-      proposed_amount: 1000,   // Replace with actual input value if needed
-      proposed_timeline: 7,    // Replace with actual input value if needed
+      cover_letter: "Hello, I would like to work on this project.",
+      proposed_amount: 1000,
+      proposed_timeline: 7,
     });
   };
-
 
   /* =======================
      AI Matches
   ======================= */
-  const {
-    data: matchesData,
-    refetch: refetchMatches,
-    isLoading: matchesLoading,
-  } = useProjectMatches(id);
-
+  const { data: matchesData, refetch: refetchMatches, isLoading: matchesLoading } = useProjectMatches(id);
   const matches = matchesData?.matches ?? [];
 
   /* =======================
@@ -139,6 +140,26 @@ export default function ProjectDetail() {
     },
     enabled: !!projectConversation?.id,
     retry: 1,
+  });
+
+  const startConversationMutation = useMutation({
+    mutationFn: async (providerId) => projectService.startConversation(id, providerId),
+    onSuccess: (data) => {
+      toast.success(t("Conversation started"));
+      queryClient.setQueryData(["project-conversation", id], data);
+      queryClient.invalidateQueries(['conversations']);
+      queryClient.invalidateQueries(['unread-count']);
+
+      // Navigate to the chat after starting conversation
+      const conversationId = data?.id || data?.data?.id;
+      if (conversationId) {
+        navigate(`/app/messages/${conversationId}`);
+      }
+    },
+    onError: (err) => {
+      const msg = err.response?.data?.error || t("Failed to start conversation");
+      toast.error(msg);
+    },
   });
 
   /* =======================
@@ -172,12 +193,19 @@ export default function ProjectDetail() {
     }
   };
 
-  const handleBidDecision = async (bidId, status) => {
+  const handleBidDecision = async (bidId, status, providerId) => {
     try {
       await changeBidStatus.mutateAsync({ id: bidId, status });
-      if (status === "accepted") await updateProjectStatus("in_progress");
+      if (status === "accepted") {
+        await updateProjectStatus("in_progress");
+        // Automatically start conversation with accepted provider
+        if (providerId) {
+          await startConversationMutation.mutateAsync(providerId);
+        }
+      }
       toast.success(`${t("Bid")} ${status}`);
-    } catch {
+    } catch (error) {
+      console.error("Bid update error:", error.response?.data || error);
       toast.error(t("Failed to update bid"));
     }
   };
@@ -244,12 +272,18 @@ export default function ProjectDetail() {
           )}
 
           {flags.isOwner && flags.isOpen && (
-            <>
-              <Button onClick={() => setEditOpen(true)}>{t("Edit")}</Button>
-              <Button variant="destructive" onClick={() => setShowDeleteConfirm(true)}>
-                {t("Delete")}
-              </Button>
-            </>
+            <Button onClick={() => setEditOpen(true)}>
+              {t("Edit")}
+            </Button>
+          )}
+
+          {flags.isOwner && (flags.isOpen || flags.isCompleted) && (
+            <Button
+              variant="destructive"
+              onClick={() => setShowDeleteConfirm(true)}
+            >
+              {t("Delete")}
+            </Button>
           )}
 
           {flags.isOwner && flags.isInProgress && (
@@ -261,16 +295,40 @@ export default function ProjectDetail() {
             </Button>
           )}
 
-          {flags.isInProgress && projectConversation?.id && (
-            <Button onClick={() => navigate(`/messages/${projectConversation.id}`)}>
-              {t("Chat with Provider")}
-              {unreadCount > 0 && (
-                <Badge variant="destructive" className="ml-2">
-                  {unreadCount > 99 ? "99+" : unreadCount}
-                </Badge>
-              )}
-            </Button>
-          )}
+          {/* Chat Button - for both Client and Accepted Provider */}
+          {((flags.isOwner && flags.isInProgress) ||
+            (flags.isProvider && flags.isInProgress && auth.user?.id === assignedProviderId)) && (
+              <Button
+                onClick={() => {
+                  if (projectConversation?.id) {
+                    navigate(`/app/messages/${projectConversation.id}`);
+                  } else {
+                    // Determine who to start conversation with
+                    const otherPartyId = flags.isOwner
+                      ? assignedProviderId
+                      : project.created_by; // Use created_by for the client ID
+
+                    if (otherPartyId) {
+                      startConversationMutation.mutate(otherPartyId);
+                    } else {
+                      toast.error(t("Unable to start conversation"));
+                    }
+                  }
+                }}
+                disabled={startConversationMutation.isLoading}
+              >
+                {startConversationMutation.isLoading
+                  ? t("Starting Chat...")
+                  : projectConversation?.id
+                    ? flags.isOwner ? t("Chat with Provider") : t("Chat with Client")
+                    : t("Start Chat")}
+                {unreadCount > 0 && (
+                  <Badge variant="destructive" className="ml-2">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </Badge>
+                )}
+              </Button>
+            )}
         </CardContent>
       </Card>
 
@@ -323,15 +381,32 @@ export default function ProjectDetail() {
                     </p>
                   )}
 
-                  {flags.isClient && flags.isOpen && (
+                  {flags.isOwner && flags.isOpen && (
                     <div className="flex gap-2 pt-2">
-                      <Button size="sm" onClick={() => handleBidDecision(bid.id, "accepted")}>
+                      <Button
+                        size="sm"
+                        onClick={() =>
+                          handleBidDecision(bid.id, "accepted", bid.service_provider)
+                        }
+                      >
                         {t("Accept")}
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => handleBidDecision(bid.id, "shortlisted")}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          handleBidDecision(bid.id, "shortlisted", bid.service_provider)
+                        }
+                      >
                         {t("Shortlist")}
                       </Button>
-                      <Button size="sm" variant="destructive" onClick={() => handleBidDecision(bid.id, "rejected")}>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() =>
+                          handleBidDecision(bid.id, "rejected", bid.service_provider)
+                        }
+                      >
                         {t("Reject")}
                       </Button>
                     </div>
