@@ -50,6 +50,7 @@ class ProjectSerializer(BaseModelSerializer):
     category_name = serializers.SerializerMethodField()
     skills_names = serializers.SerializerMethodField()
     bids_count = serializers.SerializerMethodField()
+    is_owner = serializers.SerializerMethodField()
 
     def validate_status(self, value):
         current = self.instance.status if self.instance else None
@@ -62,10 +63,12 @@ class ProjectSerializer(BaseModelSerializer):
     class Meta:
         model = Project
         fields = [
-            "id", "title", "description", "budget", "category", "category_name",
-            "skills", "skills_names", "bids_count", "visibility", "status",
-            "created_by", "requirements", "attachments", "created_at",
-            "category_id", "skill_ids",
+            "id", "title", "description", "budget", 
+            "category", "category_name", "category_id",
+            "skills", "skills_names", "skill_ids",
+            "bids_count", "visibility", "status",
+            "created_by", "is_owner",
+            "requirements", "attachments", "created_at",
         ]
         read_only_fields = ("created_by",)
 
@@ -91,6 +94,12 @@ class ProjectSerializer(BaseModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         return instance
+    
+    def get_is_owner(self, obj):
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return False
+        return obj.created_by_id == request.user.id
 
 
 # -------------------------

@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate } from 'react-router-dom';
 import { messagingService } from '@/services/messaging.service';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Send, Loader2, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Send, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/contexts/authStore';
 import { toast } from "sonner";
-import { EmptyState } from '@/components/common'; // <- import EmptyState
+import { EmptyState } from '@/components/common';
 
 const ChatPage = () => {
   const { id } = useParams();
@@ -22,10 +22,22 @@ const ChatPage = () => {
   const [message, setMessage] = useState('');
   const messagesEndRef = useRef(null);
 
-  const { data: messages, isLoading, error } = useQuery({
+  const { data: messages = [], isLoading, error, isError } = useQuery({
     queryKey: ['messages', id],
-    queryFn: () => messagingService.getMessages(id).then(res => res.data),
-    refetchInterval: 5000, // Poll every 5 seconds
+    queryFn: async () => {
+      try {
+        const res = await messagingService.getMessages(id);
+        return res.results || [];
+      } catch (err) {
+        console.error('Error fetching messages:', err);
+        throw err;
+      }
+    },
+    refetchInterval: 5000,
+    retry: 2,
+    retryDelay: 1000,
+    enabled: !!id, // Only run if we have an ID
+    staleTime: 1000, // Consider data stale after 1 second
   });
 
   const sendMutation = useMutation({
@@ -36,6 +48,10 @@ const ChatPage = () => {
       queryClient.invalidateQueries(['unread-count']);
       setMessage('');
     },
+    onError: (error) => {
+      console.error('Error sending message:', error);
+      toast.error("Failed to send message");
+    }
   });
 
   const handleSend = (e) => {
@@ -46,19 +62,49 @@ const ChatPage = () => {
   };
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messages && messages.length > 0) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages]);
 
-  if (error) {
-    toast.error("Failed to load messages");
-    return null;
+  if (isError) {
+    return (
+      <div className="container mx-auto p-4 max-w-4xl">
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center space-y-4">
+              <h2 className="text-xl font-semibold text-destructive">
+                Failed to load conversation
+              </h2>
+              <p className="text-muted-foreground">
+                {error?.message || 'An error occurred while loading messages'}
+              </p>
+              <div className="flex gap-2 justify-center">
+                <Button onClick={() => navigate('/app/messages')} variant="outline">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to Messages
+                </Button>
+                <Button onClick={() => queryClient.invalidateQueries(['messages', id])}>
+                  Try Again
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   const formatTime = (timestamp) => {
-    return new Date(timestamp).toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    if (!timestamp) return '';
+    try {
+      return new Date(timestamp).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (err) {
+      return '';
+    }
   };
 
   return (
@@ -74,7 +120,7 @@ const ChatPage = () => {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <CardTitle className="text-xl">
-            {t('chat.title', 'Conversation')} #{id}
+            {t('chat.title', 'Conversation')}
           </CardTitle>
         </CardHeader>
       </Card>
@@ -96,7 +142,7 @@ const ChatPage = () => {
             />
           ) : (
             messages.map((msg) => {
-              const isOwnMessage = msg.sender === user?.username || msg.sender === user?.email;
+              const isOwnMessage = msg.sender === user?.id;
 
               return (
                 <div
@@ -114,9 +160,9 @@ const ChatPage = () => {
                         : "bg-muted"
                     )}
                   >
-                    {!isOwnMessage && (
+                    {!isOwnMessage && msg.sender_name && (
                       <div className="text-xs font-semibold mb-1 opacity-70">
-                        {msg.sender}
+                        {msg.sender_name}
                       </div>
                     )}
                     <div className="break-words">{msg.content}</div>
@@ -139,12 +185,13 @@ const ChatPage = () => {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder={t('chat.placeholder', 'Type a message...')}
-              disabled={sendMutation.isPending}
+              disabled={sendMutation.isPending || isLoading}
               className="flex-1"
+              autoFocus
             />
             <Button
               type="submit"
-              disabled={sendMutation.isPending || !message.trim()}
+              disabled={sendMutation.isPending || !message.trim() || isLoading}
               size="icon"
             >
               {sendMutation.isPending ? (

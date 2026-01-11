@@ -4,47 +4,36 @@ export const messagingService = {
   // Get list of all conversations
   getConversations: async () => {
     try {
-      const res = await api.get('/messaging/conversations/');
-      return { results: res?.data?.results || [] };
+      const res = await api.get('/messaging/conversations/', {
+        timeout: 30000, // Increase timeout to 30 seconds
+      });
+      return res?.data || [];
     } catch (err) {
-      console.error("Failed to fetch conversations", err);
-      return { results: [] };
-    }
-  },
-
-  // Get conversations for a specific project
-  getProjectConversations: async (projectId) => {
-    try {
-      const res = await api.get(`/messaging/conversations/?project_id=${projectId}`);
-      return { results: res?.data?.results || [] };
-    } catch (err) {
-      console.error(`Failed to fetch conversations for project ${projectId}`, err);
-      return { results: [] };
+      if (err.code === 'ECONNABORTED') {
+      }
+      throw err; // Re-throw to let React Query handle it
     }
   },
 
   // Create a new conversation
-  createConversation: async (participants, projectId) => {
+  createConversation: async (participants) => {
     try {
-      const res = await api.post('/messaging/conversations/', {
-        participants,
-        project_id: projectId,
-      });
+      const res = await api.post('/messaging/conversations/', { participants });
       return { data: res?.data || null };
     } catch (err) {
-      console.error("Failed to create conversation", err);
-      throw err; // still throw so React Query can catch
+      throw err;
     }
   },
 
   // Get messages for a conversation
   getMessages: async (conversationId) => {
     try {
-      const res = await api.get(`/messaging/conversations/${conversationId}/messages/`);
-      return { results: res?.data?.results || [] };
+      const res = await api.get(`/messaging/conversations/${conversationId}/messages/`, {
+        timeout: 30000,
+      });
+      return { results: res?.data || [] };
     } catch (err) {
-      console.error(`Failed to fetch messages for conversation ${conversationId}`, err);
-      return { results: [] };
+      throw err; // Re-throw instead of returning empty results
     }
   },
 
@@ -54,7 +43,6 @@ export const messagingService = {
       const res = await api.post(`/messaging/conversations/${conversationId}/send_message/`, { content });
       return { data: res?.data || null };
     } catch (err) {
-      console.error(`Failed to send message to conversation ${conversationId}`, err);
       throw err;
     }
   },
@@ -62,12 +50,25 @@ export const messagingService = {
   // Get unread count
   getUnreadCount: async () => {
     try {
-      const res = await api.get('/messaging/unread-count/');
-      // Ensure count is always a number
+      const res = await api.get('/messaging/unread-count/', {
+        timeout: 30000,
+      });
       return { count: res?.data?.count ?? 0 };
     } catch (err) {
-      console.error("Failed to fetch unread count", err);
+      // Don't throw, just return 0 for unread count
       return { count: 0 };
+    }
+  },
+
+  startConversation: async (projectId, providerId) => {
+    try {
+      const res = await api.post(`/messaging/conversations/`, {
+        participants: [providerId],
+        project_id: projectId,
+      });
+      return res?.data; // Make sure this returns the conversation object with id
+    } catch (err) {
+      throw err;
     }
   },
 };
