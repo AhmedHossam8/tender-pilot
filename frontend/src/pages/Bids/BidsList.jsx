@@ -275,8 +275,9 @@ const BidsList = () => {
                       <div className="mb-3 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-3 border border-purple-100">
                         <AIMatchScore
                           score={bid.ai_score}
-                          recommendation={bid.ai_recommendation}
-                          showDetails={false}
+                          recommendation={bid.ai_feedback?.recommendation || bid.ai_recommendation}
+                          showDetails={true}
+                          feedback={bid.ai_feedback}
                           size="small"
                         />
                       </div>

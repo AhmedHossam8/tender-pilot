@@ -69,8 +69,9 @@ class ProjectSerializer(BaseModelSerializer):
             "bids_count", "visibility", "status",
             "created_by", "is_owner",
             "requirements", "attachments", "created_at",
+            "ai_summary", "ai_complexity", "ai_processed", "ai_processed_at", "ai_data",
         ]
-        read_only_fields = ("created_by",)
+        read_only_fields = ("created_by", "ai_summary", "ai_complexity", "ai_processed", "ai_processed_at", "ai_data")
 
     def get_category_name(self, obj):
         return obj.category.name if obj.category else None

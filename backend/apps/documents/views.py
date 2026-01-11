@@ -98,6 +98,16 @@ class ProjectDocumentViewSet(BaseModelViewSet):
 
             # Save AI results persistently - store as JSON in ai_summary field
             doc.ai_summary = json.dumps(ai_result)
+            
+            # Trigger automatic project analysis after document upload
+            from apps.ai_engine.services.integration_service import AIIntegrationService
+            try:
+                AIIntegrationService.auto_analyze_project_on_document_upload(
+                    project=project,
+                    user=request.user
+                )
+            except Exception as e:
+                logger.warning(f"Auto-analysis after upload failed: {e}")
             doc.ai_processed = True
             doc.ai_processed_at = timezone.now()
             doc.save()

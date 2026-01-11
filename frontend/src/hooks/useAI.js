@@ -17,7 +17,23 @@ export const useAIHealth = () => {
 };
 
 /**
- * Hook for analyzing tender
+ * Hook for analyzing project
+ */
+export const useAnalyzeProject = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ projectId, payload }) =>
+      aiService.analyzeProject(projectId, payload),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["project", variables.projectId] });
+      queryClient.invalidateQueries({ queryKey: ["ai", "analytics"] });
+    },
+  });
+};
+
+/**
+ * Hook for analyzing tender (alias for backward compatibility)
  */
 export const useAnalyzeTender = () => {
   const queryClient = useQueryClient();
@@ -27,6 +43,7 @@ export const useAnalyzeTender = () => {
       aiService.analyzeTender(tenderId, payload),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["tender", variables.tenderId] });
+      queryClient.invalidateQueries({ queryKey: ["project", variables.tenderId] });
       queryClient.invalidateQueries({ queryKey: ["ai", "analytics"] });
     },
   });
@@ -39,10 +56,10 @@ export const useCheckCompliance = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ tenderId, payload }) =>
-      aiService.checkCompliance(tenderId, payload),
+    mutationFn: ({ projectId, payload }) =>
+      aiService.checkCompliance(projectId, payload),
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["tender", variables.tenderId, "compliance"] });
+      queryClient.invalidateQueries({ queryKey: ["project", variables.projectId, "compliance"] });
       queryClient.invalidateQueries({ queryKey: ["ai", "analytics"] });
     },
   });
@@ -55,10 +72,10 @@ export const useGenerateOutline = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ tenderId, payload }) =>
-      aiService.generateOutline(tenderId, payload),
+    mutationFn: ({ projectId, payload }) =>
+      aiService.generateOutline(projectId, payload),
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["tender", variables.tenderId, "outline"] });
+      queryClient.invalidateQueries({ queryKey: ["project", variables.projectId, "outline"] });
       queryClient.invalidateQueries({ queryKey: ["ai", "analytics"] });
     },
   });

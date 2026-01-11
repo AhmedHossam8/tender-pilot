@@ -107,6 +107,7 @@ class AIMatchingService:
                         if cached_match:
                             cached_match['provider_id'] = provider.id
                             cached_match['provider_name'] = provider.full_name or provider.email
+                            cached_match['provider_email'] = provider.email
                             cached_match['cached'] = True
                             results.append(cached_match)
                             continue
@@ -117,11 +118,17 @@ class AIMatchingService:
                         provider_data
                     )
                     
-                    if match_result:
+                    # Check if we got fallback response indicating AI is unavailable
+                    if match_result and match_result.get('reasoning') == 'Basic rule-based scoring used (AI unavailable)':
+                        # AI is unavailable, don't return random matches
+                        self.logger.warning("AI matching service unavailable")
+                        return []
+                    elif match_result:
                         match_result['cached'] = False
                         result = {
                             'provider_id': provider.id,
                             'provider_name': provider.full_name or provider.email,
+                            'provider_email': provider.email,
                             **match_result
                         }
                         results.append(result)

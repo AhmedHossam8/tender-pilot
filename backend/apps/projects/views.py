@@ -57,6 +57,16 @@ class ProjectViewSet(viewsets.ModelViewSet):
     filterset_class = ProjectFilter
     ordering_fields = ["created_at", "budget"]
     search_fields = ["title", "description"]
+    
+    def get_permissions(self):
+        """
+        Override permissions for specific actions.
+        """
+        # Allow any authenticated user to generate cover letters (will be validated in the action)
+        if self.action == 'generate_cover_letter':
+            from rest_framework.permissions import IsAuthenticated
+            return [IsAuthenticated()]
+        return super().get_permissions()
 
     def get_queryset(self):
         user = self.request.user
@@ -83,6 +93,23 @@ class ProjectViewSet(viewsets.ModelViewSet):
         if self.action == "create":
             return ProjectCreateSerializer
         return ProjectSerializer
+    
+    def retrieve(self, request, *args, **kwargs):
+        """Retrieve project with automatic AI analysis refresh if stale"""
+        instance = self.get_object()
+        
+        # Auto-refresh analysis if stale (background task, doesn't block response)
+        from apps.ai_engine.services.integration_service import AIIntegrationService
+        try:
+            AIIntegrationService.refresh_project_analysis_if_stale(
+                project=instance,
+                user=request.user
+            )
+        except Exception as e:
+            logger.warning(f"Auto-refresh analysis for project {instance.id} failed: {e}")
+        
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
@@ -149,14 +176,40 @@ class ProjectViewSet(viewsets.ModelViewSet):
             logger.error(f"Project analysis validation error: {e}")
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            logger.error(f"Project analysis failed: {e}", exc_info=True)
-            return Response({'error': 'AI analysis failed. Please try again later.'},
+            # Check if it's a rate limit error
+            if 'rate limit' in str(e).lower() or 'quota' in str(e).lower() or '429' in str(e):
+                logger.warning(f"AI API rate limit hit for project {project.id}")
+                
+                # Return fallback analysis
+                fallback_result = {
+                    'analysis': {
+                        'summary': f"This project '{project.title}' is seeking {', '.join(project.skills.values_list('name', flat=True)) if project.skills.exists() else 'technical skills'} for a budget of ${project.budget}. AI analysis is temporarily limited due to high usage, but this appears to be a {analysis_depth} complexity project.",
+                        'complexity': 'medium',
+                        'estimated_duration': '2-4 weeks',
+                        'key_requirements': ['Project scope clarification needed', 'Budget appropriate for scope'],
+                        'risk_factors': ['Limited AI analysis available'],
+                    },
+                    'metadata': {
+                        'fallback_mode': True,
+                        'reason': 'AI service rate limited'
+                    }
+                }
+                
+                # Still save a basic summary
+                project.ai_summary = fallback_result['analysis']['summary']
+                project.save(update_fields=['ai_summary'])
+                
+                return Response(fallback_result, status=status.HTTP_200_OK)
+            else:
+                logger.error(f"Project analysis failed: {e}", exc_info=True)
+                return Response({'error': 'AI analysis failed. Please try again later.'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=True, methods=['get'], permission_classes=[CanUseAI], url_path='match-providers')
     def match_providers(self, request, pk=None):
         project = self.get_object()
-        limit = int(request.query_params.get('limit', 10))
+        limit = int(request.query_params.get('limit', 5))  # Default to 5
+        offset = int(request.query_params.get('offset', 0))
         use_cache = request.query_params.get('use_cache', 'true').lower() == 'true'
         only_applicants = request.query_params.get('only_applicants', 'true').lower() == 'true'
 
@@ -168,16 +221,36 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
             matches = matching_service.match_providers_to_project(
                 project=project,
-                limit=limit,
+                limit=limit + offset,  # Get more than needed for pagination
                 use_cache=use_cache,
                 provider_ids=provider_ids
             )
+            
+            # Handle AI unavailable case
+            if not matches and not use_cache:
+                return Response({
+                    'error': 'AI_UNAVAILABLE',
+                    'message': 'Unable to provide accurate matches at this time. Our AI matching system is currently unavailable. Please try again later.',
+                    'project_id': str(project.id),
+                    'project_title': project.title,
+                    'matches_count': 0,
+                    'matches': [],
+                    'has_more': False
+                }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+            
+            # Apply pagination
+            paginated_matches = matches[offset:offset + limit]
+            has_more = len(matches) > offset + limit
 
             return Response({
                 'project_id': str(project.id),
                 'project_title': project.title,
-                'matches_count': len(matches),
-                'matches': matches
+                'matches_count': len(paginated_matches),
+                'total_matches': len(matches),
+                'matches': paginated_matches,
+                'has_more': has_more,
+                'offset': offset,
+                'limit': limit
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
@@ -261,6 +334,51 @@ class ProjectViewSet(viewsets.ModelViewSet):
         conversation.participants.add(project.created_by, provider)
         serializer = ConversationSerializer(conversation, context={'request': request})
         return Response(serializer.data, status=201)
+    
+    @action(detail=True, methods=['post'], url_path='generate-cover-letter')
+    def generate_cover_letter(self, request, pk=None):
+        """
+        Generate AI-suggested cover letter for bidding on this project.
+        
+        POST /api/v1/projects/{project_id}/generate-cover-letter/
+        
+        Returns AI-generated cover letter suggestion that providers can use.
+        """
+        from apps.ai_engine.services.integration_service import AIIntegrationService
+        
+        # Ensure user is a provider
+        if request.user.user_type not in ['provider', 'both']:
+            return Response(
+                {"error": "Only service providers can generate cover letters."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        project = self.get_object()
+        
+        # Don't allow generating cover letter for own project
+        if project.created_by == request.user:
+            return Response(
+                {"error": "You cannot bid on your own project."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Generate cover letter
+        cover_letter = AIIntegrationService.generate_cover_letter_suggestion(
+            project=project,
+            provider=request.user
+        )
+        
+        if cover_letter:
+            return Response({
+                'cover_letter': cover_letter,
+                'project_title': project.title,
+                'note': 'This is an AI-generated suggestion. Please review and customize before submitting.'
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response(
+                {"error": "Failed to generate cover letter. Please try again."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 # ------------------------

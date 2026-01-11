@@ -145,7 +145,7 @@ const AIMatchScore = ({
       </div>
 
       {/* Detailed Feedback (Optional) */}
-      {showDetails && feedback && (
+      {showDetails && feedback && Object.keys(feedback).length > 0 && (
         <div className="mt-4">
           <button
             onClick={() => setDetailsOpen(!detailsOpen)}
@@ -164,6 +164,14 @@ const AIMatchScore = ({
 
           {detailsOpen && (
             <div className={`mt-3 p-4 ${colors.bg} ${colors.border} border rounded-lg space-y-3`}>
+              {/* Reasoning - Always show this first if available */}
+              {feedback.reasoning && (
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-1">AI Analysis</h4>
+                  <p className="text-sm text-gray-700 italic">{feedback.reasoning}</p>
+                </div>
+              )}
+              
               {/* Matching Skills */}
               {feedback.matching_skills && feedback.matching_skills.length > 0 && (
                 <div>
@@ -223,14 +231,6 @@ const AIMatchScore = ({
                       <li key={index} className="text-sm text-gray-700">{concern}</li>
                     ))}
                   </ul>
-                </div>
-              )}
-
-              {/* Reasoning */}
-              {feedback.reasoning && (
-                <div>
-                  <h4 className="font-semibold text-gray-900 mb-1">AI Analysis</h4>
-                  <p className="text-sm text-gray-700 italic">{feedback.reasoning}</p>
                 </div>
               )}
             </div>

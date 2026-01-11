@@ -20,6 +20,10 @@ export const aiService = {
   generateOutline: (projectId, payload = {}) =>
     api.post(`/ai/project/${projectId}/outline/`, payload),
 
+  // Legacy aliases for backward compatibility
+  analyzeTender: (projectId, payload = {}) =>
+    api.post(`/ai/project/${projectId}/analyze/`, payload),
+
   // Regenerate AI response
   regenerateResponse: (responseId, payload = {}) =>
     api.post(`/ai/response/${responseId}/regenerate/`, payload),
@@ -46,4 +50,27 @@ export const aiService = {
 
   getPromptPerformance: (params = {}) =>
     api.get("/ai/analytics/prompts", { params }),
+  
+  // Bid Optimization endpoints
+  analyzeBidStrength: (bidId) =>
+    api.post(`/ai/bids/${bidId}/analyze-strength/`),
+  
+  getRealtimeBidSuggestions: (bidData) =>
+    api.post("/ai/bids/realtime-suggestions/", bidData),
+  
+  optimizeBidPricing: (bidId) =>
+    api.post(`/ai/bids/${bidId}/optimize-pricing/`),
+  
+  predictBidSuccess: (bidId) =>
+    api.post(`/ai/bids/${bidId}/predict-success/`),
+  
+  // Smart Recommendations endpoints
+  getPersonalizedRecommendations: (params = {}) =>
+    api.get("/ai/recommendations/for-me/", { params }),
+  
+  getTrendingOpportunities: (params = {}) =>
+    api.get("/ai/recommendations/trending/", { params }),
+  
+  getProjectOptimization: (projectId) =>
+    api.get(`/ai/recommendations/optimize-project/${projectId}/`),
 };

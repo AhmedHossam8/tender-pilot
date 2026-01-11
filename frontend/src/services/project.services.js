@@ -34,4 +34,9 @@ export const projectService = {
   startConversation: (projectId, providerId) => {
     return api.post(`/projects/${projectId}/start-conversation/`, { provider_id: providerId });
   },
+
+  // AI-powered features
+  generateCoverLetter: (projectId) => api.post(`/projects/${projectId}/generate-cover-letter/`),
+  
+  triggerAIAnalysis: (projectId) => api.post(`/projects/${projectId}/ai-analysis/`),
 };

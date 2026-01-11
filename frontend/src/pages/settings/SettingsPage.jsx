@@ -20,7 +20,6 @@ const SettingsPage = () => {
   // Profile form state
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
-  const [bio, setBio] = useState('');
   
   // Password form state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -50,25 +49,16 @@ const SettingsPage = () => {
       setFullName(user.full_name || '');
       setEmail(user.email || '');
     }
-    if (profileData) {
-      setBio(profileData.bio || '');
-    }
-  }, [user, profileData]);
+  }, [user]);
 
   // Update profile mutation
   const updateProfileMutation = useMutation({
     mutationFn: async (data) => {
       // Update basic user info
-      if (data.full_name || data.email) {
-        await userService.updateUserInfo({
-          full_name: data.full_name,
-          email: data.email,
-        });
-      }
-      // Update profile
-      if (data.bio !== undefined) {
-        await userService.updateProfile({ bio: data.bio });
-      }
+      await userService.updateUserInfo({
+        full_name: data.full_name,
+        email: data.email,
+      });
     },
     onSuccess: () => {
       toast.success('Profile updated successfully!');
@@ -104,7 +94,6 @@ const SettingsPage = () => {
     updateProfileMutation.mutate({
       full_name: fullName,
       email: email,
-      bio: bio,
     });
   };
 
@@ -214,16 +203,6 @@ const SettingsPage = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="Enter your email"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="bio">Bio</Label>
-                    <textarea
-                      id="bio"
-                      value={bio}
-                      onChange={(e) => setBio(e.target.value)}
-                      className="w-full min-h-[100px] px-3 py-2 rounded-md border border-input bg-background"
-                      placeholder="Tell us about yourself..."
                     />
                   </div>
                   <Button 

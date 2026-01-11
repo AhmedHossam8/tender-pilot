@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
 from django.utils import timezone
+import logging
 from .models import Bid, BidMilestone, BidAttachment
 from .serializers import (
     BidListSerializer,
@@ -15,6 +16,8 @@ from .serializers import (
     BidAttachmentSerializer,
 )
 from .services.comparison_service import BidComparisonService
+
+logger = logging.getLogger(__name__)
 
 
 class BidViewSet(viewsets.ModelViewSet):
@@ -87,8 +90,20 @@ class BidViewSet(viewsets.ModelViewSet):
             return BidDetailSerializer
     
     def perform_create(self, serializer):
-        """Create a new bid"""
-        serializer.save()
+        """Create a new bid with automatic AI scoring"""
+        bid = serializer.save()
+        
+        # Automatically score the bid using AI
+        from apps.ai_engine.services.integration_service import AIIntegrationService
+        try:
+            AIIntegrationService.auto_score_bid_on_submission(
+                bid=bid,
+                user=self.request.user
+            )
+        except Exception as e:
+            logger.warning(f"Auto-scoring for bid {bid.id} failed: {e}")
+        
+        return bid
     
     def perform_update(self, serializer):
         """Update an existing bid"""
@@ -304,6 +319,77 @@ class ProjectBidsInsightsView(views.APIView):
     """
     permission_classes = [IsAuthenticated]
     
+    def get(self, request, project_id):
+        """Get AI-powered insights for all bids on a project"""
+        from apps.projects.models import Project
+        
+        try:
+            project = Project.objects.get(id=project_id, created_by=request.user)
+        except Project.DoesNotExist:
+            return Response(
+                {"error": "Project not found or you don't have access"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        bids = Bid.objects.filter(project=project).select_related('service_provider')
+        
+        insights = {
+            'total_bids': bids.count(),
+            'average_score': bids.aggregate(avg=models.Avg('ai_score'))['avg'] or 0,
+            'top_bids': [],
+            'pricing_analysis': {},
+            'skills_coverage': {},
+        }
+        
+        # Top bids by AI score
+        top_bids = bids.order_by('-ai_score')[:5]
+        insights['top_bids'] = [{
+            'id': bid.id,
+            'provider': bid.service_provider.get_full_name() if bid.service_provider else 'Unknown',
+            'score': bid.ai_score,
+            'amount': float(bid.proposed_amount),
+            'timeline': bid.proposed_timeline,
+        } for bid in top_bids]
+        
+        return Response(insights, status=status.HTTP_200_OK)
+
+
+@action(detail=True, methods=['post'], url_path='generate-cover-letter')
+def generate_cover_letter(self, request, pk=None):
+    """
+    Generate AI-suggested cover letter for a project.
+    
+    POST /api/v1/projects/{project_id}/generate-cover-letter/
+    
+    Returns AI-generated cover letter suggestion.
+    """
+    from apps.projects.models import Project
+    from apps.ai_engine.services.integration_service import AIIntegrationService
+    
+    try:
+        project = Project.objects.get(id=pk)
+    except Project.DoesNotExist:
+        return Response(
+            {"error": "Project not found"},
+            status=status.HTTP_404_NOT_FOUND
+        )
+    
+    # Generate cover letter
+    cover_letter = AIIntegrationService.generate_cover_letter_suggestion(
+        project=project,
+        provider=request.user
+    )
+    
+    if cover_letter:
+        return Response({
+            'cover_letter': cover_letter,
+            'note': 'This is an AI-generated suggestion. Please review and customize before submitting.'
+        }, status=status.HTTP_200_OK)
+    else:
+        return Response(
+            {"error": "Failed to generate cover letter"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
     def get(self, request, project_id):
         # Verify user owns the project
         from apps.projects.models import Project

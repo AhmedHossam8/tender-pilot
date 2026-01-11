@@ -6,6 +6,7 @@ import bidService from '@/services/bid.service';
 import { projectService } from "../../services/project.services";
 import { useChangeBidStatus } from "@/hooks/useBids";
 import { useAuthStore } from "@/contexts/authStore";
+import { useAnalyzeBidStrength, usePredictBidSuccess } from '@/hooks/useBidOptimization';
 
 import {
     Card,
@@ -17,6 +18,7 @@ import {
     Skeleton,
 } from "@/components/ui";
 import { StatusBadge } from "@/components/ui/Badge";
+import { Brain, TrendingUp } from 'lucide-react';
 
 export default function BidDetail() {
     const { id } = useParams(); // bid id
@@ -25,6 +27,8 @@ export default function BidDetail() {
     const { t } = useTranslation();
 
     const changeBidStatus = useChangeBidStatus();
+    const analyzeBid = useAnalyzeBidStrength(id);
+    const predictSuccess = usePredictBidSuccess(id);
 
     /* =======================
        Fetch Bid
@@ -186,6 +190,116 @@ export default function BidDetail() {
                                 {bid.cover_letter}
                             </div>
                         </div>
+
+                        {/* AI Analysis Section */}
+                        {isBidOwner && (
+                            <div className="border-t pt-6">
+                                <h3 className="font-semibold mb-3">AI Bid Analysis</h3>
+                                <div className="flex gap-2 mb-4">
+                                    <Button 
+                                        onClick={() => analyzeBid.mutate()}
+                                        disabled={analyzeBid.isPending}
+                                        variant="outline"
+                                        size="sm"
+                                    >
+                                        <Brain className="mr-2 h-4 w-4" />
+                                        {analyzeBid.isPending ? 'Analyzing...' : 'Analyze Bid Strength'}
+                                    </Button>
+                                    
+                                    <Button 
+                                        onClick={() => predictSuccess.mutate()}
+                                        disabled={predictSuccess.isPending}
+                                        variant="outline"
+                                        size="sm"
+                                    >
+                                        <TrendingUp className="mr-2 h-4 w-4" />
+                                        {predictSuccess.isPending ? 'Predicting...' : 'Predict Success'}
+                                    </Button>
+                                </div>
+                                
+                                {/* Bid Analysis Results */}
+                                {analyzeBid.data && (
+                                    <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+                                        <h4 className="font-semibold mb-3 text-blue-900 dark:text-blue-100">Bid Strength Analysis</h4>
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-sm font-medium">Overall Score:</span>
+                                                <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                                                    {analyzeBid.data.overall_score}/10
+                                                </span>
+                                            </div>
+                                            {analyzeBid.data.analysis?.content_quality && (
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-sm">Content Quality:</span>
+                                                    <span className="font-semibold">
+                                                        {analyzeBid.data.analysis.content_quality.score}/10
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {analyzeBid.data.analysis?.pricing && (
+                                                <div>
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm">Pricing Competitiveness:</span>
+                                                        <span className="font-semibold">
+                                                            {analyzeBid.data.analysis.pricing.competitive_score}/10
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-xs text-muted-foreground mt-1">
+                                                        {analyzeBid.data.analysis.pricing.reasoning}
+                                                    </p>
+                                                </div>
+                                            )}
+                                            {analyzeBid.data.suggestions?.length > 0 && (
+                                                <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-800">
+                                                    <p className="text-sm font-medium mb-2">Suggestions:</p>
+                                                    <ul className="text-sm space-y-1">
+                                                        {analyzeBid.data.suggestions.map((suggestion, idx) => (
+                                                            <li key={idx} className="flex items-start">
+                                                                <span className="mr-2">•</span>
+                                                                <span>{suggestion}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                {/* Success Prediction Results */}
+                                {predictSuccess.data && (
+                                    <div className="mt-4 p-4 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
+                                        <h4 className="font-semibold mb-3 text-green-900 dark:text-green-100">Success Prediction</h4>
+                                        <div className="space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-sm font-medium">Win Probability:</span>
+                                                <span className="text-2xl font-bold text-green-600 dark:text-green-400">
+                                                    {(predictSuccess.data.win_probability * 100).toFixed(1)}%
+                                                </span>
+                                            </div>
+                                            {predictSuccess.data.reasoning && (
+                                                <p className="text-sm text-muted-foreground mt-2">
+                                                    {predictSuccess.data.reasoning}
+                                                </p>
+                                            )}
+                                            {predictSuccess.data.factors && (
+                                                <div className="mt-3 pt-3 border-t border-green-200 dark:border-green-800">
+                                                    <p className="text-sm font-medium mb-2">Key Factors:</p>
+                                                    <ul className="text-sm space-y-1">
+                                                        {Object.entries(predictSuccess.data.factors).map(([key, value]) => (
+                                                            <li key={key} className="flex items-center justify-between">
+                                                                <span className="capitalize">{key.replace(/_/g, ' ')}:</span>
+                                                                <span className="font-semibold">{value}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
 
