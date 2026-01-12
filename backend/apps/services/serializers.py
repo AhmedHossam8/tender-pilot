@@ -39,6 +39,12 @@ class ServiceSerializer(serializers.ModelSerializer):
 class BookingSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     package = ServicePackageSerializer(read_only=True)
+    package_id = serializers.PrimaryKeyRelatedField(
+        queryset=ServicePackage.objects.all(),
+        source='package',
+        write_only=True,
+        required=False,
+    )
 
     class Meta:
         model = Booking
@@ -46,6 +52,7 @@ class BookingSerializer(serializers.ModelSerializer):
             "id",
             "user",
             "package",
+            "package_id",
             "status",
             "scheduled_for",
             "created_at",

@@ -38,6 +38,7 @@ import ServicesList from "@/pages/Services/ServicesList";
 import ServiceDetailPage from "@/pages/Services/ServiceDetailPage";
 import BookServicePage from "@/pages/Services/BookServicePage";
 import BookingsList from "@/pages/Services/BookingsList";
+import BookingDetails from "@/pages/Services/BookingDetails";
 
 // AI pages
 import { AIDashboard, AIResultPanel } from "./pages/ai";
@@ -183,6 +184,7 @@ function App() {
               <Route path="/app/services/:id" element={<ServiceDetailPage />} />
               <Route path="/app/services/:id/book" element={<BookServicePage />} />
               <Route path="/app/bookings" element={<BookingsList />} />
+              <Route path="/app/bookings/:id" element={<BookingDetails />} />
               
               {/* Messages */}
               <Route path="/app/messages" element={<MessagesList />} />

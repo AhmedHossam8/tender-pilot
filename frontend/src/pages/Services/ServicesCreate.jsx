@@ -61,6 +61,9 @@ function ServicesCreate({ isOpen, setOpen }) {
         );
     };
 
+    // Check loading state from the mutation
+    const isLoading = createServiceMutation.isPending ?? createServiceMutation.isLoading ?? false;
+
     return (
         <Dialog open={isOpen} onOpenChange={setOpen}>
             <DialogContent className="max-w-2xl">
@@ -149,14 +152,14 @@ function ServicesCreate({ isOpen, setOpen }) {
 
                     <Button
                         type="submit"
-                        disabled={createServiceMutation.isLoading}
+                        disabled={isLoading}
                         variant="success"
                         className="w-full mt-4"
                     >
-                        {createServiceMutation.isLoading && (
+                        {isLoading && (
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         )}
-                        Create Service
+                        {isLoading ? "Creating..." : "Create Service"}
                     </Button>
                 </form>
             </DialogContent>
