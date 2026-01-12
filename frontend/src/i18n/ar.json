@@ -334,5 +334,47 @@
     "cancelled": "ملغي",
     "open": "مفتوح",
     "in_progress": "قيد التنفيذ"
+  },
+  "help": {
+    "title": "المساعدة والدعم",
+    "subtitle": "اعثر على إجابات للأسئلة الشائعة واحصل على المساعدة التي تحتاجها",
+    "searchPlaceholder": "البحث في مقالات المساعدة...",
+    "clearSearch": "مسح البحث",
+    "backToCategories": "العودة للفئات",
+    "backToArticles": "العودة للمقالات",
+    "searchResults": "نتائج البحث",
+    "noResults": "لم يتم العثور على مقالات",
+    "tryDifferentKeywords": "جرب كلمات مختلفة أو تصفح الفئات",
+    "stillNeedHelp": "ما زلت بحاجة لمساعدة؟",
+    "contactDescription": "لا تجد ما تبحث عنه؟ فريق الدعم لدينا هنا للمساعدة.",
+    "yourEmail": "بريدك الإلكتروني",
+    "subject": "الموضوع",
+    "subjectPlaceholder": "فيما تحتاج المساعدة؟",
+    "message": "الرسالة",
+    "messagePlaceholder": "اوصف مشكلتك بالتفصيل...",
+    "sendMessage": "إرسال الرسالة",
+    "sending": "جاري الإرسال...",
+    "successMessage": "تم إرسال طلب الدعم بنجاح! سنتواصل معك خلال 24 ساعة.",
+    "errorMessage": "فشل في إرسال طلب الدعم. يرجى المحاولة مرة أخرى أو التواصل معنا مباشرة.",
+    "readTime": "دقيقة قراءة",
+    "articles": "مقالات",
+    "in": "في",
+    "categories": {
+      "gettingStarted": "البداية",
+      "forClients": "للعملاء",
+      "forProviders": "لمقدمي الخدمات",
+      "account": "الحساب والفوترة"
+    },
+    "contact": {
+      "emailSupport": "الدعم عبر البريد الإلكتروني",
+      "liveChat": "المحادثة المباشرة",
+      "documentation": "الوثائق",
+      "responseTime": "رد خلال 24 ساعة",
+      "availability": "متاح من الاثنين للجمعة",
+      "hours": "9 صباحاً - 5 مساءً بتوقيت شرق الولايات المتحدة",
+      "detailedGuides": "أدلة مفصلة",
+      "stepByStep": "دروس تطبيقية خطوة بخطوة",
+      "tenderPilotTeam": "فريق تندر بايلوت"
+    }
   }
 }

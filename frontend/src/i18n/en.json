@@ -430,6 +430,48 @@
       "add_portfolio": "Add portfolio URL"
     }
   },
+  "help": {
+    "title": "Help & Support",
+    "subtitle": "Find answers to common questions and get the help you need",
+    "searchPlaceholder": "Search for help articles...",
+    "clearSearch": "Clear search",
+    "backToCategories": "Back to categories",
+    "backToArticles": "Back to articles",
+    "searchResults": "Search Results",
+    "noResults": "No articles found",
+    "tryDifferentKeywords": "Try different keywords or browse categories",
+    "stillNeedHelp": "Still Need Help?",
+    "contactDescription": "Can't find what you're looking for? Our support team is here to help.",
+    "yourEmail": "Your Email",
+    "subject": "Subject",
+    "subjectPlaceholder": "What do you need help with?",
+    "message": "Message",
+    "messagePlaceholder": "Describe your issue in detail...",
+    "sendMessage": "Send Message",
+    "sending": "Sending...",
+    "successMessage": "Support request submitted successfully! We'll get back to you within 24 hours.",
+    "errorMessage": "Failed to send support request. Please try again or contact us directly.",
+    "readTime": "min read",
+    "articles": "articles",
+    "in": "in",
+    "categories": {
+      "gettingStarted": "Getting Started",
+      "forClients": "For Clients",
+      "forProviders": "For Service Providers",
+      "account": "Account & Billing"
+    },
+    "contact": {
+      "emailSupport": "Email Support",
+      "liveChat": "Live Chat",
+      "documentation": "Documentation",
+      "responseTime": "Response within 24 hours",
+      "availability": "Available Mon-Fri",
+      "hours": "9 AM - 5 PM EST",
+      "detailedGuides": "Detailed guides",
+      "stepByStep": "Step-by-step tutorials",
+      "tenderPilotTeam": "Tender Pilot Team"
+    }
+  },
   "messages": {
     "title": "Messages",
     "chat": {
