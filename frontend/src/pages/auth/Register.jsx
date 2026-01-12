@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuthStore } from "@/contexts/authStore";
 import { useTranslation } from "react-i18next";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function Register() {
   const { t } = useTranslation();
@@ -13,11 +14,12 @@ export default function Register() {
     full_name: "",
     email: "",
     password: "",
-    user_type: "client", // NEW: default to client
+    user_type: "client", // default to client
   });
 
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -45,7 +47,6 @@ export default function Register() {
       navigate("/app", { replace: true });
     } catch (err) {
       const data = err?.response?.data;
-
       if (data && typeof data === "object") {
         setErrors(data);
       } else {
@@ -78,24 +79,23 @@ export default function Register() {
   ];
 
   return (
-    <div className="w-full max-w-lg mx-auto space-y-6 p-4">
+    <div className="w-full max-w-lg mx-auto space-y-6 p-4 bg-white rounded-2xl shadow-lg">
       <h1 className="text-2xl md:text-3xl font-bold text-center">{t('auth.createAccount')}</h1>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-2">
         {/* User Type Selection */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             {t('auth.userType.title')}
           </label>
           <div className="grid grid-cols-1 gap-3">
             {userTypes.map((type) => (
               <label
                 key={type.value}
-                className={`relative flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                  form.user_type === type.value
+                className={`relative flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all ${form.user_type === type.value
                     ? "border-blue-600 bg-blue-50"
                     : "border-gray-200 hover:border-gray-300"
-                }`}
+                  }`}
               >
                 <input
                   type="radio"
@@ -109,9 +109,7 @@ export default function Register() {
                   <span className="text-2xl">{type.icon}</span>
                   <div className="flex-1">
                     <div className="font-medium text-gray-900">{type.label}</div>
-                    <div className="text-sm text-gray-600 mt-1">
-                      {type.description}
-                    </div>
+                    <div className="text-sm text-gray-600 mt-1">{type.description}</div>
                   </div>
                   {form.user_type === type.value && (
                     <svg
@@ -131,9 +129,7 @@ export default function Register() {
             ))}
           </div>
           {errors.user_type && (
-            <p className="text-sm text-red-500 mt-1">
-              {errors.user_type[0]}
-            </p>
+            <p className="text-sm text-red-500 mt-1">{errors.user_type[0]}</p>
           )}
         </div>
 
@@ -146,15 +142,13 @@ export default function Register() {
             id="full_name"
             name="full_name"
             placeholder={t('auth.fullName')}
-            className="w-full border rounded-lg px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+            className="w-full border rounded-lg px-3 pt-2 pb-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
             value={form.full_name}
             onChange={handleChange}
             required
           />
           {errors.full_name && (
-            <p className="text-sm text-red-500 mt-1">
-              {errors.full_name[0]}
-            </p>
+            <p className="text-sm text-red-500 mt-1">{errors.full_name[0]}</p>
           )}
         </div>
 
@@ -168,37 +162,40 @@ export default function Register() {
             name="email"
             type="email"
             placeholder={t('auth.email')}
-            className="w-full border rounded-lg px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+            className="w-full border rounded-lg px-3 pt-2 pb-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
             value={form.email}
             onChange={handleChange}
             required
           />
           {errors.email && (
-            <p className="text-sm text-red-500 mt-1">
-              {errors.email[0]}
-            </p>
+            <p className="text-sm text-red-500 mt-1">{errors.email[0]}</p>
           )}
         </div>
 
-        {/* Password */}
-        <div className="space-y-2">
+        {/* Password with Reveal */}
+        <div className="space-y-2 relative">
           <label htmlFor="password" className="block text-sm font-medium text-gray-700">
             {t('auth.password')}
           </label>
           <input
             id="password"
             name="password"
-            type="password"
+            type={showPassword ? "text" : "password"}
             placeholder={t('auth.password')}
-            className="w-full border rounded-lg px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+            className="w-full border rounded-lg px-3 pt-2 pb-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
             value={form.password}
             onChange={handleChange}
             required
           />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-10 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
           {errors.password && (
-            <p className="text-sm text-red-500 mt-1">
-              {errors.password[0]}
-            </p>
+            <p className="text-sm text-red-500 mt-1">{errors.password[0]}</p>
           )}
         </div>
 

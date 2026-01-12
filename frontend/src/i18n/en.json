@@ -190,7 +190,8 @@
     "privacyPolicy": "Privacy Policy",
     "termsOfService": "Terms of Service",
     "cookiePolicy": "Cookie Policy",
-    "copyright": "© {{year}} ServiceHub. All rights reserved."
+    "rightsReserved": "All rights reserved.",
+    "copyright": "© {{year}} TenderPilot. All rights reserved."
   },
   "public": {
     "browseProjects": {

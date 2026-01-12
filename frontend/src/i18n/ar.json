@@ -191,7 +191,8 @@
     "privacyPolicy": "سياسة الخصوصية",
     "termsOfService": "شروط الخدمة",
     "cookiePolicy": "سياسة ملفات تعريف الارتباط",
-    "copyright": "© {{year}} سيرفيس هاب. جميع الحقوق محفوظة."
+    "rightsReserved": "جميع الحقوق محفوظة.",
+    "copyright": "© {{year}} تندر بايلوت. جميع الحقوق محفوظة."
   },
   "public": {
     "browseProjects": {

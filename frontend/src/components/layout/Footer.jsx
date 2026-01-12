@@ -10,22 +10,31 @@ function Footer({ className, websiteName = "TenderPilot" }) {
   return (
     <footer
       className={cn(
-        "bg-white border-t py-4 px-4 text-center text-sm text-muted-foreground",
+        "bg-white border-t py-6 px-4",
         className
       )}
     >
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-2 max-w-7xl mx-auto">
-        <p>
-          © {currentYear} {websiteName}. {t("footer.rightsReserved")}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 max-w-7xl mx-auto">
+        <p className="text-sm sm:text-base">
+          © {currentYear} <span className="font-semibold">{websiteName}</span>. {t("footer.rightsReserved")}
         </p>
         <div className="flex items-center gap-4">
-          <Link to="/privacy" className="hover:text-foreground transition-colors">
+          <Link
+            to="/privacy"
+            className="text-gray-200 hover:text-white transition-colors"
+          >
             {t("footer.privacyPolicy")}
           </Link>
-          <Link to="/terms" className="hover:text-foreground transition-colors">
+          <Link
+            to="/terms"
+            className="text-gray-200 hover:text-white transition-colors"
+          >
             {t("footer.termsOfService")}
           </Link>
-          <Link to="/help" className="hover:text-foreground transition-colors">
+          <Link
+            to="/help"
+            className="text-gray-200 hover:text-white transition-colors"
+          >
             {t("footer.help")}
           </Link>
         </div>
