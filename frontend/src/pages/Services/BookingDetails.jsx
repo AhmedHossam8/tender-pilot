@@ -301,7 +301,7 @@ const BookingDetails = () => {
                 </CardHeader>
                 <CardContent className="space-y-3">
                     {/* Start Chat */}
-                    <Button onClick={handleStartChat} className="w-full" variant="outline">
+                    <Button onClick={handleStartChat} className="w-full" variant="outline" disabled={handleStartChat.isPending}>
                         <MessageCircle className="h-4 w-4 mr-2" />
                         {isProvider ? t("bookings.chatWithClient") : t("bookings.chatWithProvider")}
                     </Button>
@@ -311,10 +311,10 @@ const BookingDetails = () => {
                         <Button
                             onClick={() => setStatusDialogOpen(true)}
                             className="w-full"
-                            disabled={updateStatusMutation.isLoading}
+                            disabled={updateStatusMutation.isPending}
                         >
                             <CheckCircle className="h-4 w-4 mr-2" />
-                            {updateStatusMutation.isLoading
+                            {updateStatusMutation.isPending
                                 ? t("common.updating")
                                 : t("bookings.updateStatus")}
                         </Button>
@@ -326,10 +326,10 @@ const BookingDetails = () => {
                             onClick={() => setCancelDialogOpen(true)}
                             className="w-full"
                             variant="destructive"
-                            disabled={cancelBookingMutation.isLoading}
+                            disabled={cancelBookingMutation.isPending}
                         >
                             <XCircle className="h-4 w-4 mr-2" />
-                            {cancelBookingMutation.isLoading
+                            {cancelBookingMutation.isPending
                                 ? t("common.cancelling")
                                 : t("bookings.cancelBooking")}
                         </Button>
@@ -361,7 +361,7 @@ const BookingDetails = () => {
                         </div>
                     </div>
                     <div className="flex justify-end gap-2">
-                        <Button variant="outline" onClick={() => setStatusDialogOpen(false)}>
+                        <Button variant="outline" onClick={() => setStatusDialogOpen(false)} disabled={updateStatusMutation.isPending}>
                             {t("common.cancel")}
                         </Button>
                         <Button
@@ -386,7 +386,7 @@ const BookingDetails = () => {
                 confirmLabel={t("bookings.cancelBooking")}
                 variant="destructive"
                 onConfirm={() => cancelBookingMutation.mutate(bookingId)}
-                loading={cancelBookingMutation.isLoading}
+                loading={cancelBookingMutation.isPending}
             />
         </div>
     );
