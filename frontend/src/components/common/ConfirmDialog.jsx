@@ -10,20 +10,22 @@ import {
   DialogTitle,
 } from "@/components/ui/Dialog"
 import { Button } from "@/components/ui/Button"
+import { useTranslation } from "react-i18next"
 
 function ConfirmDialog({
   open,
   onOpenChange,
-  title = "Are you sure?",
+  title,
   description,
-  confirmLabel = "Confirm",
-  cancelLabel = "Cancel",
+  confirmLabel,
+  cancelLabel,
   onConfirm,
   onCancel,
   variant = "default",
   loading = false,
   icon,
 }) {
+  const { t } = useTranslation()
   const Icon = icon || (variant === "destructive" ? AlertTriangle : null)
 
   const handleConfirm = async () => {
@@ -34,7 +36,7 @@ function ConfirmDialog({
   }
 
   const handleCancel = () => {
-    if (loading) return; // Prevent cancel during loading
+    if (loading) return // Prevent cancel during loading
     onCancel?.()
     onOpenChange?.(false)
   }
@@ -60,7 +62,7 @@ function ConfirmDialog({
               </div>
             )}
             <div>
-              <DialogTitle>{title}</DialogTitle>
+              <DialogTitle>{title || t("areYouSure")}</DialogTitle>
               {description && (
                 <DialogDescription className="mt-1">
                   {description}
@@ -71,14 +73,14 @@ function ConfirmDialog({
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={handleCancel} disabled={loading}>
-            {cancelLabel}
+            {cancelLabel || t("cancel")}
           </Button>
           <Button
             variant={variant}
             onClick={handleConfirm}
             disabled={loading}
           >
-            {loading ? "Loading..." : confirmLabel}
+            {loading ? t("loading") : confirmLabel || t("confirm")}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -10,14 +10,16 @@ import {
   Target,
   Clock
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Simple Line Chart Component
  * Displays trend data over time
  */
 export const LineChart = ({ data, height = 200, color = '#8b5cf6' }) => {
+  const { t } = useTranslation();
   if (!data || data.length === 0) {
-    return <div className="text-center text-gray-500 py-8">No data available</div>;
+    return <div className="text-center text-gray-500 py-8">{t('noDataAvailable')}</div>;
   }
 
   const maxValue = Math.max(...data.map(d => d.value));
@@ -89,8 +91,9 @@ LineChart.propTypes = {
  * Displays percentage breakdown
  */
 export const DonutChart = ({ data, size = 200 }) => {
+  const { t } = useTranslation();
   if (!data || data.length === 0) {
-    return <div className="text-center text-gray-500 py-8">No data available</div>;
+    return <div className="text-center text-gray-500 py-8">{t('noDataAvailable')}</div>;
   }
 
   const total = data.reduce((sum, d) => sum + d.value, 0);
@@ -172,8 +175,9 @@ DonutChart.propTypes = {
  * Displays categorical data comparison
  */
 export const BarChart = ({ data, height = 300 }) => {
+  const { t } = useTranslation();
   if (!data || data.length === 0) {
-    return <div className="text-center text-gray-500 py-8">No data available</div>;
+    return <div className="text-center text-gray-500 py-8">{t('noDataAvailable')}</div>;
   }
 
   const maxValue = Math.max(...data.map(d => d.value));
@@ -229,6 +233,7 @@ export const MetricCard = ({
   prefix = '',
   suffix = ''
 }) => {
+  const { t } = useTranslation();
   const colorClasses = {
     blue: 'bg-blue-100 text-blue-600',
     purple: 'bg-purple-100 text-purple-600',
@@ -255,7 +260,7 @@ export const MetricCard = ({
               <span className={`text-sm font-medium ${isPositive ? 'text-green-500' : isNegative ? 'text-red-500' : 'text-gray-500'}`}>
                 {isPositive && '+'}{change}%
               </span>
-              <span className="text-sm text-gray-500">vs last period</span>
+              <span className="text-sm text-gray-500">{t('vsLastPeriod')}</span>
             </div>
           )}
         </div>

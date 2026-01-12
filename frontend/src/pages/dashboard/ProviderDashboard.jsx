@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../contexts/authStore';
 import DashboardCard from '../../components/dashboard/DashboardCard';
 import SkillBadge from '../../components/profile/SkillBadge';
@@ -17,6 +18,7 @@ import { Button } from '@/components/ui';
  * Dashboard for service providers showing their services, bids, and earnings
  */
 const ProviderDashboard = () => {
+  const { t } = useTranslation();
   const { user, profile } = useAuthStore();
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(true);
@@ -113,10 +115,10 @@ const ProviderDashboard = () => {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Provider Dashboard
+          {t('dashboard.provider.title')}
         </h1>
         <p className="text-gray-600">
-          Welcome back, {user?.full_name || 'Provider'}! Manage your services and bids.
+          {t('dashboard.provider.welcome', { name: user?.full_name || t('common.provider') })}
         </p>
       </div>
 
@@ -131,14 +133,14 @@ const ProviderDashboard = () => {
             </div>
             <div className="ml-3 flex-1">
               <p className="text-sm text-yellow-700">
-                Your profile is {profileCompleteness}% complete. Complete your profile to get more opportunities!
+                {t('dashboard.provider.profileIncomplete', { percentage: profileCompleteness })}
               </p>
               <div className="mt-2">
                 <Link
                   to="/app/settings"
                   className="text-sm font-medium text-yellow-700 underline hover:text-yellow-600"
                 >
-                  Update Profile →
+                  {t('dashboard.provider.updateProfile')}
                 </Link>
               </div>
             </div>
@@ -149,9 +151,9 @@ const ProviderDashboard = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <DashboardCard
-          title="Active Services"
+          title={t('dashboard.provider.activeServices')}
           value={stats.activeServices}
-          subtitle="Currently listed"
+          subtitle={t('dashboard.provider.currentlyListed')}
           color="blue"
           icon={
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -161,9 +163,9 @@ const ProviderDashboard = () => {
         />
 
         <DashboardCard
-          title="Active Bids"
+          title={t('dashboard.provider.activeBids')}
           value={stats.activeBids}
-          subtitle="Pending review"
+          subtitle={t('dashboard.provider.pendingReview')}
           color="yellow"
           icon={
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -173,9 +175,9 @@ const ProviderDashboard = () => {
         />
 
         <DashboardCard
-          title="Accepted Bids"
+          title={t('dashboard.provider.acceptedBids')}
           value={stats.acceptedBids}
-          subtitle="Won projects"
+          subtitle={t('dashboard.provider.wonProjects')}
           color="green"
           trend="+12% this month"
           trendDirection="up"
@@ -187,9 +189,9 @@ const ProviderDashboard = () => {
         />
 
         <DashboardCard
-          title="Total Earnings"
+          title={t('dashboard.provider.totalEarnings')}
           value={`$${stats.totalEarnings.toLocaleString()}`}
-          subtitle="Lifetime revenue"
+          subtitle={t('dashboard.provider.lifetimeRevenue')}
           color="green"
           icon={
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -199,9 +201,9 @@ const ProviderDashboard = () => {
         />
 
         <DashboardCard
-          title="Completed Projects"
+          title={t('dashboard.provider.completedProjects')}
           value={stats.completedProjects}
-          subtitle="Successfully delivered"
+          subtitle={t('dashboard.provider.successfullyDelivered')}
           color="indigo"
           icon={
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -211,9 +213,9 @@ const ProviderDashboard = () => {
         />
 
         <DashboardCard
-          title="Total Bids"
+          title={t('dashboard.provider.totalBids')}
           value={stats.totalBids}
-          subtitle="All time"
+          subtitle={t('dashboard.provider.allTime')}
           color="purple"
           icon={
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -223,9 +225,9 @@ const ProviderDashboard = () => {
         />
 
         <DashboardCard
-          title="Average Rating"
+          title={t('dashboard.provider.averageRating')}
           value={stats.averageRating.toFixed(1)}
-          subtitle="Out of 5.0"
+          subtitle={t('dashboard.provider.outOfFive')}
           color="yellow"
           icon={
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
@@ -235,9 +237,9 @@ const ProviderDashboard = () => {
         />
 
         <DashboardCard
-          title="Profile Score"
+          title={t('dashboard.provider.profileScore')}
           value={`${profileCompleteness}%`}
-          subtitle="Completeness"
+          subtitle={t('dashboard.provider.completeness')}
           color={profileCompleteness >= 80 ? 'green' : profileCompleteness >= 50 ? 'yellow' : 'red'}
           icon={
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -249,18 +251,17 @@ const ProviderDashboard = () => {
 
       {/* Quick Actions */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-4">{t('dashboard.provider.quickActions')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Link
-            to="/app/services/create"
-            className="flex flex-col items-center gap-2 p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
-          >
+            to="/app/services"
+            className="flex flex-col items-center gap-2 p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">
             <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             <div className="text-center">
-              <div className="font-semibold text-gray-900">Add Service</div>
-              <div className="text-xs text-gray-600">Create new listing</div>
+              <div className="font-semibold text-gray-900">{t('dashboard.provider.addService')}</div>
+              <div className="text-xs text-gray-600">{t('dashboard.provider.createNewListing')}</div>
             </div>
           </Link>
 
@@ -272,8 +273,8 @@ const ProviderDashboard = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <div className="text-center">
-              <div className="font-semibold text-gray-900">Find Projects</div>
-              <div className="text-xs text-gray-600">Browse & bid</div>
+              <div className="font-semibold text-gray-900">{t('dashboard.provider.findProjects')}</div>
+              <div className="text-xs text-gray-600">{t('dashboard.provider.browseAndBid')}</div>
             </div>
           </Link>
 
@@ -285,8 +286,8 @@ const ProviderDashboard = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             <div className="text-center">
-              <div className="font-semibold text-gray-900">My Bids</div>
-              <div className="text-xs text-gray-600">Track submissions</div>
+              <div className="font-semibold text-gray-900">{t('dashboard.provider.myBids')}</div>
+              <div className="text-xs text-gray-600">{t('dashboard.provider.trackSubmissions')}</div>
             </div>
           </Link>
 
@@ -298,8 +299,8 @@ const ProviderDashboard = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
             <div className="text-center">
-              <div className="font-semibold text-gray-900">Edit Profile</div>
-              <div className="text-xs text-gray-600">Update skills</div>
+              <div className="font-semibold text-gray-900">{t('dashboard.provider.editProfile')}</div>
+              <div className="text-xs text-gray-600">{t('dashboard.provider.updateSkills')}</div>
             </div>
           </Link>
         </div>
@@ -308,7 +309,7 @@ const ProviderDashboard = () => {
       {/* Profile Skills */}
       {profile?.skills && profile.skills.length > 0 && (
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Your Skills</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">{t('dashboard.provider.yourSkills')}</h2>
           <div className="flex flex-wrap gap-2">
             {profile.skills.map((skill) => (
               <SkillBadge key={skill.id} skill={skill} />
@@ -322,9 +323,9 @@ const ProviderDashboard = () => {
         {/* Recent Services */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">My Services</h2>
+            <h2 className="text-xl font-bold text-gray-900">{t('dashboard.provider.myServices')}</h2>
             <Link to="/app/services" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-              View All
+              {t('common.viewAll')}
             </Link>
           </div>
           
@@ -333,9 +334,9 @@ const ProviderDashboard = () => {
               <svg className="w-16 h-16 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
-              <p className="text-gray-500 mb-2">No services yet</p>
-              <Link to="/app/services/create" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                Create your first service
+              <p className="text-gray-500 mb-2">{t('dashboard.provider.noServicesYet')}</p>
+              <Link to="/app/services" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                {t('dashboard.provider.createFirstService')}
               </Link>
             </div>
           ) : (
@@ -354,11 +355,11 @@ const ProviderDashboard = () => {
                   </div>
                   <p className="text-sm text-gray-600 mb-2 line-clamp-2">{service.description}</p>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500">{service.packages?.length || 0} packages</span>
+                    <span className="text-xs text-gray-500">{service.packages?.length || 0} {t('dashboard.provider.packages')}</span>
                     <span className={`text-xs px-2 py-1 rounded-full ${
                       service.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                     }`}>
-                      {service.is_active ? 'Active' : 'Inactive'}
+                      {service.is_active ? t('common.active') : t('common.inactive')}
                     </span>
                   </div>
                 </Link>
@@ -372,7 +373,7 @@ const ProviderDashboard = () => {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-gray-900 flex items-center">
               <Sparkles className="mr-2 h-5 w-5 text-purple-500" />
-              Recommended for You
+              {t('dashboard.provider.recommendedForYou')}
             </h2>
             <Button
               variant="ghost"
@@ -399,7 +400,7 @@ const ProviderDashboard = () => {
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="font-semibold text-gray-900">{rec.project.title}</h3>
                     <span className="text-sm font-bold text-purple-600">
-                      {(rec.match_score * 100).toFixed(0)}% Match
+                      {(rec.match_score * 100).toFixed(0)}% {t('dashboard.provider.match')}
                     </span>
                   </div>
                   <p className="text-sm text-gray-600 mb-2 line-clamp-2">{rec.project.description}</p>
@@ -424,8 +425,8 @@ const ProviderDashboard = () => {
           ) : (
             <div className="text-center py-8">
               <Sparkles className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500">No recommendations available yet</p>
-              <p className="text-sm text-gray-400 mt-1">Complete your profile to get better matches</p>
+              <p className="text-gray-500">{t('dashboard.provider.noRecommendations')}</p>
+              <p className="text-sm text-gray-400 mt-1">{t('dashboard.provider.completeProfileForMatches')}</p>
             </div>
           )}
         </div>
@@ -435,7 +436,7 @@ const ProviderDashboard = () => {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-gray-900 flex items-center">
               <TrendingUp className="mr-2 h-5 w-5 text-orange-500" />
-              Trending Opportunities
+              {t('dashboard.provider.trendingOpportunities')}
             </h2>
             <Button
               variant="ghost"
@@ -445,7 +446,7 @@ const ProviderDashboard = () => {
               className="flex items-center gap-1"
             >
               <RefreshCw className={`h-4 w-4 ${trendingLoading ? 'animate-spin' : ''}`} />
-              <span className="text-sm">Refresh</span>
+              <span className="text-sm">{t('common.refresh')}</span>
             </Button>
           </div>
           
@@ -471,7 +472,7 @@ const ProviderDashboard = () => {
                     <span className="text-gray-500">📝 {item.bid_count} bids</span>
                     {item.average_bid && (
                       <span className="text-green-600 font-medium">
-                        Avg bid: ${item.average_bid}
+                        {t('dashboard.provider.avgBid')}: ${item.average_bid}
                       </span>
                     )}
                   </div>
@@ -481,7 +482,7 @@ const ProviderDashboard = () => {
           ) : (
             <div className="text-center py-8">
               <TrendingUp className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500">No trending projects at the moment</p>
+              <p className="text-gray-500">{t('dashboard.provider.noTrendingProjects')}</p>
             </div>
           )}
         </div>
@@ -489,9 +490,9 @@ const ProviderDashboard = () => {
         {/* Recent Bids */}
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">Recent Bids</h2>
+            <h2 className="text-xl font-bold text-gray-900">{t('dashboard.provider.recentBids')}</h2>
             <Link to="/app/bids" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-              View All
+              {t('common.viewAll')}
             </Link>
           </div>
           
@@ -500,9 +501,9 @@ const ProviderDashboard = () => {
               <svg className="w-16 h-16 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              <p className="text-gray-500 mb-2">No bids yet</p>
+              <p className="text-gray-500 mb-2">{t('dashboard.provider.noBidsYet')}</p>
               <Link to="/app/projects" className="text-blue-600 hover:text-blue-700 text-sm font-medium">
-                Browse projects
+                {t('dashboard.provider.browseProjects')}
               </Link>
             </div>
           ) : (
@@ -514,7 +515,7 @@ const ProviderDashboard = () => {
                   className="block p-4 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors"
                 >
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-semibold text-gray-900">{bid.project_title || 'Project'}</h3>
+                    <h3 className="font-semibold text-gray-900">{bid.project_title || t('common.project')}</h3>
                     <span className="text-sm font-bold text-gray-900">${bid.proposed_amount}</span>
                   </div>
                   <p className="text-sm text-gray-600 mb-2 line-clamp-2">{bid.cover_letter}</p>

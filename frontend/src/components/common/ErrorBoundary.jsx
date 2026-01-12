@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils"
 import { AlertTriangle, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent } from "@/components/ui/Card"
+import { useTranslation } from "react-i18next"
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -44,6 +45,7 @@ class ErrorBoundary extends React.Component {
 }
 
 function ErrorFallback({ error, onReset, className }) {
+  const { t } = useTranslation()
   return (
     <div className={cn("flex items-center justify-center p-4", className)}>
       <Card className="max-w-md w-full">
@@ -53,15 +55,15 @@ function ErrorFallback({ error, onReset, className }) {
               <AlertTriangle className="h-6 w-6 text-destructive" />
             </div>
             <div className="space-y-2">
-              <h3 className="text-lg font-semibold">Something went wrong</h3>
+              <h3 className="text-lg font-semibold">{t("somethingWentWrong")}</h3>
               <p className="text-sm text-muted-foreground">
-                {error?.message || "An unexpected error occurred"}
+                {error?.message || t("unexpectedError")}
               </p>
             </div>
             {onReset && (
               <Button onClick={onReset} variant="outline">
                 <RefreshCw className="h-4 w-4 mr-2" />
-                Try again
+                {t("tryAgain")}
               </Button>
             )}
           </div>

@@ -30,6 +30,14 @@ class IsProjectOwnerOrReadOnly(BasePermission):
         return obj.created_by == request.user
 
 class IsProjectOwnerOrAssignedProvider(permissions.BasePermission):
+    def has_permission(self, request, view):
+        # Allow list and retrieve for everyone (including unauthenticated)
+        if view.action in ['list', 'retrieve']:
+            return True
+        
+        # All other actions require authentication
+        return request.user and request.user.is_authenticated
+    
     def has_object_permission(self, request, view, obj):
         # Read permissions for everyone
         if request.method in permissions.SAFE_METHODS:

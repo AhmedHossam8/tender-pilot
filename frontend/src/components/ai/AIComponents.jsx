@@ -1,12 +1,14 @@
 import React from 'react';
 import { Badge, Card, CardContent } from '@/components/ui';
 import { Sparkles, TrendingUp, AlertCircle, CheckCircle2, Lightbulb } from 'lucide-react';
+import { useTranslation } from "react-i18next";
 
 /**
  * AI Complexity Badge
  * Shows the AI-determined complexity of a project
  */
 export const AIComplexityBadge = ({ complexity }) => {
+  const { t } = useTranslation();
   if (!complexity) return null;
 
   const config = {
@@ -20,7 +22,7 @@ export const AIComplexityBadge = ({ complexity }) => {
   return (
     <Badge className={`${color} border flex items-center gap-1`}>
       <Icon className="h-3 w-3" />
-      {complexity.charAt(0).toUpperCase() + complexity.slice(1)} Complexity
+      {t(complexity, { context: 'complexity' })} {t('Complexity')}
     </Badge>
   );
 };
@@ -30,6 +32,7 @@ export const AIComplexityBadge = ({ complexity }) => {
  * Shows the AI match score for a bid (0-100)
  */
 export const AIMatchScore = ({ score, size = 'md', showLabel = true }) => {
+  const { t } = useTranslation();
   if (score === null || score === undefined) return null;
 
   const getColor = (score) => {
@@ -49,7 +52,7 @@ export const AIMatchScore = ({ score, size = 'md', showLabel = true }) => {
     <div className={`inline-flex items-center gap-2 rounded-full border-2 ${getColor(score)} ${sizeClasses[size]} font-semibold`}>
       <Sparkles className="h-4 w-4" />
       <span>{Math.round(score)}</span>
-      {showLabel && <span className="text-xs opacity-75">Match</span>}
+      {showLabel && <span className="text-xs opacity-75">{t('Match')}</span>}
     </div>
   );
 };
@@ -59,6 +62,7 @@ export const AIMatchScore = ({ score, size = 'md', showLabel = true }) => {
  * Displays AI-generated project summary
  */
 export const AISummaryCard = ({ summary, complexity, className = '' }) => {
+  const { t } = useTranslation();
   if (!summary && !complexity) return null;
 
   return (
@@ -70,7 +74,7 @@ export const AISummaryCard = ({ summary, complexity, className = '' }) => {
           </div>
           <div className="flex-1">
             <h3 className="font-semibold text-sm text-gray-700 mb-2 flex items-center gap-2">
-              AI Analysis
+              {t('AI Analysis')}
               {complexity && <AIComplexityBadge complexity={complexity} />}
             </h3>
             {summary && (
@@ -88,6 +92,7 @@ export const AISummaryCard = ({ summary, complexity, className = '' }) => {
  * Shows AI feedback for a bid (strengths, concerns, recommendation)
  */
 export const AIFeedbackDisplay = ({ feedback, className = '' }) => {
+  const { t } = useTranslation();
   if (!feedback) return null;
 
   const { strengths = [], concerns = [], recommendation = '' } = feedback;
@@ -97,12 +102,12 @@ export const AIFeedbackDisplay = ({ feedback, className = '' }) => {
       <CardContent className="pt-4 space-y-4">
         <div className="flex items-center gap-2">
           <Lightbulb className="h-5 w-5 text-purple-600" />
-          <h3 className="font-semibold text-gray-900">AI Insights</h3>
+          <h3 className="font-semibold text-gray-900">{t('AI Insights')}</h3>
         </div>
 
         {strengths.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium text-green-700 mb-2">Strengths</h4>
+            <h4 className="text-sm font-medium text-green-700 mb-2">{t('Strengths')}</h4>
             <ul className="space-y-1">
               {strengths.map((strength, idx) => (
                 <li key={idx} className="flex items-start gap-2 text-sm text-gray-600">
@@ -116,7 +121,7 @@ export const AIFeedbackDisplay = ({ feedback, className = '' }) => {
 
         {concerns.length > 0 && (
           <div>
-            <h4 className="text-sm font-medium text-orange-700 mb-2">Areas for Improvement</h4>
+            <h4 className="text-sm font-medium text-orange-700 mb-2">{t('Areas for Improvement')}</h4>
             <ul className="space-y-1">
               {concerns.map((concern, idx) => (
                 <li key={idx} className="flex items-start gap-2 text-sm text-gray-600">
@@ -131,7 +136,7 @@ export const AIFeedbackDisplay = ({ feedback, className = '' }) => {
         {recommendation && (
           <div className="bg-purple-50 rounded-lg p-3">
             <p className="text-sm text-purple-900">
-              <strong>Recommendation:</strong> {recommendation}
+              <strong>{t('Recommendation')}:</strong> {recommendation}
             </p>
           </div>
         )}
@@ -144,11 +149,13 @@ export const AIFeedbackDisplay = ({ feedback, className = '' }) => {
  * AI Processing Indicator
  * Shows when AI is analyzing something
  */
-export const AIProcessingIndicator = ({ text = 'AI is analyzing...' }) => {
+export const AIProcessingIndicator = ({ text }) => {
+  const { t } = useTranslation();
+  const defaultText = t('aiIsAnalyzing');
   return (
     <div className="flex items-center gap-2 text-blue-600 animate-pulse">
       <Sparkles className="h-4 w-4 animate-spin" />
-      <span className="text-sm">{text}</span>
+      <span className="text-sm">{text || defaultText}</span>
     </div>
   );
 };

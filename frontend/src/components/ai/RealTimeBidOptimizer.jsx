@@ -8,14 +8,16 @@ import React, { useEffect, useState } from 'react';
 import { AlertCircle, CheckCircle, Info, TrendingUp, Zap } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { useTranslation } from 'react-i18next';
 
 export function RealTimeBidOptimizer({ bidData, projectData, onSuggestionApply }) {
+  const { t } = useTranslation();
   const [suggestions, setSuggestions] = useState([]);
   const [overallScore, setOverallScore] = useState(70);
   
   useEffect(() => {
     // Analyze bid data and generate suggestions
-    const newSuggestions = analyzeBid(bidData, projectData);
+    const newSuggestions = analyzeBid(bidData, projectData, t);
     setSuggestions(newSuggestions);
     
     // Calculate overall score
@@ -43,7 +45,7 @@ export function RealTimeBidOptimizer({ bidData, projectData, onSuggestionApply }
                 overallScore >= 60 ? 'text-yellow-600' :
                 'text-red-600'
               }`} />
-              <span className="font-semibold">Bid Strength</span>
+              <span className="font-semibold">{t('bidStrength')}</span>
             </div>
             <div className="text-right">
               <span className="text-2xl font-bold">{overallScore}</span>
@@ -52,9 +54,9 @@ export function RealTimeBidOptimizer({ bidData, projectData, onSuggestionApply }
           </div>
           <Progress value={overallScore} className="h-2" />
           <p className="text-xs text-gray-600 mt-2">
-            {overallScore >= 80 && 'Excellent! Your bid is very competitive.'}
-            {overallScore >= 60 && overallScore < 80 && 'Good bid, but there\'s room for improvement.'}
-            {overallScore < 60 && 'Consider the suggestions below to strengthen your bid.'}
+            {overallScore >= 80 && t('excellentBid')}
+            {overallScore >= 60 && overallScore < 80 && t('goodBid')}
+            {overallScore < 60 && t('considerSuggestions')}
           </p>
         </CardContent>
       </Card>
@@ -66,7 +68,7 @@ export function RealTimeBidOptimizer({ bidData, projectData, onSuggestionApply }
             <div className="space-y-2">
               <h4 className="text-sm font-semibold text-red-700 flex items-center gap-2">
                 <AlertCircle className="h-4 w-4" />
-                Critical ({criticalSuggestions.length})
+                {t('critical')} ({criticalSuggestions.length})
               </h4>
               {criticalSuggestions.map((suggestion, idx) => (
                 <SuggestionCard
@@ -82,7 +84,7 @@ export function RealTimeBidOptimizer({ bidData, projectData, onSuggestionApply }
             <div className="space-y-2">
               <h4 className="text-sm font-semibold text-yellow-700 flex items-center gap-2">
                 <Info className="h-4 w-4" />
-                Recommended ({mediumSuggestions.length})
+                {t('recommended')} ({mediumSuggestions.length})
               </h4>
               {mediumSuggestions.map((suggestion, idx) => (
                 <SuggestionCard
@@ -98,7 +100,7 @@ export function RealTimeBidOptimizer({ bidData, projectData, onSuggestionApply }
             <div className="space-y-2">
               <h4 className="text-sm font-semibold text-blue-700 flex items-center gap-2">
                 <TrendingUp className="h-4 w-4" />
-                Optional ({infoSuggestions.length})
+                {t('optional')} ({infoSuggestions.length})
               </h4>
               {infoSuggestions.map((suggestion, idx) => (
                 <SuggestionCard
@@ -116,8 +118,8 @@ export function RealTimeBidOptimizer({ bidData, projectData, onSuggestionApply }
         <Card>
           <CardContent className="p-6 text-center">
             <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-2" />
-            <p className="text-sm font-medium">Looking good!</p>
-            <p className="text-xs text-gray-500 mt-1">No suggestions at the moment</p>
+            <p className="text-sm font-medium">{t('lookingGood')}</p>
+            <p className="text-xs text-gray-500 mt-1">{t('noSuggestions')}</p>
           </CardContent>
         </Card>
       )}
@@ -126,6 +128,7 @@ export function RealTimeBidOptimizer({ bidData, projectData, onSuggestionApply }
 }
 
 function SuggestionCard({ suggestion, onApply }) {
+  const { t } = useTranslation();
   const { type, priority, message, suggestion: suggestionText, category } = suggestion;
   
   const getIcon = () => {
@@ -178,7 +181,7 @@ function SuggestionCard({ suggestion, onApply }) {
 }
 
 // Helper functions
-function analyzeBid(bidData, projectData) {
+function analyzeBid(bidData, projectData, t) {
   const suggestions = [];
   const { proposed_amount, proposed_timeline, cover_letter } = bidData || {};
   const { budget } = projectData || {};
@@ -191,16 +194,16 @@ function analyzeBid(bidData, projectData) {
         type: 'warning',
         category: 'pricing',
         priority: 'high',
-        message: `Your bid is ${Math.round((ratio - 1) * 100)}% over budget`,
-        suggestion: `Consider reducing to $${Math.round(budget * 1.05)} or provide strong justification`
+        message: t('bidOverBudget', { percentage: Math.round((ratio - 1) * 100) }),
+        suggestion: t('reduceBidSuggestion', { amount: Math.round(budget * 1.05) })
       });
     } else if (ratio < 0.5) {
       suggestions.push({
         type: 'warning',
         category: 'pricing',
         priority: 'medium',
-        message: 'Your bid seems unusually low',
-        suggestion: 'This might raise quality concerns. Consider pricing closer to market rates.'
+        message: t('bidTooLow'),
+        suggestion: t('bidTooLowSuggestion')
       });
     }
   }
@@ -212,16 +215,16 @@ function analyzeBid(bidData, projectData) {
         type: 'warning',
         category: 'timeline',
         priority: 'high',
-        message: 'Very tight timeline',
-        suggestion: 'Ensure you can realistically deliver. Consider adding buffer time.'
+        message: t('tightTimeline'),
+        suggestion: t('tightTimelineSuggestion')
       });
     } else if (proposed_timeline > 90) {
       suggestions.push({
         type: 'info',
         category: 'timeline',
         priority: 'medium',
-        message: 'Timeline seems long',
-        suggestion: 'Long timelines may reduce competitiveness unless well-justified.'
+        message: t('longTimeline'),
+        suggestion: t('longTimelineSuggestion')
       });
     }
   }
@@ -234,16 +237,16 @@ function analyzeBid(bidData, projectData) {
         type: 'tip',
         category: 'content',
         priority: 'high',
-        message: 'Cover letter is very brief',
-        suggestion: 'Aim for 150-300 words. Add details about your approach and experience.'
+        message: t('briefCoverLetter'),
+        suggestion: t('briefCoverLetterSuggestion')
       });
     } else if (wordCount > 500) {
       suggestions.push({
         type: 'tip',
         category: 'content',
         priority: 'low',
-        message: 'Cover letter is quite long',
-        suggestion: 'Consider being more concise. Focus on key qualifications.'
+        message: t('longCoverLetter'),
+        suggestion: t('longCoverLetterSuggestion')
       });
     }
     
@@ -253,8 +256,8 @@ function analyzeBid(bidData, projectData) {
         type: 'tip',
         category: 'content',
         priority: 'medium',
-        message: 'Missing experience details',
-        suggestion: 'Mention specific relevant experience or projects you\'ve completed.'
+        message: t('missingExperience'),
+        suggestion: t('missingExperienceSuggestion')
       });
     }
   }

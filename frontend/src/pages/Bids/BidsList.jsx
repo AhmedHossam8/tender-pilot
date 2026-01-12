@@ -118,7 +118,7 @@ const BidsList = () => {
       {/* Page Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-900">
-          {t('bids.title', 'My Bids')}
+          {t('bids.title')}
         </h1>
         <button
           onClick={handleCreateBid}
@@ -146,7 +146,7 @@ const BidsList = () => {
             }`}
             disabled={loading}
           >
-            {t('bids.sent', 'Sent Bids')}
+            {t('bids.sentBids')}
           </button>
           <button
             onClick={() => setActiveTab('received')}
@@ -157,7 +157,7 @@ const BidsList = () => {
             }`}
             disabled={loading}
           >
-            {t('bids.received', 'Received Bids')}
+            {t('bids.receivedBids')}
           </button>
         </nav>
       </div>
@@ -165,19 +165,19 @@ const BidsList = () => {
       {/* Status Filter */}
       <div className="mb-6">
         <label className="text-sm font-medium text-gray-700 mr-3">
-          {t('bids.filterByStatus', 'Filter by Status')}:
+          {t('bids.filterByStatus')}:
         </label>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
           className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
-          <option value="all">{t('bids.allStatuses', 'All Statuses')}</option>
-          <option value="pending">{t('bids.pending', 'Pending')}</option>
-          <option value="shortlisted">{t('bids.shortlisted', 'Shortlisted')}</option>
-          <option value="accepted">{t('bids.accepted', 'Accepted')}</option>
-          <option value="rejected">{t('bids.rejected', 'Rejected')}</option>
-          <option value="withdrawn">{t('bids.withdrawn', 'Withdrawn')}</option>
+          <option value="all">{t('bids.allStatuses')}</option>
+          <option value="pending">{t('status.pending')}</option>
+          <option value="shortlisted">{t('bids.shortlist')}</option>
+          <option value="accepted">{t('status.accepted', 'Accepted')}</option>
+          <option value="rejected">{t('status.rejected', 'Rejected')}</option>
+          <option value="withdrawn">{t('bids.withdrawBid', 'Withdrawn')}</option>
         </select>
       </div>
 
@@ -185,7 +185,7 @@ const BidsList = () => {
       {loading && (
         <div className="text-center py-12">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <p className="mt-4 text-gray-600">{t('common.loading', 'Loading...')}</p>
+          <p className="mt-4 text-gray-600">{t('common.loading')}</p>
         </div>
       )}
 
@@ -227,12 +227,12 @@ const BidsList = () => {
                 />
               </svg>
               <h3 className="mt-2 text-sm font-medium text-gray-900">
-                {t('bids.noBids', 'No bids found')}
+                {t('bids.noBids')}
               </h3>
               <p className="mt-1 text-sm text-gray-500">
                 {activeTab === 'sent'
-                  ? t('bids.noSentBids', "You haven't submitted any bids yet.")
-                  : t('bids.noReceivedBids', "You haven't received any bids yet.")}
+                  ? t('bids.noSentBids')
+                  : t('bids.noReceivedBids')}
               </p>
               {activeTab === 'sent' && (
                 <button
@@ -266,7 +266,7 @@ const BidsList = () => {
                     {/* Service Provider Name (for received bids) */}
                     {activeTab === 'received' && (
                       <p className="text-sm text-gray-600 mb-3">
-                        {t('bids.by', 'By')}: {bid.service_provider_name}
+                        {t('bids.applicant', 'By')}: {bid.service_provider_name}
                       </p>
                     )}
 
@@ -274,7 +274,7 @@ const BidsList = () => {
                     <div className="flex justify-between items-center mb-3">
                       <div>
                         <p className="text-sm text-gray-500">
-                          {t('bids.amount', 'Amount')}
+                          {t('bids.amount')}
                         </p>
                         <p className="text-xl font-bold text-gray-900">
                           {formatCurrency(bid.proposed_amount)}
@@ -282,10 +282,10 @@ const BidsList = () => {
                       </div>
                       <div className="text-right">
                         <p className="text-sm text-gray-500">
-                          {t('bids.timeline', 'Timeline')}
+                          {t('bids.deliveryTime')}
                         </p>
                         <p className="text-lg font-semibold text-gray-900">
-                          {bid.proposed_timeline} {t('bids.days', 'days')}
+                          {bid.proposed_timeline} {t('bids.days')}
                         </p>
                       </div>
                     </div>

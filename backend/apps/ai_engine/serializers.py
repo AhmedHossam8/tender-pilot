@@ -53,6 +53,20 @@ class ProjectAnalysisRequestSerializer(serializers.Serializer):
         help_text="Include analysis of individual documents"
     )
     
+    language = serializers.ChoiceField(
+        choices=['english', 'arabic'],
+        default='english',
+        required=False,
+        help_text="Language for AI response. Defaults to English."
+    )
+    
+    locale = serializers.CharField(
+        max_length=10,
+        default='en',
+        required=False,
+        help_text="Locale code (en, ar) for UI context"
+    )
+    
     def validate_analysis_depth(self, value):
         """
         Custom validation for analysis depth.
@@ -198,6 +212,20 @@ class ServiceOptimizeRequestSerializer(serializers.Serializer):
     category = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     target_audience = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     existing_packages = ServicePackageInputSerializer(many=True, required=False)
+    
+    language = serializers.ChoiceField(
+        choices=['english', 'arabic'],
+        default='english',
+        required=False,
+        help_text="Language for AI response. Defaults to English."
+    )
+    
+    locale = serializers.CharField(
+        max_length=10,
+        default='en',
+        required=False,
+        help_text="Locale code (en, ar) for UI context"
+    )
 
 
 class ServiceOptimizeResponseSerializer(serializers.Serializer):
@@ -264,6 +292,20 @@ class ComplianceCheckRequestSerializer(serializers.Serializer):
         default=False,
         required=False,
         help_text="Also check formatting and structure compliance"
+    )
+    
+    language = serializers.ChoiceField(
+        choices=['english', 'arabic'],
+        default='english',
+        required=False,
+        help_text="Language for AI response. Defaults to English."
+    )
+    
+    locale = serializers.CharField(
+        max_length=10,
+        default='en',
+        required=False,
+        help_text="Locale code (en, ar) for UI context"
     )
     
     def validate(self, data):
@@ -396,6 +438,20 @@ class ProposalOutlineRequestSerializer(serializers.Serializer):
         child=serializers.CharField(),
         required=False,
         help_text="Custom sections to include beyond standard structure"
+    )
+    
+    language = serializers.ChoiceField(
+        choices=['english', 'arabic'],
+        default='english',
+        required=False,
+        help_text="Language for AI response. Defaults to English."
+    )
+    
+    locale = serializers.CharField(
+        max_length=10,
+        default='en',
+        required=False,
+        help_text="Locale code (en, ar) for UI context"
     )
 
 
@@ -565,6 +621,20 @@ class RegenerateRequestSerializer(serializers.Serializer):
         choices=['concise', 'detailed', 'formal', 'casual'],
         required=False,
         help_text="Desired style for the regenerated response"
+    )
+    
+    language = serializers.ChoiceField(
+        choices=['english', 'arabic'],
+        default='english',
+        required=False,
+        help_text="Language for AI response. Defaults to English."
+    )
+    
+    locale = serializers.CharField(
+        max_length=10,
+        default='en',
+        required=False,
+        help_text="Locale code (en, ar) for UI context"
     )
     
     def validate(self, data):

@@ -113,7 +113,7 @@ export default function BidDetail() {
             }, 0);
         } catch (error) {
             setTimeout(() => {
-                toast.error("Failed to update bid");
+                toast.error(t('bids.bidError'));
             }, 0);
         }
     };
@@ -122,12 +122,12 @@ export default function BidDetail() {
         try {
             await bidService.withdrawBid(bid.id);
             setTimeout(() => {
-                toast.success("Bid withdrawn");
+                toast.success(t('bids.bidWithdrawn'));
                 navigate(`/projects/${bid.project.id}`);
             }, 0);
         } catch (error) {
             setTimeout(() => {
-                toast.error("Failed to withdraw bid");
+                toast.error(t('bids.bidWithdrawError'));
             }, 0);
         }
     };

@@ -4,6 +4,7 @@ import { Search, X } from "lucide-react"
 import { Input } from "@/components/ui/Input"
 import { Button } from "@/components/ui/Button"
 import { debounce } from "@/lib/utils"
+import { useTranslation } from "react-i18next"
 
 function SearchBar({
   value,
@@ -14,6 +15,7 @@ function SearchBar({
   debounceMs = 300,
   showClear = true,
 }) {
+  const { t } = useTranslation();
   const [localValue, setLocalValue] = React.useState(value || "")
 
   // Debounced search
@@ -57,7 +59,7 @@ function SearchBar({
         type="search"
         value={localValue}
         onChange={handleChange}
-        placeholder={placeholder}
+        placeholder={placeholder || t('search')}
         className="pl-9 pr-9"
       />
       {showClear && localValue && (

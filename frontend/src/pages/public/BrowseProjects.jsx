@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Search, Calendar, DollarSign, MapPin, ArrowRight, Briefcase } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
@@ -9,6 +10,7 @@ import { useAuthStore } from '@/contexts/authStore';
 import api from '@/lib/api';
 
 const BrowseProjects = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState('');
@@ -52,10 +54,10 @@ const BrowseProjects = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Browse Projects
+              {t('public.browseProjects.title')}
             </h1>
             <p className="text-lg text-muted-foreground mb-8">
-              Find exciting opportunities and submit your bids to win projects
+              {t('public.browseProjects.description')}
             </p>
             
             {/* Search Bar */}
@@ -63,7 +65,7 @@ const BrowseProjects = () => {
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
               <Input
                 type="text"
-                placeholder="Search for projects..."
+                placeholder={t('public.browseProjects.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-12 py-6 text-lg"
@@ -88,9 +90,9 @@ const BrowseProjects = () => {
             </div>
           ) : projects.length === 0 ? (
             <div className="text-center py-16">
-              <p className="text-muted-foreground text-lg mb-4">No projects found</p>
+              <p className="text-muted-foreground text-lg mb-4">{t('public.browseProjects.noProjects')}</p>
               <Link to="/register">
-                <Button>Post your first project</Button>
+                <Button>{t('public.browseProjects.postFirst')}</Button>
               </Link>
             </div>
           ) : (
@@ -128,12 +130,12 @@ const BrowseProjects = () => {
                     {project.category && (
                       <div className="flex items-center gap-2 text-sm">
                         <Briefcase className="h-4 w-4 text-muted-foreground" />
-                        <span>{project.category}</span>
+                        <span>{typeof project.category === 'object' ? project.category.name : project.category}</span>
                       </div>
                     )}
                     {project.bid_count !== undefined && (
                       <div className="flex items-center gap-2 text-sm">
-                        <span className="text-muted-foreground">{project.bid_count} bids</span>
+                        <span className="text-muted-foreground">{project.bid_count} {t('public.browseProjects.bids')}</span>
                       </div>
                     )}
                   </div>
@@ -141,7 +143,7 @@ const BrowseProjects = () => {
                   {project.created_by_name && (
                     <div className="flex items-center justify-between pt-4 border-t">
                       <span className="text-sm text-muted-foreground">
-                        Posted by <span className="font-medium text-foreground">{project.created_by_name}</span>
+                        {t('public.browseProjects.postedBy')} <span className="font-medium text-foreground">{project.created_by_name}</span>
                       </span>
                       <ArrowRight className="h-4 w-4 text-primary" />
                     </div>
@@ -150,7 +152,7 @@ const BrowseProjects = () => {
                   {!isAuthenticated && (
                     <div className="mt-4 pt-4 border-t">
                       <p className="text-xs text-muted-foreground text-center">
-                        Sign in to view details and submit a bid
+                        {t('public.browseProjects.signInToView')}
                       </p>
                     </div>
                   )}
@@ -162,16 +164,16 @@ const BrowseProjects = () => {
           {/* CTA for non-authenticated users */}
           {!isAuthenticated && projects.length > 0 && (
             <div className="mt-16 text-center bg-secondary/30 rounded-lg p-8">
-              <h3 className="text-2xl font-bold mb-4">Ready to start bidding?</h3>
+              <h3 className="text-2xl font-bold mb-4">{t('public.browseProjects.readyToBid')}</h3>
               <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-                Create an account to submit bids, communicate with clients, and win exciting projects
+                {t('public.browseProjects.readyToBidDesc')}
               </p>
               <div className="flex gap-4 justify-center">
                 <Link to="/register">
-                  <Button size="lg">Create Account</Button>
+                  <Button size="lg">{t('public.browseProjects.createAccount')}</Button>
                 </Link>
                 <Link to="/login">
-                  <Button size="lg" variant="outline">Sign In</Button>
+                  <Button size="lg" variant="outline">{t('public.browseProjects.signIn')}</Button>
                 </Link>
               </div>
             </div>

@@ -8,6 +8,7 @@ import {
   flexRender,
 } from "@tanstack/react-table"
 import { ChevronDown, ChevronUp, ChevronsUpDown, ChevronLeft, ChevronRight } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { cn } from "@/lib/utils"
 import { Button } from "./Button"
 import { Input } from "./Input"
@@ -24,12 +25,14 @@ function DataTable({
   columns,
   data,
   searchKey,
-  searchPlaceholder = "Search...",
+  searchPlaceholder,
   pagination = true,
   sorting = true,
   pageSize = 10,
   className,
 }) {
+  const { t } = useTranslation()
+  const defaultSearchPlaceholder = searchPlaceholder || t('common.search')
   const [sortingState, setSortingState] = React.useState([])
   const [columnFilters, setColumnFilters] = React.useState([])
   const [globalFilter, setGlobalFilter] = React.useState("")
@@ -62,7 +65,7 @@ function DataTable({
       {searchKey && (
         <div className="flex items-center">
           <Input
-            placeholder={searchPlaceholder}
+            placeholder={defaultSearchPlaceholder}
             value={table.getColumn(searchKey)?.getFilterValue() ?? ""}
             onChange={(event) =>
               table.getColumn(searchKey)?.setFilterValue(event.target.value)
@@ -135,7 +138,7 @@ function DataTable({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  {t('common.noResults')}
                 </TableCell>
               </TableRow>
             )}
@@ -147,12 +150,14 @@ function DataTable({
       {pagination && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground">
-            Showing {table.getState().pagination.pageIndex * pageSize + 1} to{" "}
-            {Math.min(
-              (table.getState().pagination.pageIndex + 1) * pageSize,
-              table.getFilteredRowModel().rows.length
-            )}{" "}
-            of {table.getFilteredRowModel().rows.length} results
+            {t('common.showing', { 
+              from: table.getState().pagination.pageIndex * pageSize + 1,
+              to: Math.min(
+                (table.getState().pagination.pageIndex + 1) * pageSize,
+                table.getFilteredRowModel().rows.length
+              ),
+              total: table.getFilteredRowModel().rows.length
+            })}
           </div>
           <div className="flex items-center space-x-2">
             <Button
@@ -162,7 +167,7 @@ function DataTable({
               disabled={!table.getCanPreviousPage()}
             >
               <ChevronLeft className="h-4 w-4" />
-              Previous
+              {t('common.previous')}
             </Button>
             <Button
               variant="outline"
@@ -170,7 +175,7 @@ function DataTable({
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
             >
-              Next
+              {t('common.next')}
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>

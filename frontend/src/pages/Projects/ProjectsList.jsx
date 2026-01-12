@@ -148,7 +148,7 @@ function ProjectsList() {
 
   // Error state
   if (isError) {
-    return <p className="text-center text-red-500">{t("project.loadError")}</p>;
+    return <p className="text-center text-red-500">{t("projects.loadError")}</p>;
   }
 
   return (
@@ -158,10 +158,10 @@ function ProjectsList() {
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">
-              {t("project.title") || "Projects"}
+              {t("projects.title")}
             </h1>
             <p className="text-muted-foreground mt-1">
-              Manage and track all your projects
+              {t("projects.subtitle")}
             </p>
           </div>
           {canCreateProject && (
@@ -169,7 +169,7 @@ function ProjectsList() {
               trigger={
                 <Button size="lg" disabled={isAnyLoading}>
                   <Plus className="h-5 w-5 mr-2" />
-                  {t("project.create")}
+                  {t("projects.create")}
                 </Button>
               }
               onSuccess={() => queryClient.invalidateQueries(["projects"])}
@@ -183,7 +183,7 @@ function ProjectsList() {
             <SearchBar
               value={searchValue}
               onChange={setSearchValue}
-              placeholder={t("project.searchPlaceholder") || "Search projects..."}
+              placeholder={t("projects.searchPlaceholder")}
             />
             <FilterPanel
               filters={filters}
@@ -201,15 +201,15 @@ function ProjectsList() {
               <div className="p-12 text-center">
                 <p className="text-muted-foreground text-lg mb-4">
                   {searchValue || Object.keys(activeFilters).length > 0
-                    ? "No projects match your search"
-                    : "No projects yet"}
+                    ? t("projects.noProjectsFiltered")
+                    : t("projects.noProjects")}
                 </p>
                 {!searchValue && Object.keys(activeFilters).length === 0 && (
                   <ProjectCreateModal
                     trigger={
                       <Button>
                         <Plus className="h-4 w-4 mr-2" />
-                        Create your first project
+                        {t("projects.createFirstProject")}
                       </Button>
                     }
                     onSuccess={() => window.location.reload()}
@@ -221,9 +221,9 @@ function ProjectsList() {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted/50">
-                      <TableHead className="font-semibold px-6">{t("project.title") || "Title"}</TableHead>
-                      <TableHead className="font-semibold px-6">{t("project.status") || "Status"}</TableHead>
-                      <TableHead className="font-semibold px-6 text-right">{t("project.actions") || "Actions"}</TableHead>
+                      <TableHead className="font-semibold px-6">{t("projects.title")}</TableHead>
+                      <TableHead className="font-semibold px-6">{t("projects.status")}</TableHead>
+                      <TableHead className="font-semibold px-6 text-right">{t("projects.actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
 
@@ -253,7 +253,7 @@ function ProjectsList() {
                             <Link to={`/app/projects/${project.id}`}>
                               <Button size="sm" variant="ghost" disabled={isAnyLoading}>
                                 <Eye className="h-4 w-4 mr-1" />
-                                View
+                                {t("projects.view")}
                               </Button>
                             </Link>
 
@@ -269,7 +269,7 @@ function ProjectsList() {
                                   }}
                                 >
                                   <Edit className="h-4 w-4 mr-1" />
-                                  Edit
+                                  {t("projects.edit")}
                                 </Button>
 
                                 <Button
@@ -287,7 +287,7 @@ function ProjectsList() {
                                   ) : (
                                     <>
                                       <Trash2 className="h-4 w-4 mr-1" />
-                                      Delete
+                                      {t("projects.delete")}
                                     </>
                                   )}
                                 </Button>
@@ -309,9 +309,9 @@ function ProjectsList() {
       <ConfirmDialog
         open={confirmDialogOpen}
         onOpenChange={setConfirmDialogOpen}
-        title={t("project.confirmDeleteTitle")}
-        description={t("project.confirmDeleteDescription")}
-        confirmLabel={t("confirm.delete")}
+        title={t("projects.confirmDeleteTitle")}
+        description={t("projects.confirmDeleteDescription")}
+        confirmLabel={t("common.delete")}
         variant="destructive"
         onConfirm={() => {
           if (selectedProject) handleDelete(selectedProject);

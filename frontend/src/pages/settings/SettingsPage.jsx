@@ -61,7 +61,7 @@ const SettingsPage = () => {
       });
     },
     onSuccess: () => {
-      toast.success('Profile updated successfully!');
+      toast.success(t('notifications.profileUpdated'));
       queryClient.invalidateQueries(['my-profile']);
       queryClient.invalidateQueries(['current-user']);
       // Update auth store
@@ -80,7 +80,7 @@ const SettingsPage = () => {
       return userService.changePassword(current, newPass);
     },
     onSuccess: () => {
-      toast.success('Password changed successfully!');
+      toast.success(t('notifications.passwordChanged'));
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
@@ -99,17 +99,17 @@ const SettingsPage = () => {
 
   const handleChangePassword = () => {
     if (!currentPassword || !newPassword) {
-      toast.error('Please fill in all password fields');
+      toast.error(t('settings.passwordChangeError'));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      toast.error('New passwords do not match');
+      toast.error(t('settings.passwordMismatch'));
       return;
     }
 
     if (newPassword.length < 8) {
-      toast.error('Password must be at least 8 characters');
+      toast.error(t('settings.weakPassword'));
       return;
     }
 
@@ -127,20 +127,20 @@ const SettingsPage = () => {
       setPushNotifications(value);
       localStorage.setItem('pushNotifications', value);
     }
-    toast.success('Notification preferences saved');
+    toast.success(t('settings.saved'));
   };
 
   const tabs = [
-    { id: 'profile', label: 'Profile', icon: User },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'security', label: 'Security', icon: Lock },
-    { id: 'preferences', label: 'Preferences', icon: Globe },
+    { id: 'profile', label: t('settings.profile'), icon: User },
+    { id: 'notifications', label: t('settings.notifications'), icon: Bell },
+    { id: 'security', label: t('settings.security'), icon: Lock },
+    { id: 'preferences', label: t('settings.language'), icon: Globe },
   ];
 
   const switchLanguage = () => {
     const newLang = i18n.language === 'en' ? 'ar' : 'en';
     i18n.changeLanguage(newLang);
-    toast.success(`Language changed to ${newLang === 'en' ? 'English' : 'العربية'}`);
+    toast.success(t('notifications.settingsSaved'));
   };
 
   if (profileLoading) {
@@ -154,7 +154,7 @@ const SettingsPage = () => {
   return (
     <div className="p-8 min-h-screen bg-background">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">{t('sidebar.settings', 'Settings')}</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('settings.title')}</h1>
 
         <div className="grid md:grid-cols-4 gap-6">
           {/* Sidebar */}
@@ -183,26 +183,26 @@ const SettingsPage = () => {
             {activeTab === 'profile' && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Profile Information</CardTitle>
+                  <CardTitle>{t('settings.personalInfo')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
+                    <Label htmlFor="name">{t('settings.fullName')}</Label>
                     <Input 
                       id="name" 
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      placeholder="Enter your full name"
+                      placeholder={t('settings.fullName')}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email Address</Label>
+                    <Label htmlFor="email">{t('settings.email')}</Label>
                     <Input 
                       id="email" 
                       type="email" 
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Enter your email"
+                      placeholder={t('settings.email')}
                     />
                   </div>
                   <Button 
@@ -212,10 +212,10 @@ const SettingsPage = () => {
                     {updateProfileMutation.isPending ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Saving...
+                        {t('settings.saving')}
                       </>
                     ) : (
-                      'Save Changes'
+                      t('settings.saveChanges')
                     )}
                   </Button>
                 </CardContent>
@@ -225,14 +225,14 @@ const SettingsPage = () => {
             {activeTab === 'notifications' && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Notification Preferences</CardTitle>
+                  <CardTitle>{t('settings.notifications')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label>Email Notifications</Label>
+                      <Label>{t('settings.emailNotifications')}</Label>
                       <p className="text-sm text-muted-foreground">
-                        Receive updates about your projects and bids via email
+                        {t('settings.projectUpdates')}
                       </p>
                     </div>
                     <Switch
@@ -242,9 +242,9 @@ const SettingsPage = () => {
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label>Push Notifications</Label>
+                      <Label>{t('settings.pushNotifications')}</Label>
                       <p className="text-sm text-muted-foreground">
-                        Get instant notifications for important updates
+                        {t('settings.instant')}
                       </p>
                     </div>
                     <Switch
@@ -262,41 +262,41 @@ const SettingsPage = () => {
             {activeTab === 'security' && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Security Settings</CardTitle>
+                  <CardTitle>{t('settings.security')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="current-password">Current Password</Label>
+                    <Label htmlFor="current-password">{t('settings.currentPassword')}</Label>
                     <Input 
                       id="current-password" 
                       type="password"
                       value={currentPassword}
                       onChange={(e) => setCurrentPassword(e.target.value)}
-                      placeholder="Enter current password"
+                      placeholder={t('settings.currentPassword')}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="new-password">New Password</Label>
+                    <Label htmlFor="new-password">{t('settings.newPassword')}</Label>
                     <Input 
                       id="new-password" 
                       type="password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="Enter new password (min 8 characters)"
+                      placeholder={t('settings.newPassword')}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="confirm-password">Confirm New Password</Label>
+                    <Label htmlFor="confirm-password">{t('settings.confirmNewPassword')}</Label>
                     <Input 
                       id="confirm-password" 
                       type="password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="Confirm new password"
+                      placeholder={t('settings.confirmNewPassword')}
                     />
                   </div>
                   {newPassword && newPassword !== confirmPassword && (
-                    <p className="text-sm text-destructive">Passwords do not match</p>
+                    <p className="text-sm text-destructive">{t('settings.passwordMismatch')}</p>
                   )}
                   <Button 
                     onClick={handleChangePassword}
@@ -305,10 +305,10 @@ const SettingsPage = () => {
                     {changePasswordMutation.isPending ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Updating...
+                        {t('settings.saving')}
                       </>
                     ) : (
-                      'Update Password'
+                      t('settings.changePassword')
                     )}
                   </Button>
                 </CardContent>
@@ -318,18 +318,18 @@ const SettingsPage = () => {
             {activeTab === 'preferences' && (
               <Card>
                 <CardHeader>
-                  <CardTitle>General Preferences</CardTitle>
+                  <CardTitle>{t('settings.languagePreference')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label>Language</Label>
+                      <Label>{t('settings.language')}</Label>
                       <p className="text-sm text-muted-foreground">
-                        Current: {i18n.language === 'en' ? 'English' : 'العربية'}
+                        {i18n.language === 'en' ? t('settings.english') : t('settings.arabic')}
                       </p>
                     </div>
                     <Button variant="outline" onClick={switchLanguage}>
-                      Switch Language
+                      {t('settings.language')}
                     </Button>
                   </div>
                 </CardContent>

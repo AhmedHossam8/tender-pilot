@@ -9,13 +9,20 @@ from rest_framework.permissions import IsAuthenticated
 from apps.users.models import User
 
 class ServiceViewSet(viewsets.ModelViewSet):
-    queryset = Service.objects.all()
+    queryset = Service.objects.prefetch_related('packages').select_related('created_by').all()
     serializer_class = ServiceSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = ServiceFilter
     search_fields = ["name", "description"]
     ordering_fields = ["packages__price", "name"]
+
+    def get_permissions(self):
+        """Allow unauthenticated users to list and retrieve services"""
+        if self.action in ['list', 'retrieve']:
+            from rest_framework.permissions import AllowAny
+            return [AllowAny()]
+        return super().get_permissions()
 
     def perform_create(self, serializer):
         if self.request.user.user_type not in [User.UserType.PROVIDER, User.UserType.BOTH]:

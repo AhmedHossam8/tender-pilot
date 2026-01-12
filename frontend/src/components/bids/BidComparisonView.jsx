@@ -11,6 +11,7 @@ import {
   Award
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import bidComparisonService from '@/services/bidComparison.service';
 import { LoadingSpinner } from '@/components/common';
 
@@ -19,6 +20,7 @@ import { LoadingSpinner } from '@/components/common';
  * Allows clients to compare multiple bids side-by-side with AI insights
  */
 const BidComparisonView = ({ bidIds, onClose }) => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [comparisonData, setComparisonData] = useState(null);
 
@@ -35,7 +37,7 @@ const BidComparisonView = ({ bidIds, onClose }) => {
       setComparisonData(response.data);
     } catch (error) {
       console.error('Error loading comparison:', error);
-      toast.error('Failed to load bid comparison');
+      toast.error(t('failedToLoadBidComparison'));
     } finally {
       setLoading(false);
     }
@@ -44,7 +46,7 @@ const BidComparisonView = ({ bidIds, onClose }) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <LoadingSpinner size="large" message="Comparing bids..." />
+        <LoadingSpinner size="large" message={t('comparingBids')} />
       </div>
     );
   }
@@ -53,7 +55,7 @@ const BidComparisonView = ({ bidIds, onClose }) => {
     return (
       <div className="text-center py-12">
         <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-        <p className="text-gray-600">No comparison data available</p>
+        <p className="text-gray-600">{t('noComparisonData')}</p>
       </div>
     );
   }
@@ -65,7 +67,7 @@ const BidComparisonView = ({ bidIds, onClose }) => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-900">
-          Bid Comparison
+          {t('bidComparison')}
         </h2>
         {onClose && (
           <button
@@ -86,7 +88,7 @@ const BidComparisonView = ({ bidIds, onClose }) => {
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                AI Recommendation
+                {t('aiRecommendation')}
               </h3>
               <p className="text-gray-700 mb-3">
                 {recommendation.summary}
@@ -103,14 +105,14 @@ const BidComparisonView = ({ bidIds, onClose }) => {
               </div>
               <div className="flex items-center gap-4 text-sm">
                 <span className="font-medium text-gray-700">
-                  Confidence: <span className={`font-bold ${
+                  {t('confidence')}: <span className={`font-bold ${
                     recommendation.confidence === 'high' ? 'text-green-600' :
                     recommendation.confidence === 'medium' ? 'text-yellow-600' :
                     'text-gray-600'
-                  }`}>{recommendation.confidence.toUpperCase()}</span>
+                  }`}>{t(recommendation.confidence)}</span>
                 </span>
                 <span className="font-medium text-gray-700">
-                  Score: <span className="font-bold text-purple-600">
+                  {t('score')}: <span className="font-bold text-purple-600">
                     {recommendation.composite_score}/100
                   </span>
                 </span>
@@ -125,39 +127,39 @@ const BidComparisonView = ({ bidIds, onClose }) => {
         <div className="bg-white border rounded-lg p-4">
           <div className="flex items-center gap-3 mb-2">
             <DollarSign className="h-5 w-5 text-green-600" />
-            <span className="text-sm font-medium text-gray-600">Price Range</span>
+            <span className="text-sm font-medium text-gray-600">{t('priceRange')}</span>
           </div>
           <div className="text-2xl font-bold text-gray-900">
             ${comparison.price.min.toLocaleString()} - ${comparison.price.max.toLocaleString()}
           </div>
           <div className="text-xs text-gray-500 mt-1">
-            Avg: ${comparison.price.avg.toFixed(0).toLocaleString()}
+            {t('avg')}: ${comparison.price.avg.toFixed(0).toLocaleString()}
           </div>
         </div>
 
         <div className="bg-white border rounded-lg p-4">
           <div className="flex items-center gap-3 mb-2">
             <Clock className="h-5 w-5 text-blue-600" />
-            <span className="text-sm font-medium text-gray-600">Timeline Range</span>
+            <span className="text-sm font-medium text-gray-600">{t('timelineRange')}</span>
           </div>
           <div className="text-2xl font-bold text-gray-900">
-            {comparison.timeline.min} - {comparison.timeline.max} days
+            {t('daysRange', { min: comparison.timeline.min, max: comparison.timeline.max })}
           </div>
           <div className="text-xs text-gray-500 mt-1">
-            Avg: {comparison.timeline.avg.toFixed(0)} days
+            {t('avgDays', { count: comparison.timeline.avg.toFixed(0) })}
           </div>
         </div>
 
         <div className="bg-white border rounded-lg p-4">
           <div className="flex items-center gap-3 mb-2">
             <Target className="h-5 w-5 text-purple-600" />
-            <span className="text-sm font-medium text-gray-600">AI Match Score</span>
+            <span className="text-sm font-medium text-gray-600">{t('aiMatchScore')}</span>
           </div>
           <div className="text-2xl font-bold text-gray-900">
             {comparison.ai_score.avg.toFixed(1)}/100
           </div>
           <div className="text-xs text-gray-500 mt-1">
-            Range: {comparison.ai_score.min} - {comparison.ai_score.max}
+            {t('range')}: {comparison.ai_score.min} - {comparison.ai_score.max}
           </div>
         </div>
       </div>
@@ -169,22 +171,22 @@ const BidComparisonView = ({ bidIds, onClose }) => {
             <thead className="bg-gray-50 border-b">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Provider
+                  {t('provider')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Price
+                  {t('price')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Timeline
+                  {t('timeline')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  AI Score
+                  {t('aiScore')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Value Score
+                  {t('valueScore')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Overall
+                  {t('overall')}
                 </th>
               </tr>
             </thead>
@@ -218,15 +220,15 @@ const BidComparisonView = ({ bidIds, onClose }) => {
                       ${bid.proposed_amount.toLocaleString()}
                     </div>
                     {bid.proposed_amount === comparison.price.min && (
-                      <span className="text-xs text-green-600">Lowest</span>
+                      <span className="text-xs text-green-600">{t('lowest')}</span>
                     )}
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm text-gray-900">
-                      {bid.proposed_timeline} days
+                      {t('days', { count: bid.proposed_timeline })}
                     </div>
                     {bid.proposed_timeline === comparison.timeline.min && (
-                      <span className="text-xs text-blue-600">Fastest</span>
+                      <span className="text-xs text-blue-600">{t('fastest')}</span>
                     )}
                   </td>
                   <td className="px-6 py-4">
@@ -296,7 +298,7 @@ const BidComparisonView = ({ bidIds, onClose }) => {
             {recommendation && bid.id === recommendation.recommended_bid_id && (
               <div className="flex items-center gap-2 mb-4 text-purple-600">
                 <Award className="h-5 w-5" />
-                <span className="font-semibold">Recommended</span>
+                <span className="font-semibold">{t('recommended')}</span>
               </div>
             )}
 
@@ -306,21 +308,21 @@ const BidComparisonView = ({ bidIds, onClose }) => {
 
             <div className="space-y-3">
               <div>
-                <div className="text-sm text-gray-600 mb-1">Price</div>
+                <div className="text-sm text-gray-600 mb-1">{t('price')}</div>
                 <div className="text-xl font-bold text-gray-900">
                   ${bid.proposed_amount.toLocaleString()}
                 </div>
               </div>
 
               <div>
-                <div className="text-sm text-gray-600 mb-1">Timeline</div>
+                <div className="text-sm text-gray-600 mb-1">{t('timeline')}</div>
                 <div className="text-lg font-semibold text-gray-900">
-                  {bid.proposed_timeline} days
+                  {t('days', { count: bid.proposed_timeline })}
                 </div>
               </div>
 
               <div>
-                <div className="text-sm text-gray-600 mb-1">AI Match Score</div>
+                <div className="text-sm text-gray-600 mb-1">{t('aiMatchScore')}</div>
                 <div className="flex items-center gap-2">
                   <div className="flex-1 bg-gray-200 rounded-full h-2">
                     <div
@@ -337,9 +339,9 @@ const BidComparisonView = ({ bidIds, onClose }) => {
               </div>
 
               <div>
-                <div className="text-sm text-gray-600 mb-1">Overall Score</div>
+                <div className="text-sm text-gray-600 mb-1">{t('overallScore')}</div>
                 <div className="text-2xl font-bold text-purple-600">
-                  {bid.composite_score?.toFixed(1) || 'N/A'}
+                  {bid.composite_score?.toFixed(1) || t('notAvailable')}
                 </div>
               </div>
             </div>

@@ -41,7 +41,7 @@ const ServiceDetailPage = () => {
             // Close dialog first, then show toast and navigate
             setConfirmDialogOpen(false);
             setTimeout(() => {
-                toast.success("Service deleted successfully");
+                toast.success(t('notifications.success'));
                 navigate("/app/services");
             }, 100);
         },

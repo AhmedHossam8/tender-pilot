@@ -1,9 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle, Users, Briefcase, Shield, Zap, MessageSquare, TrendingUp } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
 
 const LandingPage = () => {
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
       {/* Hero Section */}
@@ -11,141 +13,140 @@ const LandingPage = () => {
         <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-              Connect. Collaborate. Create.
+            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              {t('landing.hero.title')}
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              ServiceHub is where talented professionals meet exciting projects. 
-              Whether you're a client seeking expertise or a provider showcasing your skills, we bring the right people together.
+            <p className="text-lg md:text-xl lg:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+              {t('landing.hero.subtitle')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/register">
-                <Button size="lg" className="text-lg px-8 py-6">
-                  Get Started Free
+                <Button size="lg" className="text-base lg:text-lg px-6 lg:px-8 py-4 lg:py-6 w-full sm:w-auto">
+                  {t('landing.hero.getStarted')}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
               <Link to="/browse/services">
-                <Button size="lg" variant="outline" className="text-lg px-8 py-6">
-                  Browse Services
+                <Button size="lg" variant="outline" className="text-base lg:text-lg px-6 lg:px-8 py-4 lg:py-6 w-full sm:w-auto">
+                  {t('landing.hero.browseServices')}
                 </Button>
               </Link>
             </div>
             <div className="flex gap-4 justify-center mt-6">
               <Link to="/browse/projects">
                 <Button variant="ghost" className="text-primary">
-                  View Projects →
+                  {t('landing.hero.viewProjects')} →
                 </Button>
               </Link>
             </div>
             <p className="text-sm text-muted-foreground mt-4">
-              No credit card required • Free to join • Start in minutes
+              {t('landing.hero.noCredit')}
             </p>
           </div>
         </div>
       </section>
 
       {/* Features Grid */}
-      <section className="py-20 bg-secondary/30">
+      <section id="features" className="py-20 bg-secondary/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4">Why Choose ServiceHub?</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              A complete marketplace built for modern professionals
+            <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-4">{t('landing.features.title')}</h2>
+            <p className="text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto">
+              {t('landing.features.subtitle')}
             </p>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
             <FeatureCard
               icon={<Briefcase className="h-8 w-8" />}
-              title="Post Projects, Get Bids"
-              description="Describe your project needs and receive competitive bids from qualified service providers within hours."
+              title={t('landing.features.postProjects.title')}
+              description={t('landing.features.postProjects.description')}
             />
             <FeatureCard
               icon={<Users className="h-8 w-8" />}
-              title="Browse Services"
-              description="Explore a curated marketplace of professional services. Book experts directly for fixed-price packages."
+              title={t('landing.features.browseServices.title')}
+              description={t('landing.features.browseServices.description')}
             />
             <FeatureCard
               icon={<MessageSquare className="h-8 w-8" />}
-              title="Seamless Communication"
-              description="Built-in messaging keeps all project discussions organized and secure in one place."
+              title={t('landing.features.communication.title')}
+              description={t('landing.features.communication.description')}
             />
             <FeatureCard
               icon={<Zap className="h-8 w-8" />}
-              title="AI-Powered Matching"
-              description="Our smart algorithms connect you with the perfect match based on skills, experience, and project requirements."
+              title={t('landing.features.aiMatching.title')}
+              description={t('landing.features.aiMatching.description')}
             />
             <FeatureCard
               icon={<Shield className="h-8 w-8" />}
-              title="Secure & Reliable"
-              description="Verified profiles, reviews, and ratings ensure you work with trusted professionals every time."
+              title={t('landing.features.security.title')}
+              description={t('landing.features.security.description')}
             />
             <FeatureCard
               icon={<TrendingUp className="h-8 w-8" />}
-              title="Grow Your Business"
-              description="Service providers can showcase portfolios, build reputation, and access a steady stream of quality projects."
+              title={t('landing.features.growth.title')}
+              description={t('landing.features.growth.description')}
             />
           </div>
         </div>
       </section>
 
       {/* How It Works */}
-      <section className="py-20">
+      <section id="how-it-works" className="py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4">How ServiceHub Works</h2>
-            <p className="text-lg text-muted-foreground">Simple, transparent, and efficient</p>
+            <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-4">{t('landing.howItWorks.title')}</h2>
+            <p className="text-base lg:text-lg text-muted-foreground">{t('landing.howItWorks.subtitle')}</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-12 max-w-6xl mx-auto">
             {/* For Clients */}
             <div className="space-y-6">
-              <h3 className="text-2xl font-bold text-primary mb-6">For Clients</h3>
+              <h3 className="text-2xl font-bold text-primary mb-6">{t('landing.howItWorks.forClients')}</h3>
               <StepCard
                 number="1"
-                title="Post Your Project"
-                description="Describe what you need, set your budget, and define your timeline."
+                title={t('landing.howItWorks.clients.step1.title')}
+                description={t('landing.howItWorks.clients.step1.description')}
               />
               <StepCard
                 number="2"
-                title="Review Proposals"
-                description="Receive bids from qualified providers and compare their offers."
+                title={t('landing.howItWorks.clients.step2.title')}
+                description={t('landing.howItWorks.clients.step2.description')}
               />
               <StepCard
                 number="3"
-                title="Choose & Collaborate"
-                description="Select the best fit and work together through our platform."
+                title={t('landing.howItWorks.clients.step3.title')}
+                description={t('landing.howItWorks.clients.step3.description')}
               />
               <StepCard
                 number="4"
-                title="Pay Securely"
-                description="Release payment when satisfied with the delivered work."
+                title={t('landing.howItWorks.clients.step4.title')}
+                description={t('landing.howItWorks.clients.step4.description')}
               />
             </div>
 
             {/* For Providers */}
             <div className="space-y-6">
-              <h3 className="text-2xl font-bold text-primary mb-6">For Service Providers</h3>
+              <h3 className="text-2xl font-bold text-primary mb-6">{t('landing.howItWorks.forProviders')}</h3>
               <StepCard
                 number="1"
-                title="Create Your Profile"
-                description="Showcase your skills, portfolio, and what makes you unique."
+                title={t('landing.howItWorks.providers.step1.title')}
+                description={t('landing.howItWorks.providers.step1.description')}
               />
               <StepCard
                 number="2"
-                title="Find Projects"
-                description="Browse opportunities or create service listings clients can book."
+                title={t('landing.howItWorks.providers.step2.title')}
+                description={t('landing.howItWorks.providers.step2.description')}
               />
               <StepCard
                 number="3"
-                title="Submit Proposals"
-                description="Bid on projects that match your expertise with competitive offers."
+                title={t('landing.howItWorks.providers.step3.title')}
+                description={t('landing.howItWorks.providers.step3.description')}
               />
               <StepCard
                 number="4"
-                title="Deliver & Earn"
-                description="Complete the work, get paid, and build your reputation."
+                title={t('landing.howItWorks.providers.step4.title')}
+                description={t('landing.howItWorks.providers.step4.description')}
               />
             </div>
           </div>
@@ -153,31 +154,24 @@ const LandingPage = () => {
       </section>
 
       {/* About Us Section */}
-      <section className="py-20 bg-secondary/30">
+      <section id="about" className="py-20 bg-secondary/30">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl md:text-5xl font-bold mb-6 text-center">About ServiceHub</h2>
+            <h2 className="text-3xl md:text-5xl font-bold mb-6 text-center">{t('landing.about.title')}</h2>
             <div className="space-y-6 text-lg text-muted-foreground">
               <p>
-                ServiceHub was born from a simple idea: the best work happens when the right people connect. 
-                In today's digital world, talent knows no boundaries, and neither should opportunity.
+                {t('landing.about.intro')}
               </p>
               <p>
-                We're more than a marketplace—we're a community where clients find the perfect expertise for their projects, 
-                and service providers discover meaningful work that matches their skills. Whether you're looking to hire a 
-                developer, designer, writer, consultant, or any other professional, or you're a freelancer seeking your next opportunity, 
-                ServiceHub is your launchpad.
+                {t('landing.about.description')}
               </p>
               <p>
-                Our platform combines powerful AI-driven matching with human-centered design to make collaboration effortless. 
-                We've eliminated the friction from traditional hiring and freelancing, creating a space where quality work and 
-                fair compensation meet.
+                {t('landing.about.platform')}
               </p>
               <div className="bg-card p-8 rounded-lg border border-border mt-8">
-                <h3 className="text-2xl font-bold mb-4 text-foreground">Our Mission</h3>
+                <h3 className="text-2xl font-bold mb-4 text-foreground">{t('landing.about.mission.title')}</h3>
                 <p className="text-foreground">
-                  To empower professionals worldwide by creating meaningful connections that drive success. 
-                  We believe everyone deserves access to opportunities that match their talents and ambitions.
+                  {t('landing.about.mission.description')}
                 </p>
               </div>
             </div>
@@ -189,10 +183,10 @@ const LandingPage = () => {
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-8 max-w-5xl mx-auto text-center">
-            <StatCard number="10,000+" label="Active Users" />
-            <StatCard number="5,000+" label="Projects Completed" />
-            <StatCard number="500+" label="Service Providers" />
-            <StatCard number="95%" label="Success Rate" />
+            <StatCard number="10,000+" label={t('landing.stats.activeUsers')} />
+            <StatCard number="5,000+" label={t('landing.stats.projectsCompleted')} />
+            <StatCard number="500+" label={t('landing.stats.serviceProviders')} />
+            <StatCard number="95%" label={t('landing.stats.successRate')} />
           </div>
         </div>
       </section>
@@ -201,15 +195,14 @@ const LandingPage = () => {
       <section className="py-20 bg-primary text-primary-foreground">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-5xl font-bold mb-6">
-            Ready to Get Started?
+            {t('landing.cta.title')}
           </h2>
           <p className="text-xl mb-8 max-w-2xl mx-auto opacity-90">
-            Join thousands of professionals already collaborating on ServiceHub. 
-            Your next great project or opportunity is just a click away.
+            {t('landing.cta.subtitle')}
           </p>
           <Link to="/register">
             <Button size="lg" variant="secondary" className="text-lg px-8 py-6">
-              Create Your Free Account
+              {t('landing.cta.button')}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </Link>

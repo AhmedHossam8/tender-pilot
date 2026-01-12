@@ -2,8 +2,10 @@ import * as React from "react";
 import { Outlet, Link, Navigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/contexts/authStore";
+import { useTranslation } from "react-i18next";
 
 function AuthLayout({ className }) {
+  const { t } = useTranslation();
   const { user, loading } = useAuthStore();
 
   // Prevent flicker before auth hydration finishes
@@ -27,7 +29,7 @@ function AuthLayout({ className }) {
           <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
             <span className="text-white font-bold text-lg">TP</span>
           </div>
-          <span className="text-xl font-bold">TenderPilot</span>
+          <span className="text-xl font-bold">{t('common.websiteName')}</span>
         </Link>
       </header>
 
@@ -40,7 +42,7 @@ function AuthLayout({ className }) {
 
       {/* Footer */}
       <footer className="p-4 text-center text-sm text-muted-foreground">
-        <p>© {new Date().getFullYear()} TenderPilot. All rights reserved.</p>
+        <p>{t('common.copyright', { year: new Date().getFullYear() })}</p>
       </footer>
     </div>
   );

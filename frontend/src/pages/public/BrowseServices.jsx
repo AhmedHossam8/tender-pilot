@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Search, MapPin, DollarSign, Star, ArrowRight, Clock } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
@@ -9,20 +10,24 @@ import { useAuthStore } from '@/contexts/authStore';
 import api from '@/lib/api';
 
 const BrowseServices = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { data: servicesData, isLoading } = useQuery({
+  const { data: servicesData, isLoading, error } = useQuery({
     queryKey: ['public-services', searchQuery],
     queryFn: async () => {
       const params = searchQuery ? { search: searchQuery } : {};
-      const response = await api.get('/services/', { params });
+      const response = await api.get('/services/services/', { params });
       return response.data;
     },
   });
 
-  const services = servicesData?.results || [];
+  // Handle both paginated and non-paginated responses
+  const services = Array.isArray(servicesData) 
+    ? servicesData 
+    : (servicesData?.results || []);
 
   const handleServiceClick = (serviceId) => {
     if (isAuthenticated) {
@@ -30,7 +35,7 @@ const BrowseServices = () => {
     } else {
       // Store intended destination and redirect to login
       sessionStorage.setItem('redirectAfterLogin', `/app/services/${serviceId}`);
-      navigate('/login', { state: { message: 'Please sign in to view service details and book services.' } });
+      navigate('/login', { state: { message: t('auth.signInToViewServices') } });
     }
   };
 
@@ -41,10 +46,10 @@ const BrowseServices = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Browse Services
+              {t('public.browseServices.title')}
             </h1>
             <p className="text-lg text-muted-foreground mb-8">
-              Discover talented professionals ready to help with your next project
+              {t('public.browseServices.description')}
             </p>
             
             {/* Search Bar */}
@@ -52,7 +57,7 @@ const BrowseServices = () => {
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
               <Input
                 type="text"
-                placeholder="Search for services..."
+                placeholder={t('public.browseServices.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-12 py-6 text-lg"
@@ -65,7 +70,12 @@ const BrowseServices = () => {
       {/* Services Grid */}
       <section className="py-12">
         <div className="container mx-auto px-4">
-          {isLoading ? (
+          {error ? (
+            <div className="text-center py-16">
+              <p className="text-red-500 text-lg mb-4">Error loading services: {error.message}</p>
+              <Button onClick={() => window.location.reload()}>Retry</Button>
+            </div>
+          ) : isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
                 <Card key={i} className="p-6 animate-pulse">
@@ -77,9 +87,9 @@ const BrowseServices = () => {
             </div>
           ) : services.length === 0 ? (
             <div className="text-center py-16">
-              <p className="text-muted-foreground text-lg mb-4">No services found</p>
+              <p className="text-muted-foreground text-lg mb-4">{t('public.browseServices.noServices')}</p>
               <Link to="/register">
-                <Button>Be the first to offer a service</Button>
+                <Button>{t('public.browseServices.beFirst')}</Button>
               </Link>
             </div>
           ) : (
@@ -112,7 +122,7 @@ const BrowseServices = () => {
                     {service.delivery_time && (
                       <div className="flex items-center gap-1">
                         <Clock className="h-4 w-4" />
-                        <span>{service.delivery_time} days</span>
+                        <span>{service.delivery_time} {t('public.browseServices.days')}</span>
                       </div>
                     )}
                   </div>
@@ -120,7 +130,7 @@ const BrowseServices = () => {
                   {service.provider_name && (
                     <div className="flex items-center justify-between pt-4 border-t">
                       <span className="text-sm text-muted-foreground">
-                        by <span className="font-medium text-foreground">{service.provider_name}</span>
+                        {t('public.browseServices.by')} <span className="font-medium text-foreground">{service.provider_name}</span>
                       </span>
                       <ArrowRight className="h-4 w-4 text-primary" />
                     </div>
@@ -129,7 +139,7 @@ const BrowseServices = () => {
                   {!isAuthenticated && (
                     <div className="mt-4 pt-4 border-t">
                       <p className="text-xs text-muted-foreground text-center">
-                        Sign in to view details and book this service
+                        {t('public.browseServices.signInToBook')}
                       </p>
                     </div>
                   )}
@@ -141,16 +151,16 @@ const BrowseServices = () => {
           {/* CTA for non-authenticated users */}
           {!isAuthenticated && services.length > 0 && (
             <div className="mt-16 text-center bg-secondary/30 rounded-lg p-8">
-              <h3 className="text-2xl font-bold mb-4">Ready to get started?</h3>
+              <h3 className="text-2xl font-bold mb-4">{t('public.browseServices.readyToStart')}</h3>
               <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-                Create an account to book services, communicate with providers, and manage your projects
+                {t('public.browseServices.readyToStartDesc')}
               </p>
               <div className="flex gap-4 justify-center">
                 <Link to="/register">
-                  <Button size="lg">Create Account</Button>
+                  <Button size="lg">{t('public.browseServices.createAccount')}</Button>
                 </Link>
                 <Link to="/login">
-                  <Button size="lg" variant="outline">Sign In</Button>
+                  <Button size="lg" variant="outline">{t('public.browseServices.signIn')}</Button>
                 </Link>
               </div>
             </div>
