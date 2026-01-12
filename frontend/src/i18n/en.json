@@ -191,7 +191,8 @@
     "termsOfService": "Terms of Service",
     "cookiePolicy": "Cookie Policy",
     "rightsReserved": "All rights reserved.",
-    "copyright": "© {{year}} TenderPilot. All rights reserved."
+    "copyright": "© {{year}} TenderPilot. All rights reserved.",
+    "help": "Help"
   },
   "public": {
     "browseProjects": {

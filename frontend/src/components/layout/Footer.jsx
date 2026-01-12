@@ -21,19 +21,19 @@ function Footer({ className, websiteName = "TenderPilot" }) {
         <div className="flex items-center gap-4">
           <Link
             to="/privacy"
-            className="text-gray-200 hover:text-white transition-colors"
+            className="text-gray-900 hover:text-white transition-colors"
           >
             {t("footer.privacyPolicy")}
           </Link>
           <Link
             to="/terms"
-            className="text-gray-200 hover:text-white transition-colors"
+            className="text-gray-900 hover:text-white transition-colors"
           >
             {t("footer.termsOfService")}
           </Link>
           <Link
             to="/help"
-            className="text-gray-200 hover:text-white transition-colors"
+            className="text-gray-900 hover:text-white transition-colors"
           >
             {t("footer.help")}
           </Link>

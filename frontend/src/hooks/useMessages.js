@@ -56,9 +56,18 @@ export const useMessages = () => {
         },
     });
 
+    const deleteConversationMutation = useMutation({
+        mutationFn: messagingService.deleteConversation,
+        onSuccess: () => {
+            queryClient.invalidateQueries(["conversations"]);
+            queryClient.invalidateQueries(["unread-count"]);
+        },
+    });
+
     return {
         conversationsQuery,
         unreadCountQuery,
         createConversationMutation,
+        deleteConversationMutation,
     };
 };

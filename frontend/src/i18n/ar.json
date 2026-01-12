@@ -192,7 +192,8 @@
     "termsOfService": "شروط الخدمة",
     "cookiePolicy": "سياسة ملفات تعريف الارتباط",
     "rightsReserved": "جميع الحقوق محفوظة.",
-    "copyright": "© {{year}} تندر بايلوت. جميع الحقوق محفوظة."
+    "copyright": "© {{year}} تندر بايلوت. جميع الحقوق محفوظة.",
+    "help": "المساعدة"
   },
   "public": {
     "browseProjects": {

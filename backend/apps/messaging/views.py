@@ -106,6 +106,24 @@ class ConversationViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         message = serializer.save()
         return Response(MessageSerializer(message).data, status=status.HTTP_201_CREATED)
+    
+    def destroy(self, request, *args, **kwargs):
+        conversation = self.get_object()
+    
+        # Ensure user is a participant
+        is_participant = ConversationParticipant.objects.filter(
+            conversation=conversation,
+            user=request.user
+        ).exists()
+    
+        if not is_participant:
+            return Response(
+                {"detail": "You are not allowed to delete this conversation."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+    
+        conversation.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class UnreadCountView(viewsets.ViewSet):
