@@ -134,6 +134,7 @@ const HelpPage = () => {
               variant="ghost"
               onClick={() => setSelectedCategory(null)}
               className="mb-6"
+              disabled={setSelectedCategory === null || setSelectedCategory === undefined}
             >
               ← Back to categories
             </Button>
@@ -190,7 +191,9 @@ const HelpPage = () => {
                 placeholder="Describe your issue in detail..."
               />
             </div>
-            <Button onClick={handleContactSupport}>Send Message</Button>
+            <Button onClick={handleContactSupport} disabled={handleContactSupport.isPending}>
+              {handleContactSupport.isPending ? ('Sending...') : 'Send Message'}
+            </Button>
           </CardContent>
         </Card>
 

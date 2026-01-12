@@ -308,7 +308,7 @@ const BidCreate = () => {
                             >
                                 {isSubmitting ? (
                                     <>
-                                        <span className="animate-spin">⏳</span>
+                                        <LoadingSpinner className="h-4 w-4" />
                                         {t("bid.submitting", "Submitting...")}
                                     </>
                                 ) : (

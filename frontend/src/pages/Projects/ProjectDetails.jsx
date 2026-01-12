@@ -397,9 +397,9 @@ export default function ProjectDetail() {
                     }
                   }
                 }}
-                disabled={startConversationMutation.isLoading}
+                disabled={startConversationMutation.isPending}
               >
-                {startConversationMutation.isLoading
+                {startConversationMutation.isPending
                   ? t("Starting Chat...")
                   : projectConversation?.id
                     ? flags.isOwner ? t("Chat with Provider") : t("Chat with Client")
@@ -644,6 +644,7 @@ export default function ProjectDetail() {
                         onClick={() =>
                           handleBidDecision(bid.id, "accepted", bid.service_provider)
                         }
+                        disabled={handleBidDecision.statusLoading}
                       >
                         {t("Accept")}
                       </Button>
@@ -653,6 +654,7 @@ export default function ProjectDetail() {
                         onClick={() =>
                           handleBidDecision(bid.id, "shortlisted", bid.service_provider)
                         }
+                        disabled={handleBidDecision.statusLoading}
                       >
                         {t("Shortlist")}
                       </Button>
@@ -662,6 +664,7 @@ export default function ProjectDetail() {
                         onClick={() =>
                           handleBidDecision(bid.id, "rejected", bid.service_provider)
                         }
+                        disabled={handleBidDecision.statusLoading}
                       >
                         {t("Reject")}
                       </Button>

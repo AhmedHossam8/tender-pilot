@@ -129,7 +129,13 @@ const EnhancedAIDashboard = () => {
                     ? 'bg-purple-600 text-white'
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
+                disabled={handleTimeRangeChange.isPending}
               >
+                {handleTimeRangeChange.isPending ? (
+                  <LoadingSpinner className="h-4 w-4 mr-2" />
+                ) : (
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                )}
                 7 Days
               </button>
               <button
@@ -139,7 +145,13 @@ const EnhancedAIDashboard = () => {
                     ? 'bg-purple-600 text-white'
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
+                disabled={handleTimeRangeChange.isPending}
               >
+                {handleTimeRangeChange.isPending ? (
+                  <LoadingSpinner className="h-4 w-4 mr-2" />
+                ) : (
+                  <Calendar className="h-4 w-4 mr-2" />
+                )}
                 30 Days
               </button>
               <button
@@ -149,7 +161,13 @@ const EnhancedAIDashboard = () => {
                     ? 'bg-purple-600 text-white'
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
+                disabled={handleTimeRangeChange.isPending}
               >
+                {handleTimeRangeChange.isPending ? (
+                  <LoadingSpinner className="h-4 w-4 mr-2" />
+                ) : (
+                  <Calendar className="h-4 w-4 mr-2" />
+                )}
                 90 Days
               </button>
             </div>
