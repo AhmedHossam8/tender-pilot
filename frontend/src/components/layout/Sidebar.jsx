@@ -50,8 +50,7 @@ export const getDynamicNavigation = (userType, isClient, isProvider) => {
     baseNav.push({
       key: "sidebar.clientDashboard",
       href: "/app/dashboard/client",
-      icon: UserCircle,
-      label: "Client Dashboard"
+      icon: UserCircle
     });
   }
 
@@ -59,8 +58,7 @@ export const getDynamicNavigation = (userType, isClient, isProvider) => {
     baseNav.push({
       key: "sidebar.providerDashboard",
       href: "/app/dashboard/provider",
-      icon: Briefcase,
-      label: "Provider Dashboard"
+      icon: Briefcase
     });
   }
 
@@ -143,9 +141,12 @@ function Sidebar({ collapsed, onToggleCollapse, isRtl }) {
     >
       {/* Logo */}
       <div className="flex items-center h-16 px-4 border-b border-secondary-foreground/10">
-        <NavLink to="/app" className="flex items-center w-full">
+        <NavLink 
+          to={isClient() ? "/app/dashboard/client" : isProvider() ? "/app/dashboard/provider" : "/app"} 
+          className="flex items-center w-full"
+        >
           {!collapsed ? (
-            <span className="text-xl font-bold text-white">ServiceHub</span>
+            <span className="text-xl font-bold text-white">{t('common.websiteName')}</span>
           ) : (
             <span className="text-xl font-bold text-white mx-auto">SH</span>
           )}

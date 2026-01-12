@@ -1,5 +1,6 @@
 import * as React from "react"
 import { toast } from "sonner"
+import { useTranslation } from "react-i18next"
 
 // UI Components
 import {
@@ -75,6 +76,7 @@ import {
 } from "lucide-react"
 
 function ComponentShowcase() {
+  const { t } = useTranslation()
   const [dialogOpen, setDialogOpen] = React.useState(false)
   const [confirmDialogOpen, setConfirmDialogOpen] = React.useState(false)
   const [searchValue, setSearchValue] = React.useState("")
@@ -94,20 +96,20 @@ function ComponentShowcase() {
   const columns = [
     {
       accessorKey: "name",
-      header: "Project Name",
+      header: t('showcase.projectName'),
     },
     {
       accessorKey: "status",
-      header: "Status",
+      header: t('showcase.status'),
       cell: ({ row }) => <StatusBadge status={row.getValue("status")} />,
     },
     {
       accessorKey: "deadline",
-      header: "Deadline",
+      header: t('showcase.deadline'),
     },
     {
       accessorKey: "budget",
-      header: "Budget",
+      header: t('showcase.budget'),
     },
   ]
 
@@ -115,24 +117,24 @@ function ComponentShowcase() {
   const filters = [
     {
       key: "status",
-      label: "Status",
+      label: t('showcase.status'),
       type: "select",
       options: [
-        { value: "draft", label: "Draft" },
-        { value: "in-review", label: "In Review" },
-        { value: "approved", label: "Approved" },
-        { value: "rejected", label: "Rejected" },
+        { value: "draft", label: t('status.draft') },
+        { value: "in-review", label: t('status.inReview') },
+        { value: "approved", label: t('status.approved') },
+        { value: "rejected", label: t('status.rejected') },
       ],
     },
     {
       key: "search",
-      label: "Search",
+      label: t('showcase.search'),
       type: "text",
-      placeholder: "Search projects...",
+      placeholder: t('showcase.searchProjects'),
     },
     {
       key: "deadline",
-      label: "Deadline",
+      label: t('showcase.deadline'),
       type: "date",
     },
   ]
@@ -142,87 +144,87 @@ function ComponentShowcase() {
       <div className="max-w-7xl mx-auto space-y-12">
         {/* Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold">Component Showcase</h1>
+          <h1 className="text-4xl font-bold">{t('showcase.title')}</h1>
           <p className="text-muted-foreground">
-            TenderPilot UI Component Library
+            {t('showcase.subtitle')}
           </p>
         </div>
 
         {/* Colors Section */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold border-b pb-2">Colors</h2>
+          <h2 className="text-2xl font-semibold border-b pb-2">{t('showcase.colors')}</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4">
             <div className="space-y-2">
               <div className="h-16 rounded-lg bg-primary" />
-              <p className="text-sm text-center">Primary</p>
+              <p className="text-sm text-center">{t('showcase.primary')}</p>
             </div>
             <div className="space-y-2">
               <div className="h-16 rounded-lg bg-secondary" />
-              <p className="text-sm text-center">Secondary</p>
+              <p className="text-sm text-center">{t('showcase.secondary')}</p>
             </div>
             <div className="space-y-2">
               <div className="h-16 rounded-lg bg-accent" />
-              <p className="text-sm text-center">Accent</p>
+              <p className="text-sm text-center">{t('showcase.accent')}</p>
             </div>
             <div className="space-y-2">
               <div className="h-16 rounded-lg bg-destructive" />
-              <p className="text-sm text-center">Destructive</p>
+              <p className="text-sm text-center">{t('showcase.destructive')}</p>
             </div>
             <div className="space-y-2">
               <div className="h-16 rounded-lg bg-warning" />
-              <p className="text-sm text-center">Warning</p>
+              <p className="text-sm text-center">{t('showcase.warning')}</p>
             </div>
             <div className="space-y-2">
               <div className="h-16 rounded-lg bg-success" />
-              <p className="text-sm text-center">Success</p>
+              <p className="text-sm text-center">{t('showcase.success')}</p>
             </div>
           </div>
         </section>
 
         {/* Buttons Section */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold border-b pb-2">Buttons</h2>
+          <h2 className="text-2xl font-semibold border-b pb-2">{t('showcase.buttons')}</h2>
           
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Variants</h3>
+            <h3 className="text-lg font-medium">{t('showcase.variants')}</h3>
             <div className="flex flex-wrap gap-4">
-              <Button>Default</Button>
-              <Button variant="secondary">Secondary</Button>
-              <Button variant="destructive">Destructive</Button>
-              <Button variant="outline">Outline</Button>
-              <Button variant="ghost">Ghost</Button>
-              <Button variant="link">Link</Button>
-              <Button variant="success">Success</Button>
+              <Button>{t('showcase.default')}</Button>
+              <Button variant="secondary">{t('showcase.secondary')}</Button>
+              <Button variant="destructive">{t('showcase.destructive')}</Button>
+              <Button variant="outline">{t('showcase.outline')}</Button>
+              <Button variant="ghost">{t('showcase.ghost')}</Button>
+              <Button variant="link">{t('showcase.link')}</Button>
+              <Button variant="success">{t('showcase.success')}</Button>
             </div>
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Sizes</h3>
+            <h3 className="text-lg font-medium">{t('showcase.sizes')}</h3>
             <div className="flex flex-wrap items-center gap-4">
-              <Button size="sm">Small</Button>
-              <Button>Default</Button>
-              <Button size="lg">Large</Button>
-              <Button size="xl">Extra Large</Button>
+              <Button size="sm">{t('showcase.small')}</Button>
+              <Button>{t('showcase.default')}</Button>
+              <Button size="lg">{t('showcase.large')}</Button>
+              <Button size="xl">{t('showcase.extraLarge')}</Button>
               <Button size="icon"><Plus className="h-4 w-4" /></Button>
             </div>
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">With Icons</h3>
+            <h3 className="text-lg font-medium">{t('showcase.withIcons')}</h3>
             <div className="flex flex-wrap gap-4">
-              <Button><Plus className="h-4 w-4 mr-2" />Create New</Button>
-              <Button variant="outline"><Download className="h-4 w-4 mr-2" />Download</Button>
-              <Button variant="destructive"><Trash2 className="h-4 w-4 mr-2" />Delete</Button>
+              <Button><Plus className="h-4 w-4 mr-2" />{t('showcase.createNew')}</Button>
+              <Button variant="outline"><Download className="h-4 w-4 mr-2" />{t('showcase.download')}</Button>
+              <Button variant="destructive"><Trash2 className="h-4 w-4 mr-2" />{t('showcase.delete')}</Button>
             </div>
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">States</h3>
+            <h3 className="text-lg font-medium">{t('showcase.states')}</h3>
             <div className="flex flex-wrap gap-4">
-              <Button disabled>Disabled</Button>
+              <Button disabled>{t('showcase.disabled')}</Button>
               <Button className="cursor-wait opacity-75">
                 <LoadingSpinner size="sm" className="mr-2" />
-                Loading...
+                {t('showcase.loading')}
               </Button>
             </div>
           </div>
@@ -230,32 +232,32 @@ function ComponentShowcase() {
 
         {/* Inputs Section */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold border-b pb-2">Inputs</h2>
+          <h2 className="text-2xl font-semibold border-b pb-2">{t('showcase.inputs')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <Input placeholder="Default input" />
-              <Input placeholder="Disabled input" disabled />
+              <Input placeholder={t('showcase.defaultInput')} />
+              <Input placeholder={t('showcase.disabledInput')} disabled />
               <InputWithLabel
-                label="Email"
+                label={t('auth.email')}
                 type="email"
-                placeholder="Enter your email"
+                placeholder={t('auth.enterEmail')}
               />
               <InputWithLabel
-                label="With Error"
-                placeholder="This field has an error"
-                error="This field is required"
+                label={t('showcase.withError')}
+                placeholder={t('showcase.errorPlaceholder')}
+                error={t('showcase.fieldRequired')}
               />
             </div>
             <div className="space-y-4">
-              <Textarea placeholder="Enter your message..." />
+              <Textarea placeholder={t('showcase.enterMessage')} />
               <Select value={selectValue} onValueChange={setSelectValue}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select an option" />
+                  <SelectValue placeholder={t('showcase.selectOption')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="option1">Option 1</SelectItem>
-                  <SelectItem value="option2">Option 2</SelectItem>
-                  <SelectItem value="option3">Option 3</SelectItem>
+                  <SelectItem value="option1">{t('showcase.option')} 1</SelectItem>
+                  <SelectItem value="option2">{t('showcase.option')} 2</SelectItem>
+                  <SelectItem value="option3">{t('showcase.option')} 3</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -264,22 +266,22 @@ function ComponentShowcase() {
 
         {/* Badges Section */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold border-b pb-2">Badges</h2>
+          <h2 className="text-2xl font-semibold border-b pb-2">{t('showcase.badges')}</h2>
           
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Variants</h3>
+            <h3 className="text-lg font-medium">{t('showcase.variants')}</h3>
             <div className="flex flex-wrap gap-2">
-              <Badge>Default</Badge>
-              <Badge variant="secondary">Secondary</Badge>
-              <Badge variant="destructive">Destructive</Badge>
-              <Badge variant="outline">Outline</Badge>
-              <Badge variant="success">Success</Badge>
-              <Badge variant="warning">Warning</Badge>
+              <Badge>{t('showcase.default')}</Badge>
+              <Badge variant="secondary">{t('showcase.secondary')}</Badge>
+              <Badge variant="destructive">{t('showcase.destructive')}</Badge>
+              <Badge variant="outline">{t('showcase.outline')}</Badge>
+              <Badge variant="success">{t('showcase.success')}</Badge>
+              <Badge variant="warning">{t('showcase.warning')}</Badge>
             </div>
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Status Badges</h3>
+            <h3 className="text-lg font-medium">{t('showcase.statusBadges')}</h3>
             <div className="flex flex-wrap gap-2">
               <StatusBadge status="draft" />
               <StatusBadge status="in-review" />
@@ -292,22 +294,22 @@ function ComponentShowcase() {
 
         {/* Cards Section */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold border-b pb-2">Cards</h2>
+          <h2 className="text-2xl font-semibold border-b pb-2">{t('showcase.cards')}</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Card Title</CardTitle>
-                <CardDescription>Card description goes here</CardDescription>
+                <CardTitle>{t('showcase.cardTitle')}</CardTitle>
+                <CardDescription>{t('showcase.cardDescription')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  This is the card content area where you can add any content.
+                  {t('showcase.cardContent')}
                 </p>
               </CardContent>
               <CardFooter className="flex justify-between">
-                <Button variant="outline">Cancel</Button>
-                <Button>Submit</Button>
+                <Button variant="outline">{t('common.cancel')}</Button>
+                <Button>{t('common.submit')}</Button>
               </CardFooter>
             </Card>
 
@@ -346,27 +348,27 @@ function ComponentShowcase() {
 
         {/* Dialog Section */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold border-b pb-2">Dialogs</h2>
+          <h2 className="text-2xl font-semibold border-b pb-2">{t('showcase.dialogs')}</h2>
           <div className="flex flex-wrap gap-4">
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
-                <Button>Open Dialog</Button>
+                <Button>{t('showcase.openDialog')}</Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Dialog Title</DialogTitle>
+                  <DialogTitle>{t('showcase.dialogTitle')}</DialogTitle>
                   <DialogDescription>
-                    This is a dialog description. You can add any content here.
+                    {t('showcase.dialogDescription')}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="py-4">
-                  <p>Dialog content goes here.</p>
+                  <p>{t('showcase.dialogContent')}</p>
                 </div>
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                    Cancel
+                    {t('common.cancel')}
                   </Button>
-                  <Button onClick={() => setDialogOpen(false)}>Confirm</Button>
+                  <Button onClick={() => setDialogOpen(false)}>{t('common.confirm')}</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -375,45 +377,45 @@ function ComponentShowcase() {
               variant="destructive"
               onClick={() => setConfirmDialogOpen(true)}
             >
-              Open Confirm Dialog
+              {t('showcase.openConfirmDialog')}
             </Button>
             <ConfirmDialog
               open={confirmDialogOpen}
               onOpenChange={setConfirmDialogOpen}
-              title="Delete Item?"
-              description="This action cannot be undone. Are you sure you want to delete this item?"
-              confirmLabel="Delete"
+              title={t('showcase.deleteItem')}
+              description={t('showcase.deleteConfirmation')}
+              confirmLabel={t('showcase.delete')}
               variant="destructive"
-              onConfirm={() => toast.success("Item deleted!")}
+              onConfirm={() => toast.success(t('showcase.itemDeleted'))}
             />
           </div>
         </section>
 
         {/* Tabs Section */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold border-b pb-2">Tabs</h2>
+          <h2 className="text-2xl font-semibold border-b pb-2">{t('showcase.tabs')}</h2>
           <Tabs defaultValue="tab1">
             <TabsList>
-              <TabsTrigger value="tab1">Overview</TabsTrigger>
-              <TabsTrigger value="tab2">Details</TabsTrigger>
-              <TabsTrigger value="tab3">Settings</TabsTrigger>
+              <TabsTrigger value="tab1">{t('showcase.overview')}</TabsTrigger>
+              <TabsTrigger value="tab2">{t('showcase.details')}</TabsTrigger>
+              <TabsTrigger value="tab3">{t('showcase.settings')}</TabsTrigger>
             </TabsList>
             <TabsContent value="tab1" className="p-4 border rounded-lg mt-2">
-              <h3 className="font-medium">Overview Content</h3>
+              <h3 className="font-medium">{t('showcase.overviewContent')}</h3>
               <p className="text-muted-foreground mt-2">
-                This is the overview tab content.
+                {t('showcase.overviewText')}
               </p>
             </TabsContent>
             <TabsContent value="tab2" className="p-4 border rounded-lg mt-2">
-              <h3 className="font-medium">Details Content</h3>
+              <h3 className="font-medium">{t('showcase.detailsContent')}</h3>
               <p className="text-muted-foreground mt-2">
-                This is the details tab content.
+                {t('showcase.detailsText')}
               </p>
             </TabsContent>
             <TabsContent value="tab3" className="p-4 border rounded-lg mt-2">
-              <h3 className="font-medium">Settings Content</h3>
+              <h3 className="font-medium">{t('showcase.settingsContent')}</h3>
               <p className="text-muted-foreground mt-2">
-                This is the settings tab content.
+                {t('showcase.settingsText')}
               </p>
             </TabsContent>
           </Tabs>
@@ -421,53 +423,53 @@ function ComponentShowcase() {
 
         {/* Toast Section */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold border-b pb-2">Toasts</h2>
+          <h2 className="text-2xl font-semibold border-b pb-2">{t('showcase.toasts')}</h2>
           <div className="flex flex-wrap gap-4">
-            <Button onClick={() => toast("Default toast message")}>
-              Default Toast
+            <Button onClick={() => toast(t('showcase.defaultToast'))}>
+              {t('showcase.defaultToast')}
             </Button>
             <Button
               variant="success"
-              onClick={() => toast.success("Success! Operation completed.")}
+              onClick={() => toast.success(t('showcase.successToast'))}
             >
-              Success Toast
+              {t('showcase.successToast')}
             </Button>
             <Button
               variant="destructive"
-              onClick={() => toast.error("Error! Something went wrong.")}
+              onClick={() => toast.error(t('showcase.errorToast'))}
             >
-              Error Toast
+              {t('showcase.errorToast')}
             </Button>
             <Button
               variant="outline"
-              onClick={() => toast.info("Info: This is informational.")}
+              onClick={() => toast.info(t('showcase.infoToast'))}
             >
-              Info Toast
+              {t('showcase.infoToast')}
             </Button>
             <Button
               variant="secondary"
-              onClick={() => toast.warning("Warning! Please be careful.")}
+              onClick={() => toast.warning(t('showcase.warningToast'))}
             >
-              Warning Toast
+              {t('showcase.warningToast')}
             </Button>
           </div>
         </section>
 
         {/* Table Section */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold border-b pb-2">Tables</h2>
+          <h2 className="text-2xl font-semibold border-b pb-2">{t('showcase.tables')}</h2>
           
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Basic Table</h3>
+            <h3 className="text-lg font-medium">{t('showcase.basicTable')}</h3>
             <div className="border rounded-lg">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Deadline</TableHead>
-                    <TableHead>Budget</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>{t('showcase.name')}</TableHead>
+                    <TableHead>{t('showcase.status')}</TableHead>
+                    <TableHead>{t('showcase.deadline')}</TableHead>
+                    <TableHead>{t('showcase.budget')}</TableHead>
+                    <TableHead className="text-right">{t('showcase.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -495,12 +497,12 @@ function ComponentShowcase() {
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Data Table with Sorting & Pagination</h3>
+            <h3 className="text-lg font-medium">{t('showcase.dataTable')}</h3>
             <DataTable
               columns={columns}
               data={sampleData}
               searchKey="name"
-              searchPlaceholder="Search projects..."
+              searchPlaceholder={t('showcase.searchProjects')}
               pageSize={3}
             />
           </div>
@@ -508,21 +510,21 @@ function ComponentShowcase() {
 
         {/* Search & Filter Section */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold border-b pb-2">Search & Filters</h2>
+          <h2 className="text-2xl font-semibold border-b pb-2">{t('showcase.searchFilters')}</h2>
           
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Search Bar</h3>
+            <h3 className="text-lg font-medium">{t('showcase.searchBar')}</h3>
             <SearchBar
               value={searchValue}
               onChange={setSearchValue}
-              onSearch={(v) => toast.info(`Searching for: ${v}`)}
-              placeholder="Search tenders..."
+              onSearch={(v) => toast.info(t('showcase.searchingFor', { query: v }))}
+              placeholder={t('showcase.searchTenders')}
               className="max-w-md"
             />
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Filter Panel</h3>
+            <h3 className="text-lg font-medium">{t('showcase.filterPanel')}</h3>
             <FilterPanel
               filters={filters}
               activeFilters={activeFilters}
@@ -534,11 +536,11 @@ function ComponentShowcase() {
 
         {/* Loading States Section */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold border-b pb-2">Loading States</h2>
+          <h2 className="text-2xl font-semibold border-b pb-2">{t('showcase.loadingStates')}</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Spinners</h3>
+              <h3 className="text-lg font-medium">{t('showcase.spinners')}</h3>
               <div className="flex items-center gap-8 p-4 border rounded-lg">
                 <LoadingSpinner size="sm" />
                 <LoadingSpinner size="md" />
@@ -548,7 +550,7 @@ function ComponentShowcase() {
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Skeleton Text</h3>
+              <h3 className="text-lg font-medium">{t('showcase.skeletonText')}</h3>
               <div className="p-4 border rounded-lg">
                 <SkeletonText lines={4} />
               </div>
@@ -556,7 +558,7 @@ function ComponentShowcase() {
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Skeleton Cards</h3>
+            <h3 className="text-lg font-medium">{t('showcase.skeletonCards')}</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <SkeletonCard />
               <SkeletonCard />
@@ -565,28 +567,28 @@ function ComponentShowcase() {
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Skeleton Table</h3>
+            <h3 className="text-lg font-medium">{t('showcase.skeletonTable')}</h3>
             <SkeletonTable rows={3} columns={4} />
           </div>
         </section>
 
         {/* Empty States Section */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold border-b pb-2">Empty States</h2>
+          <h2 className="text-2xl font-semibold border-b pb-2">{t('showcase.emptyStates')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="border rounded-lg">
               <EmptyState
-                title="No tenders found"
-                description="Get started by creating your first tender."
-                actionLabel="Create Tender"
-                action={() => toast.info("Create tender clicked!")}
+                title={t('showcase.noTendersFound')}
+                description={t('showcase.getStartedTender')}
+                actionLabel={t('showcase.createTender')}
+                action={() => toast.info(t('showcase.createTenderClicked'))}
               />
             </div>
             <div className="border rounded-lg">
               <EmptyState
                 illustration="no-results"
-                title="No results"
-                description="Try adjusting your search or filter criteria."
+                title={t('showcase.noResults')}
+                description={t('showcase.adjustFilters')}
               />
             </div>
           </div>
@@ -594,29 +596,27 @@ function ComponentShowcase() {
 
         {/* Typography Section */}
         <section className="space-y-4">
-          <h2 className="text-2xl font-semibold border-b pb-2">Typography</h2>
+          <h2 className="text-2xl font-semibold border-b pb-2">{t('showcase.typography')}</h2>
           <div className="space-y-4">
-            <h1 className="text-4xl font-bold">Heading 1</h1>
-            <h2 className="text-3xl font-semibold">Heading 2</h2>
-            <h3 className="text-2xl font-semibold">Heading 3</h3>
-            <h4 className="text-xl font-medium">Heading 4</h4>
+            <h1 className="text-4xl font-bold">{t('showcase.heading1')}</h1>
+            <h2 className="text-3xl font-semibold">{t('showcase.heading2')}</h2>
+            <h3 className="text-2xl font-semibold">{t('showcase.heading3')}</h3>
+            <h4 className="text-xl font-medium">{t('showcase.heading4')}</h4>
             <p className="text-base">
-              This is a paragraph with <strong>bold text</strong> and{" "}
-              <em>italic text</em>. Lorem ipsum dolor sit amet, consectetur
-              adipiscing elit.
+              {t('showcase.paragraph')}
             </p>
             <p className="text-sm text-muted-foreground">
-              This is small muted text for secondary information.
+              {t('showcase.smallText')}
             </p>
             <p className="text-xs text-muted-foreground">
-              Extra small text for labels and captions.
+              {t('showcase.extraSmallText')}
             </p>
           </div>
         </section>
 
         {/* Footer */}
         <footer className="text-center py-8 border-t text-muted-foreground">
-          <p>TenderPilot Component Library • Built with shadcn/ui + Tailwind CSS</p>
+          <p>{t('showcase.footer')}</p>
         </footer>
       </div>
     </div>

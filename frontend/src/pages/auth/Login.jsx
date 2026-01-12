@@ -2,8 +2,10 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuthStore } from "@/contexts/authStore";
+import { useTranslation } from "react-i18next";
 
 export default function Login() {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const login = useAuthStore((s) => s.login);
 
@@ -24,11 +26,11 @@ export default function Login() {
 
         try {
             await login(form);
-            toast.success("Welcome back!");
+            toast.success(t('auth.success.welcome'));
             navigate("/app", { replace: true });
         } catch (err) {
             toast.error(
-                err?.response?.data?.detail || "Invalid email or password"
+                err?.response?.data?.detail || t('auth.errors.invalidCredentials')
             );
         } finally {
             setLoading(false);
@@ -37,13 +39,13 @@ export default function Login() {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-2xl font-bold text-center">Login</h1>
+            <h1 className="text-2xl font-bold text-center">{t('auth.login')}</h1>
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <input
                     type="email"
                     name="email"
-                    placeholder="Email"
+                    placeholder={t('auth.email')}
                     className="w-full border rounded px-3 py-2"
                     value={form.email}
                     onChange={handleChange}
@@ -53,7 +55,7 @@ export default function Login() {
                 <input
                     type="password"
                     name="password"
-                    placeholder="Password"
+                    placeholder={t('auth.password')}
                     className="w-full border rounded px-3 py-2"
                     value={form.password}
                     onChange={handleChange}
@@ -65,19 +67,19 @@ export default function Login() {
                     disabled={loading}
                     className="w-full bg-primary text-white py-2 rounded disabled:opacity-50"
                 >
-                    {loading ? "Logging in..." : "Login"}
+                    {loading ? t('auth.loggingIn') : t('auth.login')}
                 </button>
             </form>
 
             <div className="text-sm text-center space-y-2">
                 <Link to="/forgot-password" className="text-primary underline">
-                    Forgot password?
+                    {t('auth.forgotPassword')}
                 </Link>
 
                 <p>
-                    Don’t have an account?{" "}
+                    {t('auth.noAccount')}{" "}
                     <Link to="/register" className="text-primary underline">
-                        Register
+                        {t('auth.register')}
                     </Link>
                 </p>
             </div>

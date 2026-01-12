@@ -50,6 +50,8 @@ class ProjectSerializer(BaseModelSerializer):
     category_name = serializers.SerializerMethodField()
     skills_names = serializers.SerializerMethodField()
     bids_count = serializers.SerializerMethodField()
+    bid_count = serializers.SerializerMethodField()  # Alias for frontend compatibility
+    created_by_name = serializers.SerializerMethodField()
     is_owner = serializers.SerializerMethodField()
 
     def validate_status(self, value):
@@ -66,8 +68,8 @@ class ProjectSerializer(BaseModelSerializer):
             "id", "title", "description", "budget", 
             "category", "category_name", "category_id",
             "skills", "skills_names", "skill_ids",
-            "bids_count", "visibility", "status",
-            "created_by", "is_owner",
+            "bids_count", "bid_count", "visibility", "status",
+            "created_by", "created_by_name", "is_owner",
             "requirements", "attachments", "created_at",
             "ai_summary", "ai_complexity", "ai_processed", "ai_processed_at", "ai_data",
         ]
@@ -81,6 +83,16 @@ class ProjectSerializer(BaseModelSerializer):
 
     def get_bids_count(self, obj):
         return obj.bids.count()
+    
+    def get_bid_count(self, obj):
+        """Alias for bids_count for frontend compatibility"""
+        return obj.bids.count()
+    
+    def get_created_by_name(self, obj):
+        """Get the name of the project creator"""
+        if obj.created_by:
+            return obj.created_by.full_name or obj.created_by.email
+        return None
 
     def update(self, instance, validated_data):
         category_id = validated_data.pop("category_id", None)

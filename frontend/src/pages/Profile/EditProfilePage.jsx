@@ -4,12 +4,14 @@ import ProfileService from '../../services/profile.service';
 import SkillBadge from '../../components/profile/SkillBadge';
 import ProfileCompletenessWidget from '../../components/profile/ProfileCompletenessWidget';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 /**
  * EditProfilePage
  * Page for editing current user's profile
  */
 const EditProfilePage = () => {
+  const { t } = useTranslation();
   const { user, userType, profile, updateProfile } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [skills, setSkills] = useState([]);
@@ -61,7 +63,7 @@ const EditProfilePage = () => {
       }
     } catch (error) {
       console.error('Error loading data:', error);
-      toast.error('Failed to load profile data');
+      toast.error(t('profile.errors.loadFailed'));
     }
   };
 
@@ -111,10 +113,10 @@ const EditProfilePage = () => {
 
       const response = await ProfileService.updateMyProfile(payload);
       updateProfile(response.data);
-      toast.success('Profile updated successfully!');
+      toast.success(t('profile.success.updated'));
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast.error(error.response?.data?.detail || 'Failed to update profile');
+      toast.error(error.response?.data?.detail || t('profile.errors.updateFailed'));
     } finally {
       setLoading(false);
     }
@@ -139,20 +141,20 @@ const EditProfilePage = () => {
         {/* Right Column - Edit Form */}
         <div className="lg:col-span-2">
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h1 className="text-3xl font-bold text-gray-900 mb-6">Edit Profile</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-6">{t('profile.editProfile')}</h1>
 
             <form onSubmit={handleSubmit} className="space-y-6">
           {/* Headline */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Professional Headline
+              {t('profile.professionalHeadline')}
             </label>
             <input
               type="text"
               name="headline"
               value={formData.headline}
               onChange={handleInputChange}
-              placeholder="e.g., Full-Stack Developer | React & Node.js Expert"
+              placeholder={t('profile.headlinePlaceholder')}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               maxLength={200}
             />
@@ -161,14 +163,14 @@ const EditProfilePage = () => {
           {/* Bio */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Bio / About Me
+              {t('profile.bio')}
             </label>
             <textarea
               name="bio"
               value={formData.bio}
               onChange={handleInputChange}
               rows={4}
-              placeholder="Tell clients about yourself, your experience, and what makes you unique..."
+              placeholder={t('profile.bioPlaceholder')}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -176,7 +178,7 @@ const EditProfilePage = () => {
           {/* Skills */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Skills ({selectedSkills.length} selected)
+              {t('profile.skills')} ({selectedSkills.length} {t('profile.selected')})
             </label>
             <div className="border border-gray-300 rounded-lg p-4 max-h-64 overflow-y-auto">
               <div className="flex flex-wrap gap-2">
@@ -196,13 +198,13 @@ const EditProfilePage = () => {
                     </button>
                   ))
                 ) : (
-                  <p className="text-sm text-gray-500">No skills available. Loading...</p>
+                  <p className="text-sm text-gray-500">{t('profile.noSkillsAvailable')}</p>
                 )}
               </div>
             </div>
             {selectedSkills.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-2">
-                <span className="text-sm text-gray-600">Selected:</span>
+                <span className="text-sm text-gray-600">{t('profile.selected')}:</span>
                 {selectedSkills.map((skill) => (
                   <SkillBadge
                     key={skill.id}
@@ -219,14 +221,14 @@ const EditProfilePage = () => {
           {isProvider && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Hourly Rate (USD)
+                {t('profile.hourlyRate')}
               </label>
               <input
                 type="number"
                 name="hourly_rate"
                 value={formData.hourly_rate}
                 onChange={handleInputChange}
-                placeholder="e.g., 50"
+                placeholder={t('profile.hourlyRatePlaceholder')}
                 min="0"
                 step="0.01"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -237,14 +239,14 @@ const EditProfilePage = () => {
           {/* Location */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Location
+              {t('profile.location')}
             </label>
             <input
               type="text"
               name="location"
               value={formData.location}
               onChange={handleInputChange}
-              placeholder="e.g., San Francisco, USA"
+              placeholder={t('profile.locationPlaceholder')}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -252,7 +254,7 @@ const EditProfilePage = () => {
           {/* Languages */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Languages
+              {t('profile.languages')}
             </label>
             <div className="flex gap-2 mb-2">
               <input
@@ -260,7 +262,7 @@ const EditProfilePage = () => {
                 value={newLanguage}
                 onChange={(e) => setNewLanguage(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddLanguage())}
-                placeholder="e.g., English"
+                placeholder={t('profile.languagePlaceholder')}
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               <button
@@ -268,7 +270,7 @@ const EditProfilePage = () => {
                 onClick={handleAddLanguage}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
               >
-                Add
+                {t('common.add')}
               </button>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -287,14 +289,14 @@ const EditProfilePage = () => {
           {/* Portfolio URL */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Portfolio / Website URL
+              {t('profile.portfolioUrl')}
             </label>
             <input
               type="url"
               name="portfolio_url"
               value={formData.portfolio_url}
               onChange={handleInputChange}
-              placeholder="https://yourportfolio.com"
+              placeholder={t('profile.portfolioPlaceholder')}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -306,7 +308,7 @@ const EditProfilePage = () => {
               disabled={loading}
               className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
             >
-              {loading ? 'Saving...' : 'Save Profile'}
+              {loading ? t('profile.saving') : t('profile.saveProfile')}
             </button>
           </div>
         </form>

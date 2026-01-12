@@ -3,6 +3,7 @@ import { useAnalyzeProject, useCheckCompliance, useGenerateOutline, useAIHealth 
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge } from '@/components/ui';
 import { Sparkles, Shield, FileText, Activity, AlertCircle, CheckCircle, Clock, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 /**
  * AI Features Demo Component
@@ -19,6 +20,7 @@ import { toast } from 'sonner';
  * <AIFeaturesDemo projectId="your-project-uuid" />
  */
 function AIFeaturesDemo({ projectId }) {
+  const { t } = useTranslation();
   const [selectedDepth, setSelectedDepth] = useState('standard');
   const [selectedStyle, setSelectedStyle] = useState('standard');
   
@@ -59,11 +61,11 @@ function AIFeaturesDemo({ projectId }) {
       },
       {
         onSuccess: (response) => {
-          toast.success('Analysis complete!');
+          toast.success(t('analysisComplete'));
           console.log('Analysis:', response.data);
         },
         onError: (error) => {
-          toast.error(`Analysis failed: ${error.message}`);
+          toast.error(`${t('analysisFailed')}: ${error.message}`);
         }
       }
     );
@@ -81,11 +83,11 @@ function AIFeaturesDemo({ projectId }) {
       },
       {
         onSuccess: (response) => {
-          toast.success('Compliance check complete!');
+          toast.success(t('complianceCheckComplete'));
           console.log('Compliance:', response.data);
         },
         onError: (error) => {
-          toast.error(`Compliance check failed: ${error.message}`);
+          toast.error(`${t('complianceCheckFailed')}: ${error.message}`);
         }
       }
     );
@@ -103,11 +105,11 @@ function AIFeaturesDemo({ projectId }) {
       },
       {
         onSuccess: (response) => {
-          toast.success('Outline generated!');
+          toast.success(t('outlineGenerated'));
           console.log('Outline:', response.data);
         },
         onError: (error) => {
-          toast.error(`Outline generation failed: ${error.message}`);
+          toast.error(`${t('outlineGenerationFailed')}: ${error.message}`);
         }
       }
     );
@@ -116,7 +118,7 @@ function AIFeaturesDemo({ projectId }) {
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">AI Features Demo</h2>
+        <h2 className="text-2xl font-bold">{t('aiFeaturesDemo')}</h2>
         {health && (
           <Badge variant={health.status === 'healthy' ? 'success' : 'destructive'}>
             <Activity className="h-3 w-3 mr-1" />
@@ -131,25 +133,25 @@ function AIFeaturesDemo({ projectId }) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Activity className="h-5 w-5" />
-              AI Engine Status
+              {t('aiEngineStatus')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <div className="text-sm text-gray-500">Provider</div>
+                <div className="text-sm text-gray-500">{t('provider')}</div>
                 <div className="font-semibold">{health.provider}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-500">Model</div>
+                <div className="text-sm text-gray-500">{t('model')}</div>
                 <div className="font-semibold">{health.model}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-500">Requests Today</div>
+                <div className="text-sm text-gray-500">{t('requestsToday')}</div>
                 <div className="font-semibold">{health.requests_today || 0}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-500">Available</div>
+                <div className="text-sm text-gray-500">{t('available')}</div>
                 <div className="font-semibold">
                   {health.available ? (
                     <CheckCircle className="h-5 w-5 text-green-500" />
@@ -168,7 +170,7 @@ function AIFeaturesDemo({ projectId }) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5" />
-            Project Analysis
+            {t('projectAnalysis')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -178,9 +180,9 @@ function AIFeaturesDemo({ projectId }) {
               onChange={(e) => setSelectedDepth(e.target.value)}
               className="border rounded px-3 py-2"
             >
-              <option value="quick">Quick</option>
-              <option value="standard">Standard</option>
-              <option value="detailed">Detailed</option>
+              <option value="quick">{t('quick')}</option>
+              <option value="standard">{t('standard')}</option>
+              <option value="detailed">{t('detailed')}</option>
             </select>
             
             <Button 
@@ -188,26 +190,26 @@ function AIFeaturesDemo({ projectId }) {
               disabled={analyzing || !projectId}
             >
               <Sparkles className="h-4 w-4 mr-2" />
-              {analyzing ? 'Analyzing...' : 'Analyze Project'}
+              {analyzing ? t('analyzing') : t('analyzeProject')}
             </Button>
           </div>
           
           {analysisData && (
             <div className="mt-4 space-y-3 p-4 bg-blue-50 rounded">
-              <div className="font-semibold text-lg">Analysis Results</div>
+              <div className="font-semibold text-lg">{t('analysisResults')}</div>
               
               <div>
-                <div className="text-sm text-gray-600">Summary</div>
+                <div className="text-sm text-gray-600">{t('summary')}</div>
                 <p>{analysisData.data.analysis?.summary}</p>
               </div>
               
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <div className="text-sm text-gray-600">Complexity</div>
+                  <div className="text-sm text-gray-600">{t('complexity')}</div>
                   <Badge>{analysisData.data.analysis?.estimated_complexity}</Badge>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-600">Confidence</div>
+                  <div className="text-sm text-gray-600">{t('confidence')}</div>
                   <div className="font-semibold">
                     {analysisData.data.analysis?.confidence_level}%
                   </div>
@@ -220,7 +222,7 @@ function AIFeaturesDemo({ projectId }) {
               
               {analysisData.data.analysis?.key_requirements && (
                 <div>
-                  <div className="text-sm text-gray-600 mb-2">Key Requirements</div>
+                  <div className="text-sm text-gray-600 mb-2">{t('keyRequirements')}</div>
                   <ul className="space-y-1">
                     {analysisData.data.analysis.key_requirements.slice(0, 3).map((req, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm">
@@ -236,7 +238,7 @@ function AIFeaturesDemo({ projectId }) {
               )}
               
               <div className="flex items-center gap-4 text-sm text-gray-500">
-                <span>Tokens: {analysisData.data.tokens_used}</span>
+                <span>{t('tokens')}: {analysisData.data.tokens_used}</span>
                 <span className="flex items-center gap-1">
                   <DollarSign className="h-3 w-3" />
                   {analysisData.data.cost?.toFixed(4) || '0.0000'}
@@ -252,7 +254,7 @@ function AIFeaturesDemo({ projectId }) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
-            Compliance Check
+            {t('complianceCheck')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -261,13 +263,13 @@ function AIFeaturesDemo({ projectId }) {
             disabled={checking || !projectId}
           >
             <Shield className="h-4 w-4 mr-2" />
-            {checking ? 'Checking...' : 'Check Compliance'}
+            {checking ? t('checking') : t('checkCompliance')}
           </Button>
           
           {complianceData && (
             <div className="mt-4 space-y-3 p-4 bg-green-50 rounded">
               <div className="flex items-center justify-between">
-                <div className="font-semibold text-lg">Compliance Results</div>
+                <div className="font-semibold text-lg">{t('complianceResults')}</div>
                 <div className="text-2xl font-bold">
                   {complianceData.data.compliance_score}%
                 </div>
@@ -275,7 +277,7 @@ function AIFeaturesDemo({ projectId }) {
               
               {complianceData.data.gaps && complianceData.data.gaps.length > 0 && (
                 <div>
-                  <div className="text-sm text-gray-600 mb-2">Gaps Found</div>
+                  <div className="text-sm text-gray-600 mb-2">{t('gapsFound')}</div>
                   {complianceData.data.gaps.map((gap, i) => (
                     <div key={i} className="flex items-start gap-2 p-2 bg-red-50 rounded mb-2">
                       <AlertCircle className="h-4 w-4 text-red-500 mt-1" />
@@ -300,7 +302,7 @@ function AIFeaturesDemo({ projectId }) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Proposal Outline
+            {t('proposalOutline')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -310,10 +312,10 @@ function AIFeaturesDemo({ projectId }) {
               onChange={(e) => setSelectedStyle(e.target.value)}
               className="border rounded px-3 py-2"
             >
-              <option value="brief">Brief</option>
-              <option value="standard">Standard</option>
-              <option value="detailed">Detailed</option>
-              <option value="comprehensive">Comprehensive</option>
+              <option value="brief">{t('brief')}</option>
+              <option value="standard">{t('standard')}</option>
+              <option value="detailed">{t('detailed')}</option>
+              <option value="comprehensive">{t('comprehensive')}</option>
             </select>
             
             <Button 
@@ -321,7 +323,7 @@ function AIFeaturesDemo({ projectId }) {
               disabled={generating || !projectId}
             >
               <FileText className="h-4 w-4 mr-2" />
-              {generating ? 'Generating...' : 'Generate Outline'}
+              {generating ? t('generating') : t('generateOutline')}
             </Button>
           </div>
           
@@ -343,7 +345,7 @@ function AIFeaturesDemo({ projectId }) {
                   <p className="text-sm text-gray-600 mb-2">{section.description}</p>
                   
                   <div className="text-xs text-gray-500">
-                    Suggested length: {section.suggested_length}
+                    {t('suggestedLength')}: {section.suggested_length}
                   </div>
                   
                   {section.key_points && section.key_points.length > 0 && (
@@ -367,13 +369,13 @@ function AIFeaturesDemo({ projectId }) {
       <Card className="bg-gray-50">
         <CardContent className="pt-6">
           <div className="text-sm space-y-2">
-            <div className="font-semibold">📝 Notes:</div>
+            <div className="font-semibold">{t('notes')}:</div>
             <ul className="list-disc list-inside space-y-1 text-gray-600">
-              <li>Project must have uploaded documents for analysis to work</li>
-              <li>Results are cached for 24 hours (use force_refresh to bypass)</li>
-              <li>Rate limit: 10 requests per hour per user</li>
-              <li>Using Gemini 2.5 Flash (free tier) by default</li>
-              <li>Check console for full response data</li>
+              <li>{t('note1')}</li>
+              <li>{t('note2')}</li>
+              <li>{t('note3')}</li>
+              <li>{t('note4')}</li>
+              <li>{t('note5')}</li>
             </ul>
           </div>
         </CardContent>

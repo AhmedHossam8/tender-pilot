@@ -101,7 +101,7 @@ const BookingsList = () => {
 
     const handleOpenStatusDialog = (booking) => {
         if (!isProvider) {
-            toast.error(t("bookings.onlyProviderCanChangeStatus"));
+            toast.error(t("notifications.unauthorized"));
             return;
         }
         setSelectedBooking(booking);
@@ -122,7 +122,7 @@ const BookingsList = () => {
             : booking.package?.service?.created_by?.id; // Client chats with provider
 
         if (!otherUserId) {
-            toast.error(t("bookings.cannotStartConversation"));
+            toast.error(t("bookings.conversationError"));
             return;
         }
 
@@ -130,13 +130,13 @@ const BookingsList = () => {
     };
 
     if (isLoading) return <SkeletonTable rows={5} columns={6} />
-    if (isError) return <p>Error: {error.message}</p>
+    if (isError) return <p className="text-center text-red-500">{t("bookings.loadError")}</p>
 
     if (!bookings?.length)
         return (
             <EmptyState
                 title={t("bookings.noBookings")}
-                description="Bookings will appear here once created."
+                description={t("bookings.noBookings")}
             />
         )
 
@@ -148,10 +148,10 @@ const BookingsList = () => {
                     <TableRow>
                         <TableHead>{isProvider ? t("bookings.client") : t("bookings.provider")}</TableHead>
                         <TableHead>{t("bookings.service")}</TableHead>
-                        <TableHead>{t("bookings.package")}</TableHead>
-                        <TableHead>{t("bookings.price")}</TableHead>
+                        <TableHead>{t("bookings.package", "Package")}</TableHead>
+                        <TableHead>{t("bookings.amount")}</TableHead>
                         <TableHead>{t("bookings.status")}</TableHead>
-                        <TableHead>{t("bookings.scheduledFor")}</TableHead>
+                        <TableHead>{t("bookings.bookedAt")}</TableHead>
                         <TableHead className="text-right">{t("bookings.actions")}</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -184,7 +184,7 @@ const BookingsList = () => {
                                         <Button
                                             size="icon"
                                             variant="ghost"
-                                            title={t("bookings.viewDetails")}
+                                            title={t("bookings.viewBooking")}
                                             onClick={() => navigate(`/app/bookings/${booking.id}`)}
                                         >
                                             <Eye className="h-4 w-4" />
@@ -195,7 +195,7 @@ const BookingsList = () => {
                                             <Button
                                                 size="icon"
                                                 variant="ghost"
-                                                title={t("bookings.changeStatus")}
+                                                title={t("bookings.updateStatus")}
                                                 onClick={() => handleOpenStatusDialog(booking)}
                                                 disabled={statusMutation.isPending}
                                             >
@@ -207,7 +207,7 @@ const BookingsList = () => {
                                         <Button
                                             size="icon"
                                             variant="ghost"
-                                            title={t("bookings.startConversation")}
+                                            title={t("bookings.contactProvider")}
                                             onClick={() => handleCreateConversation(booking)}
                                             disabled={conversationMutation.isPending}
                                         >
@@ -230,23 +230,23 @@ const BookingsList = () => {
                 <Dialog open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>{t("bookings.changeStatus")}</DialogTitle>
+                            <DialogTitle>{t("bookings.updateBookingStatus")}</DialogTitle>
                             <DialogDescription>
-                                {t("bookings.currentStatus")}: <strong>{selectedBooking?.status}</strong>
+                                {t("bookings.status")}: <strong>{selectedBooking?.status}</strong>
                             </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 py-4">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">{t("bookings.selectNewStatus")}</label>
+                                <label className="text-sm font-medium">{t("bookings.newStatus")}</label>
                                 <Select value={newStatus} onValueChange={setNewStatus}>
                                     <SelectTrigger>
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="pending">{t("bookings.statusPending")}</SelectItem>
-                                        <SelectItem value="confirmed">{t("bookings.statusConfirmed")}</SelectItem>
-                                        <SelectItem value="completed">{t("bookings.statusCompleted")}</SelectItem>
-                                        <SelectItem value="cancelled">{t("bookings.statusCancelled")}</SelectItem>
+                                        <SelectItem value="pending">{t("status.pending")}</SelectItem>
+                                        <SelectItem value="confirmed">{t("status.confirmed")}</SelectItem>
+                                        <SelectItem value="completed">{t("status.completed")}</SelectItem>
+                                        <SelectItem value="cancelled">{t("status.cancelled")}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>

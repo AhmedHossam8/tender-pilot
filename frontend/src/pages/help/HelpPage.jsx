@@ -62,139 +62,29 @@ const HelpPage = () => {
       articles: [
         {
           id: 'create-first-project',
-          title: 'How to create your first project',
-          content: `Creating your first project on Tender Pilot is simple and straightforward.
-
-**Step 1: Navigate to Projects**
-Click on "Projects" in the main navigation menu, then select "Create New Project".
-
-**Step 2: Fill in Project Details**
-- Enter a clear, descriptive project title
-- Write a detailed description of what you need
-- Set your budget range
-- Choose the project category
-- Add any relevant skills or technologies needed
-
-**Step 3: Set Timeline and Requirements**
-- Specify your desired start and end dates
-- Add any specific requirements or deliverables
-- Upload any relevant files or documents
-
-**Step 4: Publish Your Project**
-Review all details and click "Publish Project" to make it visible to service providers.
-
-**Tips for Success:**
-- Be as detailed as possible in your description
-- Set realistic budgets and timelines
-- Respond promptly to questions from providers
-- Use clear, professional language`,
-          tags: ['projects', 'getting started', 'create'],
+          title: t('help.articles.createFirstProject.title'),
+          content: t('help.articles.createFirstProject.content'),
+          tags: ['projects', 'gettingStarted', 'create'],
           readTime: 5
         },
         {
           id: 'setup-profile',
-          title: 'Setting up your profile',
-          content: `A complete profile helps build trust and attracts better opportunities.
-
-**Profile Basics**
-- Upload a professional profile picture
-- Write a compelling bio that highlights your experience
-- Add your location and time zone
-- Set your hourly rate (for service providers)
-
-**Skills and Experience**
-- Add relevant skills and technologies
-- Include your experience level for each skill
-- Upload portfolio items or previous work samples
-- Add certifications or relevant education
-
-**Verification**
-- Verify your email address
-- Complete identity verification if available
-- Link social media profiles (optional)
-
-**Privacy Settings**
-- Choose what information is public
-- Set notification preferences
-- Configure communication settings
-
-**Pro Tips:**
-- Keep your profile updated regularly
-- Use keywords that clients might search for
-- Include examples of your best work
-- Write in a professional but personable tone`,
+          title: t('help.articles.setupProfile.title'),
+          content: t('help.articles.setupProfile.content'),
           tags: ['profile', 'setup', 'verification'],
           readTime: 7
         },
         {
           id: 'user-roles',
-          title: 'Understanding user roles',
-          content: `Tender Pilot has different user roles with specific capabilities.
-
-**Client Role**
-Clients can:
-- Post new projects
-- Review and accept bids
-- Manage ongoing projects
-- Rate and review service providers
-- Access project analytics
-
-**Service Provider Role**
-Service providers can:
-- Browse available projects
-- Submit bids and proposals
-- Offer services in the marketplace
-- Build a portfolio
-- Communicate with clients
-
-**Admin Role**
-Administrators have access to:
-- Platform-wide analytics
-- User management tools
-- System settings
-- Moderation capabilities
-
-**Switching Roles**
-Users can be both clients and service providers by updating their account type in settings.
-
-**Role-Specific Features**
-Each role has a customized dashboard showing relevant information and available actions.`,
+          title: t('help.articles.userRoles.title'),
+          content: t('help.articles.userRoles.content'),
           tags: ['roles', 'permissions', 'account'],
           readTime: 4
         },
         {
           id: 'navigate-dashboard',
-          title: 'Navigating the dashboard',
-          content: `The dashboard is your central hub for managing all activities.
-
-**Main Navigation**
-- Dashboard: Overview of your activity
-- Projects: Create and manage projects
-- Messages: Communication center
-- Profile: Manage your account
-- Analytics: View performance data (admin only)
-
-**Dashboard Widgets**
-- Recent activity feed
-- Active projects summary
-- Pending notifications
-- Quick action buttons
-- Performance metrics
-
-**Customization**
-- Rearrange widgets by dragging
-- Hide/show specific sections
-- Set default landing page
-- Choose between light/dark theme
-
-**Mobile Navigation**
-The mobile interface provides the same functionality with a hamburger menu for easy access on smaller screens.
-
-**Keyboard Shortcuts**
-- Ctrl/Cmd + K: Quick search
-- Ctrl/Cmd + N: New project
-- Ctrl/Cmd + M: Messages
-- Ctrl/Cmd + P: Profile`,
+          title: t('help.articles.navigateDashboard.title'),
+          content: t('help.articles.navigateDashboard.content'),
           tags: ['dashboard', 'navigation', 'interface'],
           readTime: 6
         }
@@ -207,166 +97,29 @@ The mobile interface provides the same functionality with a hamburger menu for e
       articles: [
         {
           id: 'post-project',
-          title: 'How to post a project',
-          content: `Posting an effective project attracts quality service providers.
-
-**Project Title**
-Write a clear, specific title that summarizes what you need:
-- Good: "React Developer for E-commerce Website"
-- Avoid: "Need Help with Website"
-
-**Project Description**
-Include these key elements:
-- What you're building or need done
-- Specific requirements and features
-- Target audience or use case
-- Technical specifications
-- Any existing work or starting point
-
-**Budget and Timeline**
-- Set a realistic budget range
-- Consider the complexity of work
-- Factor in testing and revision time
-- Be clear about payment terms
-
-**Skills and Categories**
-- Select relevant skills required
-- Choose the appropriate category
-- Add technology-specific tags
-
-**Attachments**
-- Include wireframes or mockups
-- Add technical documentation
-- Provide brand guidelines
-- Share reference materials
-
-**Review Before Publishing**
-Double-check all details and ensure everything is clear and complete.`,
+          title: t('help.articles.postProject.title'),
+          content: t('help.articles.postProject.content'),
           tags: ['projects', 'posting', 'requirements'],
           readTime: 8
         },
         {
           id: 'review-bids',
-          title: 'Reviewing and accepting bids',
-          content: `Choosing the right service provider is crucial for project success.
-
-**Evaluating Bids**
-Look for:
-- Relevant experience and portfolio
-- Clear understanding of your requirements
-- Realistic timeline and budget
-- Good communication skills
-- Positive reviews and ratings
-
-**Red Flags to Avoid**
-- Extremely low bids that seem unrealistic
-- Generic proposals that don't address your needs
-- Poor grammar or communication
-- No portfolio or examples
-- Requests for upfront payment
-
-**Asking Questions**
-Before accepting, consider asking:
-- Can you walk me through your approach?
-- What's your experience with similar projects?
-- How do you handle revisions?
-- What's included in your bid?
-- What's your communication schedule?
-
-**Making Your Decision**
-- Don't always choose the lowest bid
-- Consider value, not just price
-- Trust your instincts about communication
-- Check references if provided
-
-**Accepting a Bid**
-Once you accept, the project officially begins and payment milestones are established.`,
+          title: t('help.articles.reviewBids.title'),
+          content: t('help.articles.reviewBids.content'),
           tags: ['bids', 'selection', 'evaluation'],
           readTime: 7
         },
         {
           id: 'manage-projects',
-          title: 'Managing your projects',
-          content: `Effective project management ensures successful outcomes.
-
-**Project Dashboard**
-Monitor:
-- Current project status
-- Milestone progress
-- Communication history
-- File sharing
-- Time tracking
-
-**Communication**
-Best practices:
-- Respond promptly to messages
-- Be clear and specific in feedback
-- Schedule regular check-ins
-- Document important decisions
-- Use the built-in messaging system
-
-**Milestone Management**
-- Review deliverables thoroughly
-- Provide constructive feedback
-- Approve milestones promptly when satisfied
-- Request revisions if needed
-- Keep the project moving forward
-
-**File Management**
-- Organize files in project folders
-- Use version control for documents
-- Share resources in a timely manner
-- Backup important files
-
-**Issue Resolution**
-If problems arise:
-- Communicate directly with the provider
-- Document any issues
-- Use the dispute resolution system if needed
-- Contact support for assistance`,
+          title: t('help.articles.manageProjects.title'),
+          content: t('help.articles.manageProjects.content'),
           tags: ['management', 'communication', 'milestones'],
           readTime: 6
         },
         {
           id: 'payment-invoicing',
-          title: 'Payment and invoicing',
-          content: `Understanding the payment system protects both parties.
-
-**Payment Structure**
-- Milestone-based payments
-- Escrow protection for funds
-- Automatic release upon approval
-- Dispute resolution process
-
-**Setting Up Payments**
-- Add payment methods to your account
-- Verify billing information
-- Set up automatic payments (optional)
-- Configure payment notifications
-
-**Milestone Payments**
-- Funds are held in escrow
-- Released when you approve deliverables
-- Providers can't access funds until approval
-- Automatic release after 7 days if no response
-
-**Invoicing**
-- Automatic invoice generation
-- Detailed breakdown of work completed
-- Payment history and receipts
-- Tax documentation (if applicable)
-
-**Dispute Resolution**
-- Built-in mediation system
-- Clear documentation process
-- Platform protection policies
-- Support team assistance
-
-**Payment Security**
-- SSL encryption for all transactions
-- PCI compliance
-- Fraud protection
-- Secure payment processing`,
+          title: t('help.articles.paymentInvoicing.title'),
+          content: t('help.articles.paymentInvoicing.content'),
           tags: ['payment', 'invoicing', 'escrow'],
           readTime: 9
         }
@@ -379,190 +132,29 @@ If problems arise:
       articles: [
         {
           id: 'submit-bid',
-          title: 'How to submit a bid',
-          content: `Crafting compelling bids increases your chances of winning projects.
-
-**Research the Client**
-- Read the project description carefully
-- Check the client's profile and history
-- Understand their industry or business
-- Note their budget and timeline expectations
-
-**Proposal Structure**
-1. **Opening**: Address the client by name and reference their project
-2. **Understanding**: Show you understand their needs
-3. **Approach**: Explain your methodology
-4. **Experience**: Highlight relevant skills and past work
-5. **Timeline**: Provide a realistic schedule
-6. **Price**: Justify your bid amount
-7. **Next Steps**: Suggest how to proceed
-
-**Writing Tips**
-- Be professional but personable
-- Use bullet points for clarity
-- Include specific examples
-- Proofread for grammar and spelling
-- Keep it concise but comprehensive
-
-**Standing Out**
-- Reference specific project requirements
-- Share relevant portfolio pieces
-- Ask thoughtful questions
-- Offer additional value
-- Show enthusiasm for the project
-
-**Common Mistakes**
-- Generic, copy-paste proposals
-- Unrealistic budgets or timelines
-- Poor grammar or spelling
-- Not reading requirements fully
-- Being too pushy or aggressive`,
-          tags: ['bidding', 'proposals', 'winning work'],
+          title: t('help.articles.submitBid.title'),
+          content: t('help.articles.submitBid.content'),
+          tags: ['bidding', 'proposals', 'winningWork'],
           readTime: 10
         },
         {
           id: 'create-services',
-          title: 'Creating service listings',
-          content: `Service listings help clients find you for specific offerings.
-
-**Service Title**
-- Be specific about what you offer
-- Include key technologies or skills
-- Use client-friendly language
-- Make it searchable
-
-**Service Description**
-Include:
-- What's included in your service
-- Your process or methodology
-- Typical timeline
-- What clients can expect
-- Prerequisites or requirements
-
-**Pricing Structure**
-Options:
-- Fixed price packages
-- Hourly rates
-- Tiered pricing (basic/standard/premium)
-- Custom quotes for complex work
-
-**Portfolio Examples**
-- Show your best work
-- Include before/after examples
-- Explain your role in each project
-- Update regularly with new work
-
-**Service Categories**
-- Choose the most relevant category
-- Add appropriate tags
-- Select skill keywords
-- Consider multiple categories if relevant
-
-**Optimizing for Search**
-- Use keywords clients search for
-- Include technology names
-- Mention industry-specific terms
-- Keep descriptions current and relevant`,
+          title: t('help.articles.createServices.title'),
+          content: t('help.articles.createServices.content'),
           tags: ['services', 'listings', 'marketplace'],
           readTime: 8
         },
         {
           id: 'build-portfolio',
-          title: 'Building your portfolio',
-          content: `A strong portfolio showcases your skills and attracts better clients.
-
-**Portfolio Basics**
-- Include 5-10 of your best projects
-- Show variety in your work
-- Include different project types
-- Keep it updated regularly
-
-**Project Presentations**
-For each project, include:
-- Clear, high-quality images or demos
-- Brief description of the challenge
-- Your solution and approach
-- Technologies or tools used
-- Results or outcomes achieved
-- Your specific role and contributions
-
-**Case Studies**
-Create detailed case studies for your best work:
-- Client background and requirements
-- Challenges faced during the project
-- Your problem-solving process
-- Technical implementation details
-- Measurable results and impact
-- Client testimonials if available
-
-**Technical Examples**
-- Code snippets (if applicable)
-- Architecture diagrams
-- Design mockups or prototypes
-- Performance improvements
-- Before/after comparisons
-
-**Organization**
-- Group similar projects together
-- Use clear, descriptive titles
-- Add filters by technology or industry
-- Include project timelines
-- Show progression of your skills
-
-**Legal Considerations**
-- Get client permission before sharing
-- Remove sensitive information
-- Use placeholder data when necessary
-- Respect NDAs and confidentiality`,
+          title: t('help.articles.buildPortfolio.title'),
+          content: t('help.articles.buildPortfolio.content'),
           tags: ['portfolio', 'showcase', 'projects'],
           readTime: 12
         },
         {
           id: 'get-more-projects',
-          title: 'Getting more projects',
-          content: `Strategies to increase your project opportunities and success rate.
-
-**Profile Optimization**
-- Complete all profile sections
-- Use professional photos
-- Write compelling descriptions
-- Showcase your best work
-- Keep skills updated
-
-**Bidding Strategy**
-- Bid on projects that match your skills
-- Respond quickly to new projects
-- Customize each proposal
-- Ask clarifying questions
-- Follow up appropriately
-
-**Building Reputation**
-- Deliver quality work consistently
-- Meet all deadlines
-- Communicate professionally
-- Go above and beyond when possible
-- Ask satisfied clients for reviews
-
-**Networking**
-- Engage with clients professionally
-- Build long-term relationships
-- Seek repeat business
-- Ask for referrals
-- Participate in platform community
-
-**Continuous Improvement**
-- Learn new skills regularly
-- Stay updated with industry trends
-- Seek feedback from clients
-- Analyze your successful proposals
-- Adapt your approach based on results
-
-**Marketing Your Services**
-- Create compelling service listings
-- Use relevant keywords
-- Offer competitive pricing
-- Provide clear deliverables
-- Highlight your unique value proposition`,
+          title: t('help.articles.getMoreProjects.title'),
+          content: t('help.articles.getMoreProjects.content'),
           tags: ['success', 'strategy', 'growth'],
           readTime: 11
         }
@@ -575,217 +167,29 @@ Create detailed case studies for your best work:
       articles: [
         {
           id: 'manage-account',
-          title: 'Managing your account',
-          content: `Keep your account secure and up-to-date.
-
-**Account Settings**
-- Update personal information
-- Change email address
-- Modify username (if allowed)
-- Set timezone preferences
-- Configure language settings
-
-**Security Settings**
-- Change password regularly
-- Enable two-factor authentication
-- Review login activity
-- Manage connected devices
-- Set up security questions
-
-**Privacy Controls**
-- Control profile visibility
-- Manage data sharing preferences
-- Configure search appearance
-- Set communication preferences
-- Review privacy policy updates
-
-**Account Verification**
-- Verify email address
-- Complete identity verification
-- Verify payment methods
-- Add emergency contact information
-- Link social media accounts (optional)
-
-**Data Management**
-- Download your data
-- Delete old projects or messages
-- Manage file storage
-- Backup important information
-- Understand data retention policies
-
-**Account Deletion**
-If you need to close your account:
-- Complete all ongoing projects
-- Withdraw any remaining funds
-- Download important data
-- Contact support for assistance`,
+          title: t('help.articles.manageAccount.title'),
+          content: t('help.articles.manageAccount.content'),
           tags: ['account', 'settings', 'security'],
           readTime: 7
         },
         {
           id: 'change-password',
-          title: 'Changing your password',
-          content: `Keep your account secure with a strong password.
-
-**Accessing Password Settings**
-1. Go to your account settings
-2. Click on "Security" tab
-3. Select "Change Password"
-4. Enter your current password
-5. Create a new strong password
-
-**Password Requirements**
-- Minimum 8 characters
-- Include uppercase and lowercase letters
-- Add numbers and special characters
-- Avoid common words or phrases
-- Don't reuse recent passwords
-
-**Creating Strong Passwords**
-- Use a unique password for this account
-- Consider using a password manager
-- Include a mix of character types
-- Make it memorable but not obvious
-- Update it regularly
-
-**Two-Factor Authentication**
-For additional security:
-- Enable 2FA in security settings
-- Choose SMS or authenticator app
-- Save backup codes safely
-- Test the setup before relying on it
-
-**If You Forgot Your Password**
-- Use the "Forgot Password" link
-- Check your email for reset instructions
-- Follow the secure reset process
-- Choose a new strong password
-- Consider enabling 2FA
-
-**Security Best Practices**
-- Never share your password
-- Log out of public computers
-- Use secure networks
-- Monitor account activity
-- Report suspicious activity immediately`,
+          title: t('help.articles.changePassword.title'),
+          content: t('help.articles.changePassword.content'),
           tags: ['password', 'security', '2fa'],
           readTime: 5
         },
         {
           id: 'notification-settings',
-          title: 'Notification settings',
-          content: `Customize how and when you receive notifications.
-
-**Email Notifications**
-Control emails for:
-- New project matches
-- Bid updates and responses
-- Message notifications
-- Payment confirmations
-- System announcements
-
-**Push Notifications**
-Manage mobile notifications for:
-- Urgent messages
-- Project deadlines
-- Payment alerts
-- Bid updates
-- System maintenance
-
-**In-App Notifications**
-Configure dashboard alerts for:
-- Real-time messages
-- Project updates
-- System notifications
-- Achievement badges
-- Platform updates
-
-**Frequency Settings**
-- Immediate notifications
-- Daily digest emails
-- Weekly summaries
-- Monthly reports
-- Custom schedules
-
-**Notification Categories**
-
-**For Clients:**
-- New bids received
-- Milestone deliveries
-- Project completion
-- Payment confirmations
-- Provider communications
-
-**For Service Providers:**
-- New project opportunities
-- Bid acceptance/rejection
-- Client messages
-- Payment notifications
-- Platform updates
-
-**Managing Preferences**
-- Access through account settings
-- Choose notification types
-- Set delivery preferences
-- Test notification delivery
-- Update preferences as needed`,
+          title: t('help.articles.notificationSettings.title'),
+          content: t('help.articles.notificationSettings.content'),
           tags: ['notifications', 'preferences', 'alerts'],
           readTime: 6
         },
         {
           id: 'billing-subscriptions',
-          title: 'Billing and subscriptions',
-          content: `Understand platform fees, billing, and subscription options.
-
-**Platform Fees**
-- Service fee on completed projects
-- Payment processing fees
-- Currency conversion charges (if applicable)
-- Premium feature costs
-- Subscription tier differences
-
-**Billing Cycle**
-- Monthly billing for subscriptions
-- Project-based fees
-- Automatic payment processing
-- Invoice generation and delivery
-- Payment failure handling
-
-**Payment Methods**
-- Credit and debit cards
-- Bank transfers
-- Digital wallets
-- Cryptocurrency (if available)
-- Regional payment options
-
-**Subscription Tiers**
-
-**Free Tier:**
-- Basic project posting
-- Limited monthly bids
-- Standard support
-- Basic analytics
-
-**Premium Tier:**
-- Unlimited projects
-- Advanced analytics
-- Priority support
-- Enhanced visibility
-- Additional features
-
-**Managing Billing**
-- View billing history
-- Download invoices
-- Update payment methods
-- Set up automatic payments
-- Manage subscription changes
-
-**Billing Support**
-- Contact billing support
-- Dispute resolution process
-- Refund policies
-- Tax documentation
-- International billing assistance`,
+          title: t('help.articles.billingSubscriptions.title'),
+          content: t('help.articles.billingSubscriptions.content'),
           tags: ['billing', 'subscriptions', 'fees'],
           readTime: 8
         }
@@ -861,6 +265,10 @@ Configure dashboard alerts for:
 
   const handleInputChange = (field) => (e) => {
     setContactForm(prev => ({ ...prev, [field]: e.target.value }));
+  };
+
+  const translateTag = (tag) => {
+    return t(`help.tags.${tag}`, tag);
   };
 
   const handleArticleClick = (article) => {
@@ -942,7 +350,7 @@ Configure dashboard alerts for:
                               <div className="flex gap-1">
                                 {article.tags.slice(0, 3).map(tag => (
                                   <span key={tag} className="bg-muted px-2 py-1 rounded">
-                                    {tag}
+                                    {translateTag(tag)}
                                   </span>
                                 ))}
                               </div>
@@ -956,7 +364,7 @@ Configure dashboard alerts for:
                 ) : (
                   <div className="text-center py-8">
                     <Search className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-muted-foreground">No articles found for "{searchQuery}"</p>
+                    <p className="text-muted-foreground">{t('help.noResults')} "{searchQuery}"</p>
                     <p className="text-sm text-muted-foreground mt-1">Try different keywords or browse categories</p>
                   </div>
                 )}
@@ -993,7 +401,7 @@ Configure dashboard alerts for:
                   <div className="flex gap-2">
                     {selectedArticle.tags.map(tag => (
                       <span key={tag} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
-                        {tag}
+                        {translateTag(tag)}
                       </span>
                     ))}
                   </div>
@@ -1037,7 +445,7 @@ Configure dashboard alerts for:
                           ))}
                         </ul>
                         <p className="text-xs text-muted-foreground mt-3">
-                          {category.articles.length} {t('help.articles')}
+                          {category.articles.length} {t('help.articlesCount')}
                         </p>
                       </CardContent>
                     </Card>
@@ -1080,7 +488,7 @@ Configure dashboard alerts for:
                                 <div className="flex gap-1">
                                   {article.tags.slice(0, 3).map(tag => (
                                     <span key={tag} className="bg-muted px-2 py-1 rounded">
-                                      {tag}
+                                      {translateTag(tag)}
                                     </span>
                                   ))}
                                 </div>

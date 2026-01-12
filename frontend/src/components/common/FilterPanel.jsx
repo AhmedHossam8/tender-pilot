@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils"
 import { Filter, X } from "lucide-react"
 import { Button } from "@/components/ui/Button"
 import { Badge } from "@/components/ui/Badge"
+import { useTranslation } from "react-i18next"
 
 function FilterPanel({
   filters,
@@ -11,6 +12,7 @@ function FilterPanel({
   onClearFilters,
   className,
 }) {
+  const { t } = useTranslation();
 
   const activeFilterCount = Object.values(activeFilters).filter(
     (value) => value !== undefined && value !== "" && value !== null
@@ -33,9 +35,9 @@ function FilterPanel({
       <div className="flex items-center justify-between px-4 py-3 border-b">
         <div className="flex items-center gap-2">
           <Filter className="h-4 w-4 text-muted-foreground" />
-          <span className="font-medium">Filters</span>
+          <span className="font-medium">{t('filters')}</span>
           {activeFilterCount > 0 && (
-            <Badge variant="secondary">{activeFilterCount} active</Badge>
+            <Badge variant="secondary">{t('activeFilters', { count: activeFilterCount })}</Badge>
           )}
         </div>
         <div className="flex items-center gap-2">
@@ -47,7 +49,7 @@ function FilterPanel({
               className="text-muted-foreground"
             >
               <X className="h-4 w-4 mr-1" />
-              Clear all
+              {t('clearAll')}
             </Button>
           )}
         </div>
@@ -67,7 +69,7 @@ function FilterPanel({
                     onChange={(e) => handleFilterChange(filter.key, e.target.value)}
                     className="w-full h-9 rounded-md border bg-transparent px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                   >
-                    <option value="">All</option>
+                    <option value="">{t('all')}</option>
                     {filter.options?.map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}

@@ -12,6 +12,20 @@ import AppLayout from "@/layouts/AppLayout";
 import AuthLayout from "@/layouts/AuthLayout";
 import PublicLayout from "@/layouts/PublicLayout";
 
+// Dashboard redirect component
+const DashboardRedirect = () => {
+  const { isClient, isProvider } = useAuthStore();
+  
+  if (isClient()) {
+    return <Navigate to="/app/dashboard/client" replace />;
+  }
+  if (isProvider()) {
+    return <Navigate to="/app/dashboard/provider" replace />;
+  }
+  // Fallback to projects if neither
+  return <Navigate to="/app/projects" replace />;
+};
+
 // Public pages
 import LandingPage from "@/pages/public/LandingPage";
 import BrowseServices from "@/pages/public/BrowseServices";
@@ -105,7 +119,8 @@ function App() {
                 </ProtectedRoute>
               }
             >
-              <Route path="/app" element={<ProjectList />} />
+              {/* Redirect /app to appropriate dashboard */}
+              <Route path="/app" element={<DashboardRedirect />} />
 
               {/* AI */}
               <Route path="/app/ai/dashboard" element={<AIDashboard />} />

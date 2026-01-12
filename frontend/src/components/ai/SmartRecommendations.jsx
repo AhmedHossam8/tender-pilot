@@ -10,8 +10,10 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export function SmartRecommendations({ recommendations = [], userType = 'provider' }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   
   if (!recommendations || recommendations.length === 0) {
@@ -19,7 +21,7 @@ export function SmartRecommendations({ recommendations = [], userType = 'provide
       <Card>
         <CardContent className="p-6 text-center text-gray-500">
           <Sparkles className="h-12 w-12 mx-auto mb-3 opacity-50" />
-          <p>No recommendations available at the moment</p>
+          <p>{t('noRecommendations')}</p>
         </CardContent>
       </Card>
     );
@@ -30,11 +32,11 @@ export function SmartRecommendations({ recommendations = [], userType = 'provide
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-bold flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-purple-500" />
-          AI Recommendations for You
+          {t('aiRecommendationsForYou')}
         </h3>
         <Badge variant="secondary" className="gap-1">
           <TrendingUp className="h-3 w-3" />
-          {recommendations.length} opportunities
+          {t('opportunities', { count: recommendations.length })}
         </Badge>
       </div>
       
@@ -52,6 +54,7 @@ export function SmartRecommendations({ recommendations = [], userType = 'provide
 }
 
 function RecommendationCard({ recommendation, onAction }) {
+  const { t } = useTranslation();
   const { project, match_type, match_percentage, matching_skills, reasons, confidence } = recommendation;
   
   const getMatchTypeColor = (type) => {
@@ -79,7 +82,7 @@ function RecommendationCard({ recommendation, onAction }) {
               <div className="flex items-center gap-2 mb-2">
                 <h4 className="font-semibold text-lg">{project.title}</h4>
                 <Badge className={`${getMatchTypeColor(match_type)} border`}>
-                  {match_percentage}% Match
+                  {t('matchPercentage', { percentage: match_percentage })}
                 </Badge>
               </div>
               <p className="text-sm text-gray-600 line-clamp-2">{project.description}</p>
@@ -88,13 +91,13 @@ function RecommendationCard({ recommendation, onAction }) {
           
           {/* Project Details */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <DetailBadge icon={DollarSign} label="Budget" value={`$${project.budget}`} />
-            <DetailBadge icon={Users} label="Bids" value={project.bid_count} />
-            <DetailBadge icon={Target} label="Category" value={project.category} />
+            <DetailBadge icon={DollarSign} label={t('budget')} value={`$${project.budget}`} />
+            <DetailBadge icon={Users} label={t('bids')} value={project.bid_count} />
+            <DetailBadge icon={Target} label={t('category')} value={project.category} />
             <DetailBadge 
               icon={Clock} 
-              label="Posted" 
-              value={formatDate(project.created_at)} 
+              label={t('posted')} 
+              value={formatDate(project.created_at, t)} 
             />
           </div>
           
@@ -112,7 +115,7 @@ function RecommendationCard({ recommendation, onAction }) {
           {/* Reasons */}
           {reasons && reasons.length > 0 && (
             <div className="space-y-1 bg-purple-50 rounded-lg p-3">
-              <p className="text-xs font-semibold text-purple-900 mb-2">Why this is recommended:</p>
+              <p className="text-xs font-semibold text-purple-900 mb-2">{t('whyRecommended')}:</p>
               {reasons.map((reason, idx) => (
                 <div key={idx} className="flex items-start gap-2 text-sm">
                   <Sparkles className="h-3 w-3 text-purple-500 mt-0.5 flex-shrink-0" />
@@ -125,13 +128,13 @@ function RecommendationCard({ recommendation, onAction }) {
           {/* Actions */}
           <div className="flex items-center justify-between pt-2">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">Confidence:</span>
+              <span className="text-xs text-gray-500">{t('confidence')}:</span>
               <span className={`text-sm font-bold ${getConfidenceColor(confidence)}`}>
                 {confidence}%
               </span>
             </div>
             <Button onClick={onAction} className="gap-2">
-              View Project
+              {t('viewProject')}
               <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
@@ -153,15 +156,15 @@ function DetailBadge({ icon: Icon, label, value }) {
   );
 }
 
-function formatDate(dateString) {
+function formatDate(dateString, t) {
   const date = new Date(dateString);
   const now = new Date();
   const diffTime = Math.abs(now - date);
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return `${diffDays} days ago`;
+  if (diffDays === 0) return t('today');
+  if (diffDays === 1) return t('yesterday');
+  if (diffDays < 7) return t('daysAgo', { count: diffDays });
   return date.toLocaleDateString();
 }
 

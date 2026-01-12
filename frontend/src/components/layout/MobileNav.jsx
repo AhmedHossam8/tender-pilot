@@ -7,7 +7,7 @@ import { getDynamicNavigation, bottomNavigationItems } from "./Sidebar"
 import { useTranslation } from "react-i18next"
 import { useAuthStore } from "@/contexts/authStore"
 
-function MobileNav({ isOpen, onClose, className }) {
+function MobileNav({ isOpen, onClose, className, isRtl = false }) {
   const location = useLocation()
   const { t } = useTranslation()
   const { userType, isClient, isProvider } = useAuthStore()
@@ -17,11 +17,6 @@ function MobileNav({ isOpen, onClose, className }) {
     name: item.label || t(item.key) 
   }))
   const bottomNavigation = bottomNavigationItems.map(item => ({ ...item, name: t(item.key) }))
-
-  // Close nav when route changes
-  React.useEffect(() => {
-    onClose()
-  }, [location.pathname, onClose])
 
   // Prevent body scroll when nav is open
   React.useEffect(() => {
@@ -35,32 +30,56 @@ function MobileNav({ isOpen, onClose, className }) {
     }
   }, [isOpen])
 
+  // Handle backdrop click with proper event handling
+  const handleBackdropClick = React.useCallback((e) => {
+    // Only close if the target is the backdrop itself
+    if (e.target === e.currentTarget) {
+      e.preventDefault()
+      e.stopPropagation()
+      onClose()
+    }
+  }, [onClose])
+
+  // Handle close button click
+  const handleCloseClick = React.useCallback((e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    onClose()
+  }, [onClose])
+
   return (
-    <>
+    <div className="lg:hidden">
       {/* Backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={onClose}
+          className="fixed inset-0 bg-black/50 z-40"
+          onClick={handleBackdropClick}
+          onTouchStart={handleBackdropClick}
         />
       )}
 
       {/* Slide-out nav */}
       <aside
         className={cn(
-          "fixed top-0 left-0 h-full w-64 bg-secondary text-secondary-foreground z-50 transform transition-transform duration-300 ease-in-out lg:hidden",
-          isOpen ? "translate-x-0" : "-translate-x-full",
+          "fixed top-0 h-full w-64 bg-secondary text-secondary-foreground z-50",
+          "transform transition-transform duration-300 ease-in-out",
+          isRtl 
+            ? "right-0" 
+            : "left-0",
+          isOpen 
+            ? "translate-x-0" 
+            : (isRtl ? "translate-x-full" : "-translate-x-full"),
           className
         )}
       >
         {/* Header */}
         <div className="flex items-center justify-between h-16 px-4 border-b border-secondary-foreground/10">
-          <span className="text-xl font-bold text-white">TenderPilot</span>
+          <span className="text-xl font-bold text-white">{t('common.websiteName')}</span>
           <Button
             variant="ghost"
             size="icon"
-            onClick={onClose}
-            className="text-secondary-foreground/70 hover:text-white"
+            onClick={handleCloseClick}
+            className="text-secondary-foreground/70 hover:text-white min-h-[44px] min-w-[44px]"
           >
             <X className="h-5 w-5" />
           </Button>
@@ -74,6 +93,7 @@ function MobileNav({ isOpen, onClose, className }) {
               <NavLink
                 key={item.name}
                 to={item.href}
+                onClick={onClose}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                   isActive
@@ -94,6 +114,7 @@ function MobileNav({ isOpen, onClose, className }) {
             <NavLink
               key={item.name}
               to={item.href}
+              onClick={onClose}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                 "text-secondary-foreground/70 hover:bg-secondary-foreground/10 hover:text-white"
@@ -105,7 +126,7 @@ function MobileNav({ isOpen, onClose, className }) {
           ))}
         </div>
       </aside>
-    </>
+    </div>
   )
 }
 

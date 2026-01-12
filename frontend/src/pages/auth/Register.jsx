@@ -2,8 +2,10 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuthStore } from "@/contexts/authStore";
+import { useTranslation } from "react-i18next";
 
 export default function Register() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const register = useAuthStore((s) => s.register);
 
@@ -39,7 +41,7 @@ export default function Register() {
 
     try {
       await register(form);
-      toast.success("Account created successfully");
+      toast.success(t('auth.success.accountCreated'));
       navigate("/app", { replace: true });
     } catch (err) {
       const data = err?.response?.data;
@@ -47,7 +49,7 @@ export default function Register() {
       if (data && typeof data === "object") {
         setErrors(data);
       } else {
-        toast.error("Registration failed");
+        toast.error(t('auth.errors.registrationFailed'));
       }
     } finally {
       setLoading(false);
@@ -57,33 +59,33 @@ export default function Register() {
   const userTypes = [
     {
       value: "client",
-      label: "Client",
-      description: "I want to hire services or post projects",
+      label: t('auth.userType.client'),
+      description: t('auth.userType.clientDesc'),
       icon: "👤",
     },
     {
       value: "provider",
-      label: "Service Provider",
-      description: "I want to offer my services and bid on projects",
+      label: t('auth.userType.provider'),
+      description: t('auth.userType.providerDesc'),
       icon: "💼",
     },
     {
       value: "both",
-      label: "Both",
-      description: "I want to hire and offer services",
+      label: t('auth.userType.both'),
+      description: t('auth.userType.bothDesc'),
       icon: "🤝",
     },
   ];
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-center">Create Account</h1>
+    <div className="w-full max-w-lg mx-auto space-y-6 p-4">
+      <h1 className="text-2xl md:text-3xl font-bold text-center">{t('auth.createAccount')}</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* User Type Selection */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-3">
-            I want to join as
+            {t('auth.userType.title')}
           </label>
           <div className="grid grid-cols-1 gap-3">
             {userTypes.map((type) => (
@@ -136,11 +138,15 @@ export default function Register() {
         </div>
 
         {/* Full Name */}
-        <div>
+        <div className="space-y-2">
+          <label htmlFor="full_name" className="block text-sm font-medium text-gray-700">
+            {t('auth.fullName')}
+          </label>
           <input
+            id="full_name"
             name="full_name"
-            placeholder="Full name"
-            className="w-full border rounded px-3 py-2"
+            placeholder={t('auth.fullName')}
+            className="w-full border rounded-lg px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
             value={form.full_name}
             onChange={handleChange}
             required
@@ -153,12 +159,16 @@ export default function Register() {
         </div>
 
         {/* Email */}
-        <div>
+        <div className="space-y-2">
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            {t('auth.email')}
+          </label>
           <input
+            id="email"
             name="email"
             type="email"
-            placeholder="Email"
-            className="w-full border rounded px-3 py-2"
+            placeholder={t('auth.email')}
+            className="w-full border rounded-lg px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
             value={form.email}
             onChange={handleChange}
             required
@@ -171,12 +181,16 @@ export default function Register() {
         </div>
 
         {/* Password */}
-        <div>
+        <div className="space-y-2">
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            {t('auth.password')}
+          </label>
           <input
+            id="password"
             name="password"
             type="password"
-            placeholder="Password"
-            className="w-full border rounded px-3 py-2"
+            placeholder={t('auth.password')}
+            className="w-full border rounded-lg px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
             value={form.password}
             onChange={handleChange}
             required
@@ -190,16 +204,16 @@ export default function Register() {
 
         <button
           disabled={loading}
-          className="w-full bg-primary text-white py-2 rounded disabled:opacity-50"
+          className="w-full bg-primary text-white py-2 md:py-3 rounded-lg disabled:opacity-50 transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
         >
-          {loading ? "Creating..." : "Register"}
+          {loading ? t('auth.registering') : t('auth.register')}
         </button>
       </form>
 
-      <p className="text-sm text-center">
-        Already have an account?{" "}
-        <Link to="/login" className="text-primary underline">
-          Login
+      <p className="text-sm text-center text-gray-600">
+        {t('auth.alreadyHaveAccount')}{" "}
+        <Link to="/login" className="text-primary underline hover:no-underline focus:outline-none">
+          {t('auth.login')}
         </Link>
       </p>
     </div>

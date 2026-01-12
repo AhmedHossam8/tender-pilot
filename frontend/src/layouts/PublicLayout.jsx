@@ -1,20 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { Menu, X, User } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/contexts/authStore';
 
 const PublicLayout = () => {
+  const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { isAuthenticated, user } = useAuthStore();
 
+  // Handle hash navigation
+  useEffect(() => {
+    if (location.hash) {
+      const element = document.querySelector(location.hash);
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+      }
+    }
+  }, [location]);
+
   const navigation = [
-    { name: 'Home', href: '/' },
-    { name: 'Browse Services', href: '/browse/services' },
-    { name: 'Browse Projects', href: '/browse/projects' },
-    { name: 'About', href: '#about' },
+    { name: t('navigation.home'), href: '/' },
+    { name: t('navigation.browseServices'), href: '/browse/services' },
+    { name: t('navigation.browseProjects'), href: '/browse/projects' },
+    { name: t('navigation.about'), href: '/#about' },
   ];
 
   const isActive = (href) => {
@@ -31,23 +45,23 @@ const PublicLayout = () => {
             {/* Logo */}
             <Link to="/" className="flex items-center">
               <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                ServiceHub
+                {t('common.websiteName')}
               </span>
             </Link>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-8">
               {navigation.map((item) => (
-                <a
+                <Link
                   key={item.name}
-                  href={item.href}
+                  to={item.href}
                   className={cn(
                     "text-sm font-medium transition-colors hover:text-primary",
                     isActive(item.href) ? "text-primary" : "text-muted-foreground"
                   )}
                 >
                   {item.name}
-                </a>
+                </Link>
               ))}
             </div>
 
@@ -56,22 +70,22 @@ const PublicLayout = () => {
               {isAuthenticated ? (
                 <>
                   <Link to="/app">
-                    <Button variant="ghost">Dashboard</Button>
+                    <Button variant="ghost">{t('navigation.dashboard')}</Button>
                   </Link>
                   <Link to="/app/profile/edit">
                     <Button className="gap-2">
                       <User className="h-4 w-4" />
-                      {user?.username || 'Profile'}
+                      {user?.username || t('common.profile')}
                     </Button>
                   </Link>
                 </>
               ) : (
                 <>
                   <Link to="/login">
-                    <Button variant="ghost">Sign In</Button>
+                    <Button variant="ghost">{t('auth.signIn')}</Button>
                   </Link>
                   <Link to="/register">
-                    <Button>Get Started</Button>
+                    <Button>{t('auth.getStarted')}</Button>
                   </Link>
                 </>
               )}
@@ -96,9 +110,9 @@ const PublicLayout = () => {
           <div className="md:hidden border-t border-border">
             <div className="px-4 py-4 space-y-3">
               {navigation.map((item) => (
-                <a
+                <Link
                   key={item.name}
-                  href={item.href}
+                  to={item.href}
                   className={cn(
                     "block px-3 py-2 rounded-md text-base font-medium transition-colors",
                     isActive(item.href)
@@ -108,28 +122,28 @@ const PublicLayout = () => {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {item.name}
-                </a>
+                </Link>
               ))}
               <div className="pt-4 flex flex-col gap-2">
                 {isAuthenticated ? (
                   <>
                     <Link to="/app" onClick={() => setMobileMenuOpen(false)}>
-                      <Button variant="outline" className="w-full">Dashboard</Button>
+                      <Button variant="outline" className="w-full">{t('navigation.dashboard')}</Button>
                     </Link>
                     <Link to="/app/profile/edit" onClick={() => setMobileMenuOpen(false)}>
                       <Button className="w-full gap-2">
                         <User className="h-4 w-4" />
-                        {user?.username || 'Profile'}
+                        {user?.username || t('common.profile')}
                       </Button>
                     </Link>
                   </>
                 ) : (
                   <>
                     <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-                      <Button variant="outline" className="w-full">Sign In</Button>
+                      <Button variant="outline" className="w-full">{t('auth.signIn')}</Button>
                     </Link>
                     <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
-                      <Button className="w-full">Get Started</Button>
+                      <Button className="w-full">{t('auth.getStarted')}</Button>
                     </Link>
                   </>
                 )}
@@ -152,42 +166,42 @@ const PublicLayout = () => {
             <div className="space-y-4">
               <h3 className="text-xl font-bold">ServiceHub</h3>
               <p className="text-sm text-muted-foreground">
-                Connecting talented professionals with exciting projects.
+                {t('footer.tagline')}
               </p>
             </div>
 
             {/* Quick Links */}
             <div>
-              <h4 className="font-semibold mb-4">Quick Links</h4>
+              <h4 className="font-semibold mb-4">{t('footer.quickLinks')}</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="#about" className="text-muted-foreground hover:text-primary">About Us</a></li>
-                <li><a href="#features" className="text-muted-foreground hover:text-primary">Features</a></li>
-                <li><a href="#how-it-works" className="text-muted-foreground hover:text-primary">How It Works</a></li>
+                <li><Link to="/#about" className="text-muted-foreground hover:text-primary">{t('footer.aboutUs')}</Link></li>
+                <li><Link to="/#features" className="text-muted-foreground hover:text-primary">{t('footer.features')}</Link></li>
+                <li><Link to="/#how-it-works" className="text-muted-foreground hover:text-primary">{t('footer.howItWorks')}</Link></li>
               </ul>
             </div>
 
             {/* For Users */}
             <div>
-              <h4 className="font-semibold mb-4">For Users</h4>
+              <h4 className="font-semibold mb-4">{t('footer.forUsers')}</h4>
               <ul className="space-y-2 text-sm">
-                <li><Link to="/login" className="text-muted-foreground hover:text-primary">Sign In</Link></li>
-                <li><Link to="/register" className="text-muted-foreground hover:text-primary">Register</Link></li>
+                <li><Link to="/login" className="text-muted-foreground hover:text-primary">{t('auth.signIn')}</Link></li>
+                <li><Link to="/register" className="text-muted-foreground hover:text-primary">{t('auth.register')}</Link></li>
               </ul>
             </div>
 
             {/* Legal */}
             <div>
-              <h4 className="font-semibold mb-4">Legal</h4>
+              <h4 className="font-semibold mb-4">{t('footer.legal')}</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="text-muted-foreground hover:text-primary">Privacy Policy</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-primary">Terms of Service</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-primary">Cookie Policy</a></li>
+                <li><a href="#" className="text-muted-foreground hover:text-primary">{t('footer.privacyPolicy')}</a></li>
+                <li><a href="#" className="text-muted-foreground hover:text-primary">{t('footer.termsOfService')}</a></li>
+                <li><a href="#" className="text-muted-foreground hover:text-primary">{t('footer.cookiePolicy')}</a></li>
               </ul>
             </div>
           </div>
 
           <div className="border-t border-border mt-8 pt-8 text-center text-sm text-muted-foreground">
-            <p>&copy; {new Date().getFullYear()} ServiceHub. All rights reserved.</p>
+            <p>{t('footer.copyright', { year: new Date().getFullYear() })}</p>
           </div>
         </div>
       </footer>

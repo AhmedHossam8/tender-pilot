@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { useServices } from "../../hooks/useServices";
 import {
     Button,
@@ -14,6 +15,7 @@ import {
 import { Loader2 } from "lucide-react";
 
 function ServicesCreate({ isOpen, setOpen }) {
+    const { t } = useTranslation();
     const { createServiceMutation } = useServices();
 
     // Local form state for the service + packages
@@ -45,7 +47,7 @@ function ServicesCreate({ isOpen, setOpen }) {
             { serviceData: localServiceData, packages: formattedPackages },
             {
                 onSuccess: () => {
-                    toast.success("Service created successfully!");
+                    toast.success(t('notifications.success'));
                     // Defer state updates to avoid setState during render warning
                     setTimeout(() => {
                         setLocalServiceData({ name: "", description: "" });
@@ -55,7 +57,7 @@ function ServicesCreate({ isOpen, setOpen }) {
                 },
                 onError: (error) => {
                     console.error("Service creation error:", error);
-                    toast.error("Failed to create service");
+                    toast.error(t('notifications.error'));
                 },
             }
         );
@@ -68,15 +70,15 @@ function ServicesCreate({ isOpen, setOpen }) {
         <Dialog open={isOpen} onOpenChange={setOpen}>
             <DialogContent className="max-w-2xl">
                 <DialogHeader>
-                    <DialogTitle>Create Service</DialogTitle>
+                    <DialogTitle>{t('services.createTitle')}</DialogTitle>
                     <DialogDescription>
-                        Fill in the details below to create a new service.
+                        {t('services.createDescription')}
                     </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <Input
-                        placeholder="Service Name"
+                        placeholder={t('services.serviceName')}
                         value={localServiceData.name}
                         onChange={(e) =>
                             setLocalServiceData({ ...localServiceData, name: e.target.value })
@@ -85,7 +87,7 @@ function ServicesCreate({ isOpen, setOpen }) {
                     />
 
                     <Textarea
-                        placeholder="Description"
+                        placeholder={t('services.serviceDescription')}
                         value={localServiceData.description}
                         onChange={(e) =>
                             setLocalServiceData({
@@ -102,7 +104,7 @@ function ServicesCreate({ isOpen, setOpen }) {
                                 type="number"
                                 step="0.01"
                                 min="0"
-                                placeholder="Price ($)"
+                                placeholder={t('services.price')}
                                 value={pkg.price}
                                 onChange={(e) =>
                                     handlePackageFieldChange(idx, "price", e.target.value)
@@ -114,7 +116,7 @@ function ServicesCreate({ isOpen, setOpen }) {
                                 type="number"
                                 step="0.5"
                                 min="0.5"
-                                placeholder="Hours"
+                                placeholder={t('services.hours')}
                                 value={pkg.duration_hours}
                                 onChange={(e) =>
                                     handlePackageFieldChange(idx, "duration_hours", e.target.value)
@@ -130,7 +132,7 @@ function ServicesCreate({ isOpen, setOpen }) {
                                         setLocalPackages(localPackages.filter((_, i) => i !== idx))
                                     }
                                 >
-                                    Remove
+                                    {t('services.remove')}
                                 </Button>
                             )}
                         </div>
@@ -147,7 +149,7 @@ function ServicesCreate({ isOpen, setOpen }) {
                         className="w-full"
                         variant="outline"
                     >
-                        + Add Package
+                        {t('services.addPackage')}
                     </Button>
 
                     <Button
@@ -159,7 +161,7 @@ function ServicesCreate({ isOpen, setOpen }) {
                         {isLoading && (
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         )}
-                        {isLoading ? "Creating..." : "Create Service"}
+                        {isLoading ? t('services.creating') : t('services.createService')}
                     </Button>
                 </form>
             </DialogContent>

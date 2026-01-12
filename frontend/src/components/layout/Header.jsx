@@ -32,9 +32,12 @@ export function Header({ onMenuClick, className }) {
         setShowDropdown(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    
+    if (showDropdown) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [showDropdown]);
 
   const toggleLanguage = () => {
     i18n.changeLanguage(isArabic ? "en" : "ar");
@@ -44,7 +47,17 @@ export function Header({ onMenuClick, className }) {
     <header className={cn("flex items-center justify-between h-16 px-4 bg-white border-b", className)}>
       {/* Left: menu + search */}
       <div className="flex items-center gap-4 flex-1">
-        <Button variant="ghost" size="icon" onClick={onMenuClick} className="lg:hidden">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onMenuClick();
+          }}
+          className="lg:hidden min-h-[44px] min-w-[44px] touch-manipulation"
+          type="button"
+        >
           <Menu className="h-5 w-5" />
         </Button>
 

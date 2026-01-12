@@ -23,6 +23,15 @@ function AppLayout({ showFooter = false }) {
 
   const isRtl = i18n.language === "ar";
 
+  // Prevent function recreation on every render
+  const handleMobileMenuClick = React.useCallback(() => {
+    setMobileNavOpen(true);
+  }, []);
+
+  const handleMobileMenuClose = React.useCallback(() => {
+    setMobileNavOpen(false);
+  }, []);
+
   return (
     <div className={cn("min-h-screen bg-background")} dir={isRtl ? "rtl" : "ltr"}>
       {/* Desktop Sidebar */}
@@ -43,7 +52,7 @@ function AppLayout({ showFooter = false }) {
       {/* Mobile Navigation */}
       <MobileNav
         isOpen={mobileNavOpen}
-        onClose={() => setMobileNavOpen(false)}
+        onClose={handleMobileMenuClose}
         isRtl={isRtl}
         unreadCount={unreadCount} // <-- pass safely
       />
@@ -61,7 +70,7 @@ function AppLayout({ showFooter = false }) {
               : "lg:pl-64"
         )}
       >
-        <Header onMenuClick={() => setMobileNavOpen(true)} user={user} unreadCount={unreadCount} />
+        <Header onMenuClick={handleMobileMenuClick} user={user} unreadCount={unreadCount} />
 
         <main className="flex-1 p-4 md:p-6">
           <Outlet />

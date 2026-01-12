@@ -133,7 +133,7 @@ export default function ProjectDetail() {
   const handleMatchProviders = async () => {
     try {
       console.log('Matching providers for project:', id);
-      toast.info('Finding matching providers...');
+      toast.info(t('projects.findingMatches'));
       setMatchesOffset(0);
       setAllMatches([]);
       setAiUnavailable(false);
@@ -145,7 +145,7 @@ export default function ProjectDetail() {
       // Check if AI is unavailable
       if (result.data?.error === 'AI_UNAVAILABLE') {
         setAiUnavailable(true);
-        toast.error('AI matching service is currently unavailable');
+        toast.error(t('ai.unavailable'));
         return;
       }
       
@@ -153,17 +153,17 @@ export default function ProjectDetail() {
       setHasMoreMatches(result.data?.has_more || false);
       
       if (matchCount > 0) {
-        toast.success(`Found ${matchCount} matching provider${matchCount > 1 ? 's' : ''}`);
+        toast.success(t('projects.findingMatches'));
       } else {
-        toast.info('No matching providers found for this project');
+        toast.info(t('projects.noOptimization'));
       }
     } catch (error) {
       console.error('Match providers error:', error);
       if (error?.response?.status === 503) {
         setAiUnavailable(true);
-        toast.error('AI matching service is currently unavailable');
+        toast.error(t('ai.unavailable'));
       } else {
-        toast.error('Failed to match providers');
+        toast.error(t('projects.bidError'));
       }
     }
   };
@@ -173,7 +173,7 @@ export default function ProjectDetail() {
       setOptimizationLoading(true);
       const response = await aiService.getProjectOptimization(id);
       setOptimizationData(response.data);
-      toast.success("Optimization suggestions loaded");
+      toast.success(t('projects.optimizationSuggestions'));
     } catch (error) {
       console.error('Optimization error:', error);
       toast.error(error?.response?.data?.error || "Failed to get optimization suggestions");
@@ -447,11 +447,11 @@ export default function ProjectDetail() {
                   <svg className="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-3-3v3m0 5.12V21m0-9.12V3" />
                   </svg>
-                  <p className="text-lg font-medium text-gray-900">AI Matching Unavailable</p>
+                  <p className="text-lg font-medium text-gray-900">{t('ai.fallbackTitle')}</p>
                   <p className="text-sm text-gray-600 mt-2">
-                    Cannot provide accurate matches at this time. Our AI matching system is currently unavailable.
+                    {t('ai.fallbackMessage')}
                     <br />
-                    Please try again later.
+                    {t('ai.tryAgain')}
                   </p>
                 </div>
               </div>

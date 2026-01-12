@@ -1,6 +1,7 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 import { Loader2 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 const spinnerSizes = {
   sm: "h-4 w-4",
@@ -25,18 +26,20 @@ function LoadingSpinner({ size = "md", className, text }) {
   )
 }
 
-function PageLoader({ text = "Loading..." }) {
+function PageLoader({ text }) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center justify-center min-h-[400px]">
-      <LoadingSpinner size="lg" text={text} />
+      <LoadingSpinner size="lg" text={text || t('loading')} />
     </div>
   )
 }
 
-function FullPageLoader({ text = "Loading..." }) {
+function FullPageLoader({ text }) {
+  const { t } = useTranslation();
   return (
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
-      <LoadingSpinner size="xl" text={text} />
+      <LoadingSpinner size="xl" text={text || t('loading')} />
     </div>
   )
 }

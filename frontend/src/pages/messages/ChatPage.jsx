@@ -50,7 +50,7 @@ const ChatPage = () => {
     },
     onError: (error) => {
       console.error('Error sending message:', error);
-      toast.error("Failed to send message");
+      toast.error(t('notifications.error'));
     }
   });
 

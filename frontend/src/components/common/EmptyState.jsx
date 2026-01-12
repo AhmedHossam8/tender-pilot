@@ -2,6 +2,7 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 import { FileText, Search, FolderOpen, Plus, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/Button"
+import { useTranslation } from "react-i18next"
 
 const illustrations = {
   default: FolderOpen,
@@ -12,13 +13,14 @@ const illustrations = {
 
 export function EmptyState({
   icon,
-  title = "No data found",
+  title,
   description,
   action,
   actionLabel,
   illustration = "default",
   className,
 }) {
+  const { t } = useTranslation();
   const Icon = icon || illustrations[illustration] || illustrations.default
 
   return (
@@ -31,7 +33,7 @@ export function EmptyState({
       <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
         <Icon className="h-8 w-8 text-muted-foreground" />
       </div>
-      <h3 className="text-lg font-semibold mb-1">{title}</h3>
+      <h3 className="text-lg font-semibold mb-1">{title || t('noDataFound')}</h3>
       {description && (
         <p className="text-sm text-muted-foreground max-w-sm mb-4">
           {description}
@@ -40,7 +42,7 @@ export function EmptyState({
       {action && (
         <Button onClick={action}>
           <Plus className="h-4 w-4 mr-2" />
-          {actionLabel || "Create new"}
+          {actionLabel || t('createNew')}
         </Button>
       )}
     </div>

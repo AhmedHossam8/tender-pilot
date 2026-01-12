@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import SkillBadge from './SkillBadge';
 
 /**
@@ -8,6 +9,7 @@ import SkillBadge from './SkillBadge';
  * Displays provider profile information in a card format
  */
 const ProviderCard = ({ provider, showFullDetails = false, onSelect }) => {
+  const { t } = useTranslation();
   const {
     user_id,
     user_full_name,
@@ -82,7 +84,7 @@ const ProviderCard = ({ provider, showFullDetails = false, onSelect }) => {
         {hourly_rate && (
           <div className="text-right flex-shrink-0">
             <p className="text-2xl font-bold text-gray-900">${hourly_rate}</p>
-            <p className="text-xs text-gray-500">per hour</p>
+            <p className="text-xs text-gray-500">{t('perHour')}</p>
           </div>
         )}
       </div>

@@ -49,8 +49,10 @@ class ProjectAnalysisService:
         user,
         force_refresh: bool = False,
         analysis_depth: str = "standard",
+        language: str = "english",
+        locale: str = "en",
     ) -> Dict[str, Any]:
-        logger.info(f"Starting project analysis: project_id={project_id}")
+        logger.info(f"Starting project analysis: project_id={project_id}, language={language}")
 
         project = self._get_project(project_id)
 
@@ -62,7 +64,7 @@ class ProjectAnalysisService:
         extracted_text = self._get_project_text(project)
 
         prompt_data = self._build_analysis_prompt(
-            project, extracted_text, analysis_depth
+            project, extracted_text, analysis_depth, language
         )
 
         with transaction.atomic():
@@ -153,15 +155,20 @@ class ProjectAnalysisService:
         return "\n\n".join(text_parts)
 
     def _build_analysis_prompt(
-        self, project: Project, extracted_text: str, analysis_depth: str
+        self, project: Project, extracted_text: str, analysis_depth: str, language: str = "english"
     ) -> Dict[str, str]:
         template = get_prompt("project_analysis", version="1.0.0")
 
         max_chars = 50000 if analysis_depth == "detailed" else 20000
         extracted_text = extracted_text[:max_chars]
+        
+        # Add language instruction to system prompt
+        system_prompt = template.system_prompt
+        if language == "arabic":
+            system_prompt += "\n\nIMPORTANT: Please respond in Arabic language. Provide your analysis in Arabic text, maintaining the same JSON structure but with Arabic content."
 
         return {
-            "system_prompt": template.system_prompt,
+            "system_prompt": system_prompt,
             "user_prompt": template.render(
                 project_title=project.title,
                 project_id=str(project.id),
@@ -296,6 +303,8 @@ class ComplianceCheckService:
         user,
         proposal_id: Optional[str] = None,
         proposal_content: Optional[str] = None,
+        language: str = "english",
+        locale: str = "en",
     ) -> Dict[str, Any]:
 
         if not proposal_id and not proposal_content:
@@ -311,6 +320,11 @@ class ComplianceCheckService:
             proposal_text = proposal_content
 
         template = get_prompt("compliance_check", version="1.0.0")
+        
+        # Add language instruction to system prompt
+        system_prompt = template.system_prompt
+        if language == "arabic":
+            system_prompt += "\n\nIMPORTANT: Please respond in Arabic language. Provide your compliance analysis in Arabic text, maintaining the same JSON structure but with Arabic content."
 
         requirements = "\n".join(
             f"- {r.title} ({'MANDATORY' if r.is_mandatory else 'OPTIONAL'})"
@@ -318,7 +332,7 @@ class ComplianceCheckService:
         )
 
         prompt_data = {
-            "system_prompt": template.system_prompt,
+            "system_prompt": system_prompt,
             "user_prompt": template.render(
                 project_title=project.title,
                 requirements=requirements,
@@ -382,12 +396,24 @@ class ProposalOutlineService:
     def __init__(self):
         self.usage_tracker = AIUsageTracker()
 
-    def generate_outline(self, project_id: str, user, style="standard") -> Dict[str, Any]:
+    def generate_outline(
+        self,
+        project_id: str,
+        user,
+        style="standard",
+        language: str = "english",
+        locale: str = "en",
+    ) -> Dict[str, Any]:
         project = Project.objects.prefetch_related("requirements").get(id=project_id)
         template = get_prompt("proposal_generation", version="1.0.0")
+        
+        # Add language instruction to system prompt
+        system_prompt = template.system_prompt
+        if language == "arabic":
+            system_prompt += "\n\nIMPORTANT: Please respond in Arabic language. Provide your proposal outline in Arabic text, maintaining the same JSON structure but with Arabic content."
 
         prompt_data = {
-            "system_prompt": template.system_prompt,
+            "system_prompt": system_prompt,
             "user_prompt": template.render(
                 project_title=project.title,
                 requirements="\n".join(r.title for r in project.requirements.all()),

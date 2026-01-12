@@ -15,12 +15,15 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 const AILoadingIndicator = ({ 
-  message = 'AI is thinking...', 
+  message, 
   size = 'medium',
   showIcon = true 
 }) => {
+  const { t } = useTranslation();
+  const defaultMessage = t('aiIsThinking');
   /**
    * Get size-specific classes.
    */
@@ -71,7 +74,7 @@ const AILoadingIndicator = ({
 
       {/* Loading Text */}
       <p className={`${sizeClasses.text} text-purple-700 font-medium`}>
-        {message}
+        {message || defaultMessage}
       </p>
 
       {/* Animated Dots */}
