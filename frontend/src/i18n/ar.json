@@ -365,6 +365,23 @@
     "errorMessage": "فشل في إرسال طلب الدعم. يرجى المحاولة مرة أخرى أو التواصل معنا مباشرة.",
     "readTime": "دقيقة قراءة",
     "articles": "مقالات",
-    "in": "في"
+    "in": "في",
+    "categories": {
+      "gettingStarted": "البداية",
+      "forClients": "للعملاء",
+      "forProviders": "لمقدمي الخدمات",
+      "account": "الحساب والفوترة"
+    },
+    "contact": {
+      "emailSupport": "الدعم عبر البريد الإلكتروني",
+      "liveChat": "المحادثة المباشرة",
+      "documentation": "الوثائق",
+      "responseTime": "رد خلال 24 ساعة",
+      "availability": "متاح من الاثنين للجمعة",
+      "hours": "9 صباحاً - 5 مساءً بتوقيت شرق الولايات المتحدة",
+      "detailedGuides": "أدلة مفصلة",
+      "stepByStep": "دروس تطبيقية خطوة بخطوة",
+      "tenderPilotTeam": "فريق تندر بايلوت"
+    }
   }
 }

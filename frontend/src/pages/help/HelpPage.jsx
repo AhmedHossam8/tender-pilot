@@ -57,7 +57,7 @@ const HelpPage = () => {
   const articlesData = {
     'getting-started': {
       id: 'getting-started',
-      title: 'Getting Started',
+      title: t('help.categories.gettingStarted'),
       icon: BookOpen,
       articles: [
         {
@@ -202,7 +202,7 @@ The mobile interface provides the same functionality with a hamburger menu for e
     },
     'for-clients': {
       id: 'for-clients',
-      title: 'For Clients',
+      title: t('help.categories.forClients'),
       icon: FileText,
       articles: [
         {
@@ -374,7 +374,7 @@ If problems arise:
     },
     'for-providers': {
       id: 'for-providers',
-      title: 'For Service Providers',
+      title: t('help.categories.forProviders'),
       icon: MessageCircle,
       articles: [
         {
@@ -570,7 +570,7 @@ Create detailed case studies for your best work:
     },
     'account': {
       id: 'account',
-      title: 'Account & Billing',
+      title: t('help.categories.account'),
       icon: HelpCircle,
       articles: [
         {
@@ -849,11 +849,11 @@ Configure dashboard alerts for:
       // Simulate success for now
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      toast.success('Support request submitted successfully! We\'ll get back to you within 24 hours.');
+      toast.success(t('help.successMessage'));
       setContactForm({ email: '', subject: '', message: '' });
     } catch (error) {
       console.error('Failed to send support email:', error);
-      toast.error('Failed to send support request. Please try again or contact us directly.');
+      toast.error(t('help.errorMessage'));
     } finally {
       setIsSubmitting(false);
     }
@@ -886,9 +886,9 @@ Configure dashboard alerts for:
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Help & Support</h1>
+          <h1 className="text-4xl font-bold mb-4">{t('help.title')}</h1>
           <p className="text-lg text-muted-foreground mb-8">
-            Find answers to common questions and get the help you need
+            {t('help.subtitle')}
           </p>
 
           {/* Search Bar */}
@@ -896,7 +896,7 @@ Configure dashboard alerts for:
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Search for help articles..."
+              placeholder={t('help.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-12 py-6 text-lg"
@@ -913,11 +913,11 @@ Configure dashboard alerts for:
               className="mb-6"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Clear search
+              {t('help.clearSearch')}
             </Button>
             <Card>
               <CardHeader>
-                <CardTitle>Search Results ({filteredArticles.length})</CardTitle>
+                <CardTitle>{t('help.searchResults')} ({filteredArticles.length})</CardTitle>
               </CardHeader>
               <CardContent>
                 {filteredArticles.length > 0 ? (
@@ -932,12 +932,12 @@ Configure dashboard alerts for:
                           <div className="flex-1">
                             <h4 className="font-medium mb-1">{article.title}</h4>
                             <p className="text-sm text-muted-foreground mb-2">
-                              in {article.categoryTitle}
+                              {t('help.in')} {article.categoryTitle}
                             </p>
                             <div className="flex items-center gap-4 text-xs text-muted-foreground">
                               <div className="flex items-center gap-1">
                                 <Clock className="w-3 h-3" />
-                                {article.readTime} min read
+                                {article.readTime} {t('help.readTime')}
                               </div>
                               <div className="flex gap-1">
                                 {article.tags.slice(0, 3).map(tag => (
@@ -983,11 +983,11 @@ Configure dashboard alerts for:
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Clock className="w-4 h-4" />
-                      {selectedArticle.readTime} min read
+                      {selectedArticle.readTime} {t('help.readTime')}
                     </div>
                     <div className="flex items-center gap-1">
                       <User className="w-4 h-4" />
-                      Tender Pilot Team
+                      {t('help.contact.tenderPilotTeam')}
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -1037,7 +1037,7 @@ Configure dashboard alerts for:
                           ))}
                         </ul>
                         <p className="text-xs text-muted-foreground mt-3">
-                          {category.articles.length} articles
+                          {category.articles.length} {t('help.articles')}
                         </p>
                       </CardContent>
                     </Card>
@@ -1055,7 +1055,7 @@ Configure dashboard alerts for:
                   className="mb-6"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to categories
+                  {t('help.backToCategories')}
                 </Button>
                 <Card>
                   <CardHeader>
@@ -1075,7 +1075,7 @@ Configure dashboard alerts for:
                               <div className="flex items-center gap-4 text-xs text-muted-foreground">
                                 <div className="flex items-center gap-1">
                                   <Clock className="w-3 h-3" />
-                                  {article.readTime} min read
+                                  {article.readTime} {t('help.readTime')}
                                 </div>
                                 <div className="flex gap-1">
                                   {article.tags.slice(0, 3).map(tag => (
@@ -1103,17 +1103,17 @@ Configure dashboard alerts for:
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Mail className="h-5 w-5" />
-              Still Need Help?
+              {t('help.stillNeedHelp')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-muted-foreground">
-              Can't find what you're looking for? Our support team is here to help.
+              {t('help.contactDescription')}
             </p>
             <form onSubmit={handleContactSupport} className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="support-email">Your Email</Label>
+                  <Label htmlFor="support-email">{t('help.yourEmail')}</Label>
                   <Input 
                     id="support-email" 
                     type="email" 
@@ -1124,10 +1124,10 @@ Configure dashboard alerts for:
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="support-subject">Subject</Label>
+                  <Label htmlFor="support-subject">{t('help.subject')}</Label>
                   <Input 
                     id="support-subject" 
-                    placeholder="What do you need help with?"
+                    placeholder={t('help.subjectPlaceholder')}
                     value={contactForm.subject}
                     onChange={handleInputChange('subject')}
                     required
@@ -1135,11 +1135,11 @@ Configure dashboard alerts for:
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="support-message">Message</Label>
+                <Label htmlFor="support-message">{t('help.message')}</Label>
                 <textarea
                   id="support-message"
                   className="w-full min-h-[120px] px-3 py-2 rounded-md border border-input bg-background"
-                  placeholder="Describe your issue in detail..."
+                  placeholder={t('help.messagePlaceholder')}
                   value={contactForm.message}
                   onChange={handleInputChange('message')}
                   required
@@ -1150,7 +1150,7 @@ Configure dashboard alerts for:
                 disabled={isSubmitting || !contactForm.email || !contactForm.subject || !contactForm.message}
                 className="w-full sm:w-auto"
               >
-                {isSubmitting ? 'Sending...' : 'Send Message'}
+                {isSubmitting ? t('help.sending') : t('help.sendMessage')}
               </Button>
             </form>
           </CardContent>
@@ -1160,21 +1160,21 @@ Configure dashboard alerts for:
         <div className="mt-12 grid md:grid-cols-3 gap-6 text-center">
           <div className="p-6 border border-border rounded-lg">
             <Mail className="h-8 w-8 mx-auto mb-3 text-primary" />
-            <h3 className="font-semibold mb-2">Email Support</h3>
+            <h3 className="font-semibold mb-2">{t('help.contact.emailSupport')}</h3>
             <p className="text-sm text-muted-foreground mb-3">support@servicehub.com</p>
-            <p className="text-xs text-muted-foreground">Response within 24 hours</p>
+            <p className="text-xs text-muted-foreground">{t('help.contact.responseTime')}</p>
           </div>
           <div className="p-6 border border-border rounded-lg">
             <MessageCircle className="h-8 w-8 mx-auto mb-3 text-primary" />
-            <h3 className="font-semibold mb-2">Live Chat</h3>
-            <p className="text-sm text-muted-foreground mb-3">Available Mon-Fri</p>
-            <p className="text-xs text-muted-foreground">9 AM - 5 PM EST</p>
+            <h3 className="font-semibold mb-2">{t('help.contact.liveChat')}</h3>
+            <p className="text-sm text-muted-foreground mb-3">{t('help.contact.availability')}</p>
+            <p className="text-xs text-muted-foreground">{t('help.contact.hours')}</p>
           </div>
           <div className="p-6 border border-border rounded-lg">
             <BookOpen className="h-8 w-8 mx-auto mb-3 text-primary" />
-            <h3 className="font-semibold mb-2">Documentation</h3>
-            <p className="text-sm text-muted-foreground mb-3">Detailed guides</p>
-            <p className="text-xs text-muted-foreground">Step-by-step tutorials</p>
+            <h3 className="font-semibold mb-2">{t('help.contact.documentation')}</h3>
+            <p className="text-sm text-muted-foreground mb-3">{t('help.contact.detailedGuides')}</p>
+            <p className="text-xs text-muted-foreground">{t('help.contact.stepByStep')}</p>
           </div>
         </div>
       </div>

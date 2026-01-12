@@ -448,7 +448,24 @@
     "errorMessage": "Failed to send support request. Please try again or contact us directly.",
     "readTime": "min read",
     "articles": "articles",
-    "in": "in"
+    "in": "in",
+    "categories": {
+      "gettingStarted": "Getting Started",
+      "forClients": "For Clients",
+      "forProviders": "For Service Providers",
+      "account": "Account & Billing"
+    },
+    "contact": {
+      "emailSupport": "Email Support",
+      "liveChat": "Live Chat",
+      "documentation": "Documentation",
+      "responseTime": "Response within 24 hours",
+      "availability": "Available Mon-Fri",
+      "hours": "9 AM - 5 PM EST",
+      "detailedGuides": "Detailed guides",
+      "stepByStep": "Step-by-step tutorials",
+      "tenderPilotTeam": "Tender Pilot Team"
+    }
   },
   "messages": {
     "title": "Messages",
