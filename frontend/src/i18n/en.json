@@ -246,6 +246,7 @@
     "aiSuggestedPackages": "AI-suggested packages",
     "applyAiPackages": "Use AI packages",
     "packages": "Packages",
+    "package": "Package Name",
     "price": "Price",
     "duration": "Duration",
     "selectPackage": "Select Package",
@@ -268,7 +269,11 @@
     "confirmAndPay": "Confirm & Pay (placeholder)",
     "paymentPlaceholderTitle": "Payment coming soon",
     "paymentPlaceholderDescription": "This is a demo flow. Payment processing is not yet connected; your booking will be created without charging your card.",
-    "cannotBookOwnService": "You cannot book your own service"
+    "cannotBookOwnService": "You cannot book your own service",
+    "time": "Time",
+    "date": "Date",
+    "selectTime": "Select Time",
+    "selectDate": "Select Date"
   },
   "bookings": {
     "title": "Bookings",

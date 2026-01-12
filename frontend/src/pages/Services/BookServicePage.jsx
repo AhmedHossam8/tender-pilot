@@ -26,6 +26,23 @@ import {
     SkeletonText,
 } from "@/components/ui";
 
+// Generate time slots (e.g., 8:00 AM - 8:00 PM in 30-minute intervals)
+const generateTimeSlots = () => {
+    const slots = [];
+    for (let hour = 8; hour <= 20; hour++) {
+        for (let minute = 0; minute < 60; minute += 30) {
+            const time24 = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+            const period = hour >= 12 ? 'PM' : 'AM';
+            const hour12 = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+            const time12 = `${hour12}:${String(minute).padStart(2, '0')} ${period}`;
+            slots.push({ value: time24, label: time12 });
+        }
+    }
+    return slots;
+};
+
+const timeSlots = generateTimeSlots();
+
 const BookServicePage = () => {
     const { t } = useTranslation();
     const { id: serviceId } = useParams();
@@ -35,7 +52,8 @@ const BookServicePage = () => {
     const canBookService =
         user?.user_type === "client" || user?.user_type === "both";
     const [selectedPackage, setSelectedPackage] = useState("");
-    const [scheduledFor, setScheduledFor] = useState("");
+    const [scheduledDate, setScheduledDate] = useState("");
+    const [scheduledTime, setScheduledTime] = useState("");
     const [isReviewing, setIsReviewing] = useState(false);
 
     // --- Fetch service details ---
@@ -52,15 +70,25 @@ const BookServicePage = () => {
         (pkg) => String(pkg.id) === String(selectedPackage)
     );
 
+    // Combine date and time into ISO format
+    const scheduledFor = scheduledDate && scheduledTime
+        ? `${scheduledDate}T${scheduledTime}`
+        : "";
+
     // --- Booking mutation ---
     const bookingMutation = useMutation({
-        mutationFn: (bookingData) => bookingService.create(bookingData),
+        mutationFn: (bookingData) => {
+            console.log("Booking data being sent:", bookingData);
+            return bookingService.create(bookingData);
+        },
         onSuccess: () => {
             toast.success(t("services.bookingSuccess"));
             queryClient.invalidateQueries(["bookings"]);
             navigate("/app/bookings");
         },
         onError: (err) => {
+            console.error("Booking error:", err);
+            console.error("Error response:", err?.response?.data);
             toast.error(
                 err?.response?.data?.error || t("services.bookingError")
             );
@@ -97,7 +125,7 @@ const BookServicePage = () => {
 
     // --- Booking handler ---
     const handleBooking = () => {
-        if (!selectedPackage || !scheduledFor) {
+        if (!selectedPackage || !scheduledDate || !scheduledTime) {
             toast.error(t("services.selectPackageAndDate"));
             return;
         }
@@ -117,10 +145,13 @@ const BookServicePage = () => {
             return;
         }
 
-        bookingMutation.mutate({
-            package: selectedPackage,
+        const bookingPayload = {
+            package_id: Number(selectedPackage),
             scheduled_for: scheduledFor,
-        });
+        };
+
+        console.log("Submitting booking with payload:", bookingPayload);
+        bookingMutation.mutate(bookingPayload);
     };
 
     return (
@@ -170,16 +201,42 @@ const BookServicePage = () => {
                             </Select>
                         </div>
 
-                        {/* Schedule input */}
-                        <div>
-                            <p className="text-sm font-medium mb-1">
-                                {t("services.scheduledFor")}
-                            </p>
-                            <Input
-                                type="datetime-local"
-                                value={scheduledFor}
-                                onChange={(e) => setScheduledFor(e.target.value)}
-                            />
+                        {/* Date and Time inputs */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {/* Date input */}
+                            <div>
+                                <p className="text-sm font-medium mb-1">
+                                    {t("services.date") || "Date"}
+                                </p>
+                                <Input
+                                    type="date"
+                                    value={scheduledDate}
+                                    onChange={(e) => setScheduledDate(e.target.value)}
+                                    min={new Date().toISOString().split('T')[0]}
+                                />
+                            </div>
+
+                            {/* Time dropdown */}
+                            <div>
+                                <p className="text-sm font-medium mb-1">
+                                    {t("services.time") || "Time"}
+                                </p>
+                                <Select
+                                    value={scheduledTime}
+                                    onValueChange={setScheduledTime}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder={t("services.selectTime") || "Select time"} />
+                                    </SelectTrigger>
+                                    <SelectContent className="max-h-[300px]">
+                                        {timeSlots.map((slot) => (
+                                            <SelectItem key={slot.value} value={slot.value}>
+                                                {slot.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
 
                         {isReviewing && selectedPackageObj && (
@@ -225,13 +282,13 @@ const BookServicePage = () => {
                             disabled={
                                 bookingMutation.isPending ||
                                 user?.id === service?.created_by?.id ||
-                                !canBookService // disable if user cannot book
+                                !canBookService
                             }
                         >
                             {bookingMutation.isPending
                                 ? t("common.loading")
                                 : !canBookService
-                                    ? t("services.notAuthorized") // e.g., "You cannot book this service"
+                                    ? t("services.notAuthorized")
                                     : user?.id === service?.created_by?.id
                                         ? t("services.cannotBookOwnService")
                                         : isReviewing
