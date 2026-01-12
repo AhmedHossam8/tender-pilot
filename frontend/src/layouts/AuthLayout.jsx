@@ -19,7 +19,7 @@ function AuthLayout({ className }) {
   return (
     <div
       className={cn(
-        "min-h-screen flex flex-col bg-gradient-to-br from-primary/5 via-background to-accent/5",
+        "min-h-screen flex flex-col bg-gray-100",
         className
       )}
     >
@@ -42,7 +42,7 @@ function AuthLayout({ className }) {
 
       {/* Footer */}
       <footer className="p-4 text-center text-sm text-muted-foreground">
-        <p>{t('common.copyright', { year: new Date().getFullYear() })}</p>
+        <p>{t('footer.copyright', { year: new Date().getFullYear() })}</p>
       </footer>
     </div>
   );

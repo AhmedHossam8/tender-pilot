@@ -71,4 +71,13 @@ export const messagingService = {
       throw err;
     }
   },
+
+  deleteConversation: async (conversationId) => {
+  try {
+    await api.delete(`/messaging/conversations/${conversationId}/`);
+    return true;
+  } catch (err) {
+    throw err;
+  }
+},
 };

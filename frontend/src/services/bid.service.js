@@ -1,8 +1,5 @@
 import api from "../lib/api";
 
-/**
- * Bid Service - API endpoints for managing bids in ServiceHub marketplace
- */
 
 /**
  * Get all bids (filtered by type and status)
@@ -81,7 +78,7 @@ export const withdrawBid = async (id, reason = "") => {
  * @returns {Promise} Bid statistics
  */
 export const getBidStatistics = async (id) => {
-  return api.get(`/v1/bids/${id}/statistics/`);
+  return api.get(`/bids/${id}/statistics/`);
 };
 
 /**
@@ -90,7 +87,7 @@ export const getBidStatistics = async (id) => {
  * @returns {Promise} Array of milestones
  */
 export const getBidMilestones = async (bidId) => {
-  return api.get(`/v1/milestones/?bid=${bidId}`);
+  return api.get(`/bids/milestones/?bid=${bidId}`);
 };
 
 /**
@@ -99,7 +96,7 @@ export const getBidMilestones = async (bidId) => {
  * @returns {Promise} Created milestone
  */
 export const createBidMilestone = async (milestoneData) => {
-  return api.post("/v1/milestones/", milestoneData);
+  return api.post("/bids/milestones/", milestoneData);
 };
 
 /**
@@ -109,7 +106,7 @@ export const createBidMilestone = async (milestoneData) => {
  * @returns {Promise} Updated milestone
  */
 export const updateBidMilestone = async (id, milestoneData) => {
-  return api.patch(`/v1/milestones/${id}/`, milestoneData);
+  return api.patch(`/bids/milestones/${id}/`, milestoneData);
 };
 
 /**
@@ -118,7 +115,7 @@ export const updateBidMilestone = async (id, milestoneData) => {
  * @returns {Promise} Success response
  */
 export const deleteBidMilestone = async (id) => {
-  return api.delete(`/v1/milestones/${id}/`);
+  return api.delete(`/bids/milestones/${id}/`);
 };
 
 /**
@@ -139,7 +136,7 @@ export const uploadBidAttachment = async (bidId, file, description = "") => {
     formData.append("description", description);
   }
 
-  return api.post("/v1/attachments/", formData, {
+  return api.post("/bids/attachments/", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
@@ -152,7 +149,7 @@ export const uploadBidAttachment = async (bidId, file, description = "") => {
  * @returns {Promise} Array of attachments
  */
 export const getBidAttachments = async (bidId) => {
-  return api.get(`/v1/attachments/?bid=${bidId}`);
+  return api.get(`/bids/attachments/?bid=${bidId}`);
 };
 
 /**
@@ -161,11 +158,12 @@ export const getBidAttachments = async (bidId) => {
  * @returns {Promise} Success response
  */
 export const deleteBidAttachment = async (id) => {
-  return api.delete(`/v1/attachments/${id}/`);
+  return api.delete(`/bids/attachments/${id}/`);
 };
 
 /**
  * AI-powered features for bids
+ * Note: These endpoints are under the AI engine app
  */
 
 /**
@@ -175,7 +173,7 @@ export const deleteBidAttachment = async (id) => {
  * @returns {Promise} Generated cover letter
  */
 export const generateAICoverLetter = async (projectId, providerProfile) => {
-  return api.post("/v1/ai/bid/generate/", {
+  return api.post("/ai/bid/generate/", {
     project_id: projectId,
     provider_profile: providerProfile,
   });
@@ -188,7 +186,7 @@ export const generateAICoverLetter = async (projectId, providerProfile) => {
  * @returns {Promise} Pricing suggestion
  */
 export const getAIPricingSuggestion = async (projectId, providerHistory) => {
-  return api.post("/v1/ai/bid/pricing/", {
+  return api.post("/ai/bid/pricing/", {
     project_id: projectId,
     provider_history: providerHistory,
   });
@@ -201,7 +199,16 @@ export const getAIPricingSuggestion = async (projectId, providerHistory) => {
  * @returns {Promise} Match score and analysis
  */
 export const getAIMatchScore = async (projectId, providerId) => {
-  return api.get(`/v1/ai/match/?project=${projectId}&provider=${providerId}`);
+  return api.get(`/ai/match/?project=${projectId}&provider=${providerId}`);
+};
+
+/**
+ * Compare multiple bids
+ * @param {Array<number>} bidIds - Array of bid IDs to compare
+ * @returns {Promise} Comparison data with AI insights
+ */
+export const compareBids = async (bidIds) => {
+  return api.post("/bids/compare/", { bid_ids: bidIds });
 };
 
 export default {
@@ -223,4 +230,5 @@ export default {
   generateAICoverLetter,
   getAIPricingSuggestion,
   getAIMatchScore,
+  compareBids,
 };

@@ -33,7 +33,7 @@ function AppLayout({ showFooter = false }) {
   }, []);
 
   return (
-    <div className={cn("min-h-screen bg-background")} dir={isRtl ? "rtl" : "ltr"}>
+    <div className={cn("min-h-screen bg-gray-100")} dir={isRtl ? "rtl" : "ltr"}>
       {/* Desktop Sidebar */}
       <div
         className={cn(
