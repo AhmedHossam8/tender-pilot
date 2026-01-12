@@ -8,7 +8,7 @@ urlpatterns = [
     path('ai/', include('apps.ai_engine.api.v1.urls')),
     path('projects/', include('apps.projects.api.v1.urls')),
     path('documents/', include('apps.documents.api.v1.urls')),
-    path('bids/', include('apps.bids.api.urls')),
+    path('bids/', include('apps.bids.api.v1.urls')),
     path('core/', include('apps.core.api.v1.urls')),
     path('services/', include('apps.services.urls')),
     path('messaging/', include('apps.messaging.urls')),

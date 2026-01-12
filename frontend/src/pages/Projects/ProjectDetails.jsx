@@ -43,6 +43,7 @@ export default function ProjectDetail() {
   const [deleting, setDeleting] = useState(false);
   const [statusLoading, setStatusLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
+  const [bidDecisionLoading, setBidDecisionLoading] = useState(false);
 
   /* =======================
      Fetch Project
@@ -108,7 +109,7 @@ export default function ProjectDetail() {
       return;
     }
     // Navigate to the bid creation page with project pre-selected
-    navigate(`/app/bids/create?project=${id}`);
+    navigate(`/app/bids/create/?project=${id}`);
   };
 
   /* =======================
@@ -129,7 +130,7 @@ export default function ProjectDetail() {
   ======================= */
   const [optimizationData, setOptimizationData] = useState(null);
   const [optimizationLoading, setOptimizationLoading] = useState(false);
-  
+
   const handleMatchProviders = async () => {
     try {
       console.log('Matching providers for project:', id);
@@ -137,21 +138,21 @@ export default function ProjectDetail() {
       setMatchesOffset(0);
       setAllMatches([]);
       setAiUnavailable(false);
-      
+
       const result = await refetchMatches();
       console.log('Match providers result:', result);
       console.log('Matches data structure:', result.data?.matches);
-      
+
       // Check if AI is unavailable
       if (result.data?.error === 'AI_UNAVAILABLE') {
         setAiUnavailable(true);
         toast.error(t('ai.unavailable'));
         return;
       }
-      
+
       const matchCount = result.data?.matches?.length || 0;
       setHasMoreMatches(result.data?.has_more || false);
-      
+
       if (matchCount > 0) {
         toast.success(t('projects.findingMatches'));
       } else {
@@ -211,15 +212,26 @@ export default function ProjectDetail() {
   });
 
   const startConversationMutation = useMutation({
-    mutationFn: async (providerId) => projectService.startConversation(id, providerId),
+    mutationFn: async ({ providerId, existingConversation }) => {
+      // If conversation already exists, just return it
+      if (existingConversation) {
+        return existingConversation;
+      }
+      // Otherwise create a new conversation
+      return projectService.startConversation(id, providerId);
+    },
     onSuccess: (data) => {
-      toast.success(t("Conversation started"));
-      queryClient.setQueryData(["project-conversation", id], data);
-      queryClient.invalidateQueries(['conversations']);
-      queryClient.invalidateQueries(['unread-count']);
-
-      // Navigate to the chat after starting conversation
       const conversationId = data?.id || data?.data?.id;
+
+      // Only show success toast and update cache if it's a new conversation
+      if (!projectConversation) {
+        toast.success(t("Conversation started"));
+        queryClient.setQueryData(["project-conversation", id], data);
+        queryClient.invalidateQueries(['conversations']);
+        queryClient.invalidateQueries(['unread-count']);
+      }
+
+      // Navigate to the chat
       if (conversationId) {
         navigate(`/app/messages/${conversationId}`);
       }
@@ -263,18 +275,30 @@ export default function ProjectDetail() {
 
   const handleBidDecision = async (bidId, status, providerId) => {
     try {
+      setBidDecisionLoading(true);
       await changeBidStatus.mutateAsync({ id: bidId, status });
       if (status === "accepted") {
         await updateProjectStatus("in_progress");
-        // Automatically start conversation with accepted provider
+        // Automatically start conversation with accepted provider (or use existing one)
         if (providerId) {
-          await startConversationMutation.mutateAsync(providerId);
+          if (projectConversation?.id) {
+            // Conversation already exists, just navigate
+            navigate(`/app/messages/${projectConversation.id}`);
+          } else {
+            // Create new conversation
+            await startConversationMutation.mutateAsync({
+              providerId,
+              existingConversation: null
+            });
+          }
         }
       }
       toast.success(`${t("Bid")} ${status}`);
     } catch (error) {
       console.error("Bid update error:", error.response?.data || error);
       toast.error(t("Failed to update bid"));
+    } finally {
+      setBidDecisionLoading(false);
     }
   };
 
@@ -316,8 +340,8 @@ export default function ProjectDetail() {
     <div className="max-w-4xl mx-auto space-y-6">
       {/* AI Summary */}
       {(project.ai_summary || project.ai_complexity) && (
-        <AISummaryCard 
-          summary={project.ai_summary} 
+        <AISummaryCard
+          summary={project.ai_summary}
           complexity={project.ai_complexity}
         />
       )}
@@ -383,15 +407,19 @@ export default function ProjectDetail() {
               <Button
                 onClick={() => {
                   if (projectConversation?.id) {
+                    // Conversation exists, just navigate to it
                     navigate(`/app/messages/${projectConversation.id}`);
                   } else {
-                    // Determine who to start conversation with
+                    // No conversation exists, create one
                     const otherPartyId = flags.isOwner
                       ? assignedProviderId
-                      : project.created_by; // Use created_by for the client ID
+                      : project.created_by;
 
                     if (otherPartyId) {
-                      startConversationMutation.mutate(otherPartyId);
+                      startConversationMutation.mutate({
+                        providerId: otherPartyId,
+                        existingConversation: null
+                      });
                     } else {
                       toast.error(t("Unable to start conversation"));
                     }
@@ -459,75 +487,74 @@ export default function ProjectDetail() {
               <>
                 <div className="space-y-3">
                   {matches.map((match) => (
-                <div key={match.provider_id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                      <span className="text-blue-600 font-semibold">
-                        {match.provider_name?.split(' ').map(name => name[0]).join('').substring(0, 2) || 'P'}
-                      </span>
-                    </div>
-                    <div>
-                      <h4 className="font-medium">{match.provider_name}</h4>
-                      <p className="text-sm text-gray-600">{match.provider_email || 'Email not available'}</p>
-                      {Array.isArray(match.matching_skills) && match.matching_skills.length > 0 && (
-                        <div className="flex gap-1 mt-1">
-                          {match.matching_skills.slice(0, 3).map((skill, index) => (
-                            <span key={`${match.provider_id}-skill-${index}`} className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
-                              {skill}
-                            </span>
-                          ))}
-                          {match.matching_skills.length > 3 && (
-                            <span className="text-xs text-gray-500">+{match.matching_skills.length - 3} more</span>
+                    <div key={match.provider_id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-blue-300 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                          <span className="text-blue-600 font-semibold">
+                            {match.provider_name?.split(' ').map(name => name[0]).join('').substring(0, 2) || 'P'}
+                          </span>
+                        </div>
+                        <div>
+                          <h4 className="font-medium">{match.provider_name}</h4>
+                          <p className="text-sm text-gray-600">{match.provider_email || 'Email not available'}</p>
+                          {Array.isArray(match.matching_skills) && match.matching_skills.length > 0 && (
+                            <div className="flex gap-1 mt-1">
+                              {match.matching_skills.slice(0, 3).map((skill, index) => (
+                                <span key={`${match.provider_id}-skill-${index}`} className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                                  {skill}
+                                </span>
+                              ))}
+                              {match.matching_skills.length > 3 && (
+                                <span className="text-xs text-gray-500">+{match.matching_skills.length - 3} more</span>
+                              )}
+                            </div>
                           )}
                         </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-lg font-bold text-blue-600">
-                      {Math.round(match.match_score || 0)}% Match
-                    </div>
-                    <a 
-                      href={`/app/profiles/${match.provider_id}`}
-                      className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 mt-1"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        window.open(`/app/profiles/${match.provider_id}`, '_blank');
-                      }}
-                    >
-                      <User className="w-3 h-3" />
-                      View Profile
-                    </a>
-                    {match.reasoning && (
-                      <div className="text-sm text-gray-500 max-w-xs truncate">
-                        {match.reasoning}
                       </div>
-                    )}
-                  </div>
+                      <div className="text-right">
+                        <div className="text-lg font-bold text-blue-600">
+                          {Math.round(match.match_score || 0)}% Match
+                        </div>
+                        <a
+                          href={`/app/profiles/${match.provider_id}`}
+                          className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 mt-1"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            window.open(`/app/profiles/${match.provider_id}`, '_blank');
+                          }}
+                        >
+                          <User className="w-3 h-3" />
+                          View Profile
+                        </a>
+                        {match.reasoning && (
+                          <div className="text-sm text-gray-500 max-w-xs truncate">
+                            {match.reasoning}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            {hasMoreMatches && (
-              <div className="mt-4 text-center">
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    // TODO: Implement load more functionality
-                    toast.info('Load more functionality coming soon');
-                  }}
-                  className="w-full sm:w-auto"
-                >
-                  Show 5 More Providers
-                </Button>
+                {hasMoreMatches && (
+                  <div className="mt-4 text-center">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        toast.info('Load more functionality coming soon');
+                      }}
+                      className="w-full sm:w-auto"
+                    >
+                      Show 5 More Providers
+                    </Button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-500">No matching providers found for this project.</p>
+                <p className="text-sm text-gray-400 mt-1">Try clicking "Match Providers" to find suitable candidates.</p>
               </div>
             )}
-          </>
-        ) : (
-          <div className="text-center py-8">
-            <p className="text-gray-500">No matching providers found for this project.</p>
-            <p className="text-sm text-gray-400 mt-1">Try clicking "Match Providers" to find suitable candidates.</p>
-          </div>
-        )}
           </CardContent>
         </Card>
       )}
@@ -539,7 +566,7 @@ export default function ProjectDetail() {
             <Lightbulb className="mr-2 h-5 w-5 text-yellow-500" />
             AI Optimization Suggestions
           </h3>
-          
+
           <div className="space-y-4">
             {optimizationData.suggestions?.missing_details?.length > 0 && (
               <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
@@ -554,7 +581,7 @@ export default function ProjectDetail() {
                 </ul>
               </div>
             )}
-            
+
             {optimizationData.suggestions?.improvements?.length > 0 && (
               <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
                 <h4 className="font-semibold text-sm mb-2 text-blue-700 dark:text-blue-400">Improvements</h4>
@@ -568,7 +595,7 @@ export default function ProjectDetail() {
                 </ul>
               </div>
             )}
-            
+
             {optimizationData.suggestions?.engagement_tips?.length > 0 && (
               <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
                 <h4 className="font-semibold text-sm mb-2 text-green-700 dark:text-green-400">Engagement Tips</h4>
@@ -621,16 +648,16 @@ export default function ProjectDetail() {
                     </div>
                     <StatusBadge status={bid.status} />
                   </div>
-                  
+
                   {/* AI Match Score with detailed feedback */}
                   {bid.ai_score && (
                     <div className="my-3">
-                      <AIMatchScore 
-                        score={bid.ai_score} 
+                      <AIMatchScore
+                        score={bid.ai_score}
                         recommendation={bid.ai_feedback?.recommendation}
                         showDetails={true}
                         feedback={bid.ai_feedback}
-                        size="small" 
+                        size="small"
                       />
                     </div>
                   )}
@@ -644,7 +671,7 @@ export default function ProjectDetail() {
                         onClick={() =>
                           handleBidDecision(bid.id, "accepted", bid.service_provider)
                         }
-                        disabled={handleBidDecision.statusLoading}
+                        disabled={bidDecisionLoading}
                       >
                         {t("Accept")}
                       </Button>
@@ -654,7 +681,7 @@ export default function ProjectDetail() {
                         onClick={() =>
                           handleBidDecision(bid.id, "shortlisted", bid.service_provider)
                         }
-                        disabled={handleBidDecision.statusLoading}
+                        disabled={bidDecisionLoading}
                       >
                         {t("Shortlist")}
                       </Button>
@@ -664,7 +691,7 @@ export default function ProjectDetail() {
                         onClick={() =>
                           handleBidDecision(bid.id, "rejected", bid.service_provider)
                         }
-                        disabled={handleBidDecision.statusLoading}
+                        disabled={bidDecisionLoading}
                       >
                         {t("Reject")}
                       </Button>
