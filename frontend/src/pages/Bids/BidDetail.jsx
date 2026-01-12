@@ -311,14 +311,26 @@ export default function BidDetail() {
                         <Button
                             onClick={() => handleDecision("accepted")}
                             variant="success"
+                            disabled={handleDecision.isPending}
                         >
+                            {handleDecision.isPending ? (
+                                <LoadingSpinner className="h-4 w-4 mr-2" />
+                            ) : (
+                                <Check className="h-4 w-4 mr-2" />
+                            )}
                             Accept Bid
                         </Button>
 
                         <Button
                             onClick={() => handleDecision("rejected")}
                             variant="destructive"
+                            disabled={handleDecision.isPending}
                         >
+                            {handleDecision.isPending ? (
+                                <LoadingSpinner className="h-4 w-4 mr-2" />
+                            ) : (
+                                <X className="h-4 w-4 mr-2" />
+                            )}
                             Reject Bid
                         </Button>
                     </div>
@@ -331,7 +343,13 @@ export default function BidDetail() {
                     <Button
                         variant="destructive"
                         onClick={handleWithdraw}
+                        disabled={handleWithdraw.isPending}
                     >
+                        {handleWithdraw.isPending ? (
+                            <LoadingSpinner className="h-4 w-4 mr-2" />
+                        ) : (
+                            <ArrowLeftCircle className="h-4 w-4 mr-2" />
+                        )}
                         Withdraw Bid
                     </Button>
                 )}

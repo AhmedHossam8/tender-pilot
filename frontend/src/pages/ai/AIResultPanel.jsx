@@ -153,9 +153,13 @@ function AIResultPanel() {
           <Button
             variant="outline"
             onClick={handleDownload}
-            disabled={!currentResponse?.content}
+            disabled={!currentResponse?.content || handleDownload.isPending}
           >
-            <Download className="h-4 w-4 mr-2" />
+            {handleDownload.isPending ? (
+              <LoadingSpinner className="h-4 w-4 mr-2" />
+            ) : (
+              <Download className="h-4 w-4 mr-2" />
+            )}
             {t("common.download")}
           </Button>
           <Button

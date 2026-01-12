@@ -972,6 +972,7 @@ Configure dashboard alerts for:
               variant="ghost"
               onClick={() => setSelectedArticle(null)}
               className="mb-6"
+              disabled={setSelectedCategory === null || setSelectedCategory === undefined}
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to {selectedCategory?.title || 'articles'}
