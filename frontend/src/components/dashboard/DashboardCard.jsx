@@ -49,9 +49,9 @@ const DashboardCard = ({
       <CardContent className="flex items-start justify-between gap-4">
         {/* Left Section */}
         <div className="flex-1">
-          <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <p className="text-3xl font-bold text-foreground">{value}</p>
-          {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
+          <p className="text-md font-medium mt-5 text-gray-300">{title}</p>
+          <p className="text-3xl font-bold text-gray-400">{value}</p>
+          {subtitle && <p className="text-sm text-gray-400">{subtitle}</p>}
 
         {trend && (
           <div

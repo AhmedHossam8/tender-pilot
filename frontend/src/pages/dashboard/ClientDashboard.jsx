@@ -77,7 +77,7 @@ const ClientDashboard = () => {
     <div className="container mx-auto px-4 py-8 text-gray-400">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">{t('dashboard.title')}</h1>
+        <h1 className="text-3xl font-bold mb-2 text-gray-300">{t('dashboard.title')}</h1>
         <p className="text-gray-400">
           {t('dashboard.welcome', { name: user?.full_name || t('common.user') })}
         </p>
@@ -92,11 +92,12 @@ const ClientDashboard = () => {
           subtitle={t('dashboard.activeProjectsDesc')}
           color="blue"
           icon={
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           }
         />
+        
         <DashboardCard
           title={t('dashboard.totalProjects')}
           value={stats.totalProjects}
@@ -160,40 +161,40 @@ const ClientDashboard = () => {
 
       {/* Quick Actions */}
       <div className="bg-[#101825] border-border rounded-lg p-6 mb-8">
-        <h2 className="text-xl font-bold mb-4">{t('dashboard.quickActions')}</h2>
+        <h2 className="text-xl font-bold mb-4 text-gray-300/80">{t('dashboard.quickActions')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link
             to="/app/projects"
-            className="flex items-center gap-3 p-4 border-2 border border-gray-700 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">
+            className="flex items-center gap-3 p-4 border-2 border border-gray-700 rounded-lg hover:border-blue-500 transition-colors">
             <svg className="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             <div>
-              <div className="font-semibold text-gray-400">{t('dashboard.postProject')}</div>
+              <div className="font-semibold text-gray-200/80">{t('dashboard.postProject')}</div>
               <div className="text-sm text-gray-400">{t('dashboard.postProjectDesc')}</div>
             </div>
           </Link>
 
           <Link
             to="/app/services"
-            className="flex items-center gap-3 p-4 border-2 border border-gray-700 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">
+            className="flex items-center gap-3 p-4 border-2 border border-gray-700 rounded-lg hover:border-blue-500 transition-colors">
             <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <div>
-              <div className="font-semibold text-gray-400">{t('dashboard.browseServices')}</div>
+              <div className="font-semibold text-gray-200/80">{t('dashboard.browseServices')}</div>
               <div className="text-sm text-gray-400">{t('dashboard.browseServicesDesc')}</div>
             </div>
           </Link>
 
           <Link
             to="/app/profile/edit"
-            className="flex items-center gap-3 p-4 border-2 border border-gray-700 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">
+            className="flex items-center gap-3 p-4 border-2 border border-gray-700 rounded-lg hover:border-blue-500 transition-colors">
             <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
             <div>
-              <div className="font-semibold text-gray-400">{t('dashboard.editProfile')}</div>
+              <div className="font-semibold text-gray-200/80">{t('dashboard.editProfile')}</div>
               <div className="text-sm text-gray-400">{t('dashboard.editProfileDesc')}</div>
             </div>
           </Link>
@@ -219,15 +220,15 @@ const ClientDashboard = () => {
               {recentProjects.map((project) => (
                 <div key={project.id} className="p-4 border border-border rounded-lg hover:border-primary transition-colors border-gray-700">
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-semibold">{project.title}</h3>
-                    <span className="text-sm text-gray-400">{project.bids_count} {t('dashboard.bids')}</span>
+                    <h3 className="font-semibold text-gray-200/80">{project.title}</h3>
+                    <span className="text-sm text-gray-300/80">{project.bids_count} {t('dashboard.bids')}</span>
                   </div>
                   <p className="text-sm text-gray-400 mb-2 line-clamp-2">{project.description}</p>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500">{new Date(project.created_at).toLocaleDateString()}</span>
+                    <span className="text-xs text-gray-400">{new Date(project.created_at).toLocaleDateString()}</span>
                     <span className={`text-xs px-2 py-1 rounded-full ${project.status === 'open' ? 'bg-green-800 text-green-100' :
                       project.status === 'in_progress' ? 'bg-blue-800 text-blue-100' :
-                        'bg-gray-700 text-gray-200'
+                        'bg-gray-700 text-gray-400/70'
                       }`}>
                       {t(`dashboard.status.${project.status}`)}
                     </span>
@@ -253,16 +254,16 @@ const ClientDashboard = () => {
               {recentBookings.map((booking) => (
                 <div key={booking.id} className="p-4 border border-border rounded-lg hover:border-primary transition-colors border-gray-700">
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-semibold">{booking.package?.service?.name || 'Service'}</h3>
-                    <span className="text-sm font-bold">${booking.package?.price || 0}</span>
+                    <h3 className="font-semibold text-gray-200/80">{booking.package?.service?.name || 'Service'}</h3>
+                    <span className="text-sm font-bold text-gray-200/80">${booking.package?.price || 0}</span>
                   </div>
                   <p className="text-sm text-gray-400 mb-2">{booking.package?.name || 'Package'}</p>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500">{new Date(booking.scheduled_for).toLocaleDateString()}</span>
-                    <span className={`text-xs px-2 py-1 rounded-full ${booking.status === 'confirmed' ? 'bg-blue-800 text-blue-100' :
-                      booking.status === 'completed' ? 'bg-green-800 text-green-100' :
-                        booking.status === 'cancelled' ? 'bg-red-800 text-red-100' :
-                          'bg-yellow-800 text-yellow-100'
+                    <span className="text-xs text-gray-400">{new Date(booking.scheduled_for).toLocaleDateString()}</span>
+                    <span className={`text-xs px-2 py-1 rounded-full ${booking.status === 'confirmed' ? 'bg-blue-800 text-blue-200' :
+                      booking.status === 'completed' ? 'bg-green-800 text-green-200' :
+                        booking.status === 'cancelled' ? 'bg-red-800 text-red-200' :
+                          'bg-yellow-800 text-yellow-200'
                       }`}>
                       {t(`dashboard.status.${booking.status}`)}
                     </span>

@@ -140,18 +140,21 @@ export default function ProjectsList() {
   }
 
   return (
-    <div className="min-h-screen bg-[#101825] text-white p-6">
+    <div className="min-h-screen bg-[#101825] text-gray-400 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold">{t("projects.title")}</h1>
+            <h1 className="text-3xl font-bold text-gray-300">{t("projects.title")}</h1>
             <p className="text-gray-400 mt-1">{t("projects.subtitle")}</p>
           </div>
           {canCreateProject && (
             <ProjectCreateModal
               trigger={
-                <Button size="lg" className="bg-purple-600 hover:bg-purple-700 border-0">
+                <Button
+                  size="lg"
+                  className="bg-purple-600 hover:bg-blue-700 border-0 text-gray-400 hover:bg-gray-900/20"
+                >
                   <Plus className="h-5 w-5 mr-2" />
                   {t("projects.create")}
                 </Button>
@@ -161,7 +164,7 @@ export default function ProjectsList() {
           )}
         </div>
 
-        {/* Search & Filters */}
+        {/* Search */}
         <Card className="bg-[#101825] border-gray-700">
           <CardContent className="p-6 space-y-4">
             <input
@@ -169,7 +172,7 @@ export default function ProjectsList() {
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
               placeholder={t("projects.searchPlaceholder")}
-              className="w-full px-3 py-2 rounded-lg border border-gray-600 bg-[#101825] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 rounded-lg border border-gray-700 bg-[#101825] text-gray-400 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           </CardContent>
         </Card>
@@ -184,12 +187,12 @@ export default function ProjectsList() {
                   : t("projects.noProjects")}
               </div>
             ) : (
-              <Table className="text-white">
+              <Table className="text-gray-400">
                 <TableHeader>
                   <TableRow className="bg-gray-800">
-                    <TableHead className="px-6 py-3">{t("projects.title")}</TableHead>
-                    <TableHead className="px-6 py-3">{t("projects.status")}</TableHead>
-                    <TableHead className="px-6 py-3 text-right">{t("projects.actions")}</TableHead>
+                    <TableHead className="px-6 py-3 text-gray-300">{t("projects.title")}</TableHead>
+                    <TableHead className="px-6 py-3 text-gray-300">{t("projects.status")}</TableHead>
+                    <TableHead className="px-6 py-3 text-right text-gray-300">{t("projects.actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
 
@@ -202,7 +205,7 @@ export default function ProjectsList() {
                       <TableCell className="px-6 py-4">
                         <Link
                           to={`/app/projects/${project.id}`}
-                          className="font-medium text-white hover:text-purple-500 hover:underline"
+                          className="font-medium text-gray-400 hover:text-gray-300 hover:underline"
                         >
                           {project.title}
                         </Link>
@@ -213,7 +216,7 @@ export default function ProjectsList() {
                       <TableCell className="px-6 py-4">
                         <div className="flex justify-end gap-2">
                           <Link to={`/app/projects/${project.id}`}>
-                            <Button size="sm" variant="outline">
+                            <Button size="sm" variant="outline" className="text-gray-400 border-gray-700 hover:bg-gray-900/20">
                               <Eye className="h-4 w-4 mr-1" />
                               {t("projects.view")}
                             </Button>
@@ -224,6 +227,7 @@ export default function ProjectsList() {
                               <Button
                                 size="sm"
                                 variant="outline"
+                                className="text-gray-400 border-gray-700 hover:bg-gray-900/20"
                                 onClick={() => {
                                   setEditingProject(project);
                                   setEditModalOpen(true);
@@ -236,6 +240,7 @@ export default function ProjectsList() {
                               <Button
                                 size="sm"
                                 variant="destructive"
+                                className="text-gray-400 border-gray-700"
                                 onClick={() => {
                                   setSelectedProject(project);
                                   setConfirmDialogOpen(true);
@@ -278,6 +283,6 @@ export default function ProjectsList() {
         project={editingProject}
         onSuccess={() => window.location.reload()}
       />
-    </div>
+    </div >
   );
 }
