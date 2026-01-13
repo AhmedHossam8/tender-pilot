@@ -181,10 +181,8 @@ const PublicLayout = () => {
             <div>
               <h4 className="font-bold text-lg mb-6 text-white">{t('footer.platform')}</h4>
               <ul className="space-y-3 text-sm">
-                <li><a href="/#about" className="text-slate-400 hover:text-white transition-colors hover:translate-x-1 inline-block">{t('footer.aboutUs')}</a></li>
                 <li><a href="/#features" className="text-slate-400 hover:text-white transition-colors hover:translate-x-1 inline-block">{t('footer.features')}</a></li>
                 <li><a href="/#how-it-works" className="text-slate-400 hover:text-white transition-colors hover:translate-x-1 inline-block">{t('footer.howItWorks')}</a></li>
-                <li><a href="#" className="text-slate-400 hover:text-white transition-colors hover:translate-x-1 inline-block">{t('footer.pricing')}</a></li>
               </ul>
             </div>
 

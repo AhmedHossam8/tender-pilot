@@ -1,16 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, CheckCircle, Users, Briefcase, Shield, Zap, MessageSquare, TrendingUp, Star, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from "react-router-dom";
 
 const LandingPage = () => {
   const { t } = useTranslation();
   const [scrollY, setScrollY] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleRegisterClick = () => {
+    navigate("/register");
+  }
+  const browseServices = () => {
+    navigate("/browse/services");
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 text-white overflow-hidden">
@@ -53,7 +62,10 @@ const LandingPage = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <button className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl font-semibold text-lg overflow-hidden transition-all hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/50">
+              <button
+                className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl font-semibold text-lg overflow-hidden transition-all hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/50"
+                onClick={handleRegisterClick}
+              >
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   {t('landing.hero.cta_main')}
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -61,7 +73,10 @@ const LandingPage = () => {
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
               </button>
 
-              <button className="px-8 py-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl font-semibold text-lg hover:bg-white/10 hover:border-white/20 transition-all hover:scale-105">
+              <button
+                className="px-8 py-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl font-semibold text-lg hover:bg-white/10 hover:border-white/20 transition-all hover:scale-105"
+                onClick={browseServices}
+              >
                 {t('landing.hero.cta_secondary')}
               </button>
             </div>
@@ -236,7 +251,10 @@ const LandingPage = () => {
           <p className="text-xl md:text-2xl mb-10 max-w-2xl mx-auto opacity-90">
             {t('landing.cta.subtitle')}
           </p>
-          <button className="group px-10 py-5 bg-white text-purple-600 rounded-xl font-bold text-lg hover:scale-105 transition-all hover:shadow-2xl hover:shadow-white/50">
+          <button
+            className="group px-10 py-5 bg-white text-purple-600 rounded-xl font-bold text-lg hover:scale-105 transition-all hover:shadow-2xl hover:shadow-white/50"
+            onClick={handleRegisterClick}
+          >
             <span className="flex items-center justify-center gap-2">
               {t('landing.cta.button')}
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
