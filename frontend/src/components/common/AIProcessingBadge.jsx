@@ -2,23 +2,17 @@ import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { Loader2, CheckCircle2, XCircle, Clock, Sparkles } from "lucide-react";
-import { Badge } from "@/components/ui";
+import { Badge } from "@/components/ui/Badge";
 
 /**
- * AI Processing Status Badge Component
+ * AIProcessingBadge Component
  * Displays the current status of AI processing operations
- * 
- * @param {Object} props
- * @param {string} props.status - Status: pending|processing|completed|failed|cancelled
- * @param {boolean} props.showIcon - Whether to show status icon
- * @param {boolean} props.animated - Whether to animate the badge
- * @param {string} props.className - Additional CSS classes
  */
-export function AIProcessingBadge({ 
-  status = "pending", 
-  showIcon = true, 
+export function AIProcessingBadge({
+  status = "pending",
+  showIcon = true,
   animated = true,
-  className 
+  className
 }) {
   const { t } = useTranslation();
 
@@ -59,8 +53,8 @@ export function AIProcessingBadge({
   const Icon = config.icon;
 
   return (
-    <Badge 
-      variant={config.variant} 
+    <Badge
+      variant={config.variant}
       className={cn(
         "flex items-center gap-1.5",
         animated && status === "processing" && "animate-pulse",
@@ -74,12 +68,11 @@ export function AIProcessingBadge({
 }
 
 /**
- * AI Request Info Card
+ * AIRequestInfo Component
  * Shows detailed information about an AI request
  */
 export function AIRequestInfo({ request, className }) {
   const { t } = useTranslation();
-
   if (!request) return null;
 
   return (
@@ -105,15 +98,13 @@ export function AIRequestInfo({ request, className }) {
           <span className="text-muted-foreground">{t("aiEngine.tokensUsed")}:</span>
           <p className="font-medium">
             {request.input_tokens && request.output_tokens
-              ? `${request.input_tokens + request.output_tokens}`
+              ? request.input_tokens + request.output_tokens
               : "N/A"}
           </p>
         </div>
         <div>
           <span className="text-muted-foreground">{t("aiEngine.cost")}:</span>
-          <p className="font-medium">
-            {request.cost ? `$${request.cost.toFixed(4)}` : "N/A"}
-          </p>
+          <p className="font-medium">{request.cost ? `$${request.cost.toFixed(4)}` : "N/A"}</p>
         </div>
       </div>
 
@@ -133,8 +124,8 @@ export function AIRequestInfo({ request, className }) {
 }
 
 /**
- * AI Processing List Item
- * Shows a compact view of an AI processing item in a list
+ * AIProcessingListItem Component
+ * Compact view of an AI processing item in a list
  */
 export function AIProcessingListItem({ request, onClick, className }) {
   const { t } = useTranslation();

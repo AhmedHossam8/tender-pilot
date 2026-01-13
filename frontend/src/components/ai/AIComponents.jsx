@@ -28,10 +28,10 @@ export const AIComplexityBadge = ({ complexity }) => {
 };
 
 /**
- * AI Match Score Display
- * Shows the AI match score for a bid (0-100)
+ * AI Match Score Badge (compact)
+ * Shows a compact AI match score for a bid (0-100)
  */
-export const AIMatchScore = ({ score, size = 'md', showLabel = true }) => {
+export const AIMatchScoreBadge = ({ score, size = 'md', showLabel = true }) => {
   const { t } = useTranslation();
   if (score === null || score === undefined) return null;
 

@@ -33,7 +33,22 @@ function AppLayout({ showFooter = false }) {
   }, []);
 
   return (
-    <div className={cn("min-h-screen bg-gray-100")} dir={isRtl ? "rtl" : "ltr"}>
+    <div
+      className={cn(
+        "min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 text-white relative overflow-hidden"
+      )}
+      dir={isRtl ? "rtl" : "ltr"}
+    >
+      {/* Animated Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1),transparent_50%)]" />
+        <div className="absolute top-0 -left-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
+        <div
+          className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: "1s" }}
+        />
+      </div>
+
       {/* Desktop Sidebar */}
       <div
         className={cn(
@@ -50,17 +65,19 @@ function AppLayout({ showFooter = false }) {
       </div>
 
       {/* Mobile Navigation */}
-      <MobileNav
-        isOpen={mobileNavOpen}
-        onClose={handleMobileMenuClose}
-        isRtl={isRtl}
-        unreadCount={unreadCount} // <-- pass safely
-      />
+      <div className="relative z-20 lg:hidden">
+        <MobileNav
+          isOpen={mobileNavOpen}
+          onClose={handleMobileMenuClose}
+          isRtl={isRtl}
+          unreadCount={unreadCount} // <-- pass safely
+        />
+      </div>
 
       {/* Main content */}
       <div
         className={cn(
-          "flex flex-col min-h-screen transition-all duration-300",
+          "flex flex-col min-h-screen transition-all duration-300 relative z-10",
           sidebarCollapsed
             ? isRtl
               ? "lg:pr-16"

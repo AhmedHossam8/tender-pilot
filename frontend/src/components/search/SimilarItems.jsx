@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Sparkles, Briefcase, ShoppingBag, User, ChevronRight } from 'lucide-react';
-import SearchService from '../../services/search.service';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { Sparkles, Briefcase, ShoppingBag, User, ChevronRight } from "lucide-react";
+import { Card, CardHeader, CardContent, Badge, Button } from "@/components/ui";
+import SearchService from "../../services/search.service";
 
 /**
  * SimilarItems Component
@@ -12,9 +13,7 @@ const SimilarItems = ({ itemType, itemId, title = "Similar Items" }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (itemType && itemId) {
-      fetchSimilarItems();
-    }
+    if (itemType && itemId) fetchSimilarItems();
   }, [itemType, itemId]);
 
   const fetchSimilarItems = async () => {
@@ -23,63 +22,45 @@ const SimilarItems = ({ itemType, itemId, title = "Similar Items" }) => {
       const response = await SearchService.getSimilarItems(itemType, itemId, 4);
       setSimilar(response.similar_items || []);
     } catch (error) {
-      console.error('Failed to fetch similar items:', error);
+      console.error("Failed to fetch similar items:", error);
       setSimilar([]);
     } finally {
       setLoading(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Sparkles className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-        </div>
-        <div className="space-y-3">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="animate-pulse">
-              <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-              <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (!similar || similar.length === 0) {
-    return null;
-  }
+  if (!similar || similar.length === 0) return null;
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <div className="flex items-center gap-2 mb-4">
-        <Sparkles className="h-5 w-5 text-primary" />
-        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-        <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full font-medium">
-          AI Powered
-        </span>
-      </div>
+    <Card className="bg-white/5 border-white/10 text-white rounded-xl">
+      <CardHeader className="flex items-center gap-2">
+        <Sparkles className="h-5 w-5 text-blue-400" />
+        <h3 className="text-lg font-semibold text-white">{title}</h3>
+        <Badge variant="secondary" className="ml-auto">AI Powered</Badge>
+      </CardHeader>
 
-      <div className="space-y-3">
-        {similar.map((item) => (
-          <SimilarItemCard key={item.id} item={item} />
-        ))}
-      </div>
-    </div>
+      <CardContent className="space-y-3">
+        {loading
+          ? [...Array(3)].map((_, i) => (
+            <div key={i} className="animate-pulse space-y-2 bg-white/10 p-4 rounded-lg">
+              <div className="h-4 bg-white/20 rounded w-3/4"></div>
+              <div className="h-3 bg-white/20 rounded w-1/2"></div>
+            </div>
+          ))
+          : similar.map((item) => <SimilarItemCard key={item.id} item={item} />)}
+      </CardContent>
+    </Card>
   );
 };
 
 const SimilarItemCard = ({ item }) => {
   const getIcon = () => {
     switch (item.type) {
-      case 'project':
+      case "project":
         return <Briefcase className="h-4 w-4" />;
-      case 'service':
+      case "service":
         return <ShoppingBag className="h-4 w-4" />;
-      case 'provider':
+      case "provider":
         return <User className="h-4 w-4" />;
       default:
         return null;
@@ -88,81 +69,62 @@ const SimilarItemCard = ({ item }) => {
 
   const getRoute = () => {
     switch (item.type) {
-      case 'project':
+      case "project":
         return `/projects/${item.id}`;
-      case 'service':
+      case "service":
         return `/services/${item.id}`;
-      case 'provider':
+      case "provider":
         return `/profiles/${item.id}`;
       default:
-        return '#';
+        return "#";
     }
   };
 
   const getTypeLabel = () => {
     switch (item.type) {
-      case 'project':
-        return 'Project';
-      case 'service':
-        return 'Service';
-      case 'provider':
-        return 'Provider';
+      case "project":
+        return "Project";
+      case "service":
+        return "Service";
+      case "provider":
+        return "Provider";
       default:
-        return '';
+        return "";
     }
   };
 
   return (
-    <Link
-      to={getRoute()}
-      className="block p-3 rounded-lg border border-gray-200 hover:border-primary hover:bg-primary/5 transition-all group"
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-gray-400 group-hover:text-primary transition-colors">
-              {getIcon()}
-            </span>
-            <span className="text-xs text-gray-500 uppercase font-medium">
-              {getTypeLabel()}
-            </span>
+    <Button asChild variant="ghost" className="w-full justify-start">
+      <Link to={getRoute()} className="block w-full">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-white/50">{getIcon()}</span>
+              <Badge variant="outline">{getTypeLabel()}</Badge>
+            </div>
+            <h4 className="font-medium text-white truncate">{item.title || item.name}</h4>
+            {(item.description || item.bio) && (
+              <p className="text-sm text-white/60 line-clamp-2 mt-1">
+                {item.description || item.bio}
+              </p>
+            )}
+            <div className="flex gap-3 mt-2 text-green-400 text-xs">
+              {item.budget_range && <span>{item.budget_range}</span>}
+              {item.base_price && <span>From ${item.base_price}</span>}
+              {item.hourly_rate && <span>${item.hourly_rate}/hr</span>}
+              {item.rating && (
+                <span className="flex items-center gap-1">
+                  <span className="text-yellow-400">★</span>
+                  {item.rating.toFixed(1)}
+                </span>
+              )}
+            </div>
           </div>
-          <h4 className="font-medium text-gray-900 group-hover:text-primary transition-colors truncate">
-            {item.title || item.name}
-          </h4>
-          {item.description && (
-            <p className="text-sm text-gray-600 line-clamp-2 mt-1">
-              {item.description}
-            </p>
-          )}
-          {item.bio && (
-            <p className="text-sm text-gray-600 line-clamp-2 mt-1">
-              {item.bio}
-            </p>
-          )}
-        </div>
-        <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0 mt-1" />
-      </div>
 
-      {/* Additional info */}
-      <div className="flex gap-3 mt-2 text-xs text-gray-500">
-        {item.budget_range && (
-          <span className="text-green-600">{item.budget_range}</span>
-        )}
-        {item.base_price && (
-          <span className="text-green-600">From ${item.base_price}</span>
-        )}
-        {item.hourly_rate && (
-          <span className="text-green-600">${item.hourly_rate}/hr</span>
-        )}
-        {item.rating && (
-          <span className="flex items-center gap-1">
-            <span className="text-yellow-500">★</span>
-            {item.rating.toFixed(1)}
-          </span>
-        )}
-      </div>
-    </Link>
+          <ChevronRight className="h-4 w-4 text-white/50 mt-1 transition-transform group-hover:translate-x-1" />
+        </div>
+      </Link>
+    </Button>
   );
 };
 

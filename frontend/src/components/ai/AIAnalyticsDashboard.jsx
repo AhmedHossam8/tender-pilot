@@ -10,8 +10,7 @@
 
 import React from 'react';
 import { TrendingUp, Target, Award, AlertTriangle, CheckCircle, Info } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { useTranslation } from "react-i18next";
 
 export function AIAnalyticsDashboard({ analysisData, bidData }) {
@@ -23,7 +22,7 @@ export function AIAnalyticsDashboard({ analysisData, bidData }) {
     market_insights = {},
     suggestions = []
   } = analysisData || {};
-  
+
   return (
     <div className="space-y-6">
       {/* Header Stats */}
@@ -50,7 +49,7 @@ export function AIAnalyticsDashboard({ analysisData, bidData }) {
           color="green"
         />
       </div>
-      
+
       {/* Bid Strength Breakdown */}
       <Card>
         <CardHeader>
@@ -85,7 +84,7 @@ export function AIAnalyticsDashboard({ analysisData, bidData }) {
           </div>
         </CardContent>
       </Card>
-      
+
       {/* Success Factors */}
       <Card>
         <CardHeader>
@@ -113,7 +112,7 @@ export function AIAnalyticsDashboard({ analysisData, bidData }) {
                 ))}
               </div>
             </div>
-            
+
             {/* Improvement Areas */}
             <div className="space-y-3">
               <h4 className="text-sm font-semibold flex items-center gap-2">
@@ -135,7 +134,7 @@ export function AIAnalyticsDashboard({ analysisData, bidData }) {
           </div>
         </CardContent>
       </Card>
-      
+
       {/* Market Insights */}
       {market_insights && Object.keys(market_insights).length > 0 && (
         <Card>
@@ -186,13 +185,13 @@ function StatCard({ icon: Icon, label, value, trend, color }) {
     purple: 'bg-purple-50 text-purple-700 border-purple-200',
     green: 'bg-green-50 text-green-700 border-green-200',
   };
-  
+
   const trendColors = {
     high: 'text-green-600',
     medium: 'text-yellow-600',
     low: 'text-red-600',
   };
-  
+
   return (
     <Card className={`border-2 ${colors[color]}`}>
       <CardContent className="p-6">
@@ -220,13 +219,13 @@ function DimensionBar({ label, score, status, message }) {
     if (score >= 60) return 'bg-yellow-500';
     return 'bg-red-500';
   };
-  
+
   const getStatusIcon = (status) => {
     if (status === 'excellent' || status === 'good') return <CheckCircle className="h-4 w-4 text-green-500" />;
     if (status === 'fair' || status === 'medium') return <Info className="h-4 w-4 text-yellow-500" />;
     return <AlertTriangle className="h-4 w-4 text-red-500" />;
   };
-  
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
@@ -236,7 +235,17 @@ function DimensionBar({ label, score, status, message }) {
         </div>
         <span className="text-sm font-bold">{score}/100</span>
       </div>
-      <Progress value={score} className="h-2" indicatorClassName={getColor(score)} />
+      <div className="w-full bg-gray-200 rounded-full h-2">
+        <div
+          className={`h-2 rounded-full ${overallScore >= 80
+              ? "bg-green-500"
+              : overallScore >= 60
+                ? "bg-yellow-500"
+                : "bg-red-500"
+            }`}
+          style={{ width: `${overallScore}%` }}
+        />
+      </div>
       {message && <p className="text-xs text-gray-600">{message}</p>}
     </div>
   );

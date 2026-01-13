@@ -9,20 +9,22 @@
  */
 
 // Basic AI Components
-export { 
-  AIComplexityBadge, 
-  AIMatchScore, 
-  AISummaryCard, 
+export {
+  AIComplexityBadge,
+  AISummaryCard,
   AIFeedbackDisplay,
-  AIProcessingIndicator 
-} from './AIComponents';
+  AIProcessingIndicator,
+  AIMatchScoreBadge,
+} from "./AIComponents";
+
+// Detailed AI Match Score component
+export { default as AIMatchScore } from "./AIMatchScore";
 
 // Advanced AI Features
-export { AIAssistant } from './AIAssistant';
-export { AIAnalyticsDashboard } from './AIAnalyticsDashboard';
-export { SmartRecommendations } from './SmartRecommendations';
-export { RealTimeBidOptimizer } from './RealTimeBidOptimizer';
+export { AIAssistant } from "./AIAssistant";
+export { AIAnalyticsDashboard } from "./AIAnalyticsDashboard";
+export { SmartRecommendations } from "./SmartRecommendations";
+export { RealTimeBidOptimizer } from "./RealTimeBidOptimizer";
 
-// Legacy export
-export { default as AIMatchScore } from './AIMatchScore';
-export { default as AILoadingIndicator } from './AILoadingIndicator';
+// Legacy / utility exports
+export { default as AILoadingIndicator } from "./AILoadingIndicator";

@@ -152,7 +152,7 @@ const SettingsPage = () => {
   }
 
   return (
-    <div className="p-8 min-h-screen bg-background">
+    <div className="p-8 min-h-screen">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold mb-8">{t('settings.title')}</h1>
 

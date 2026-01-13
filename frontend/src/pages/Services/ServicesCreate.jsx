@@ -18,15 +18,13 @@ function ServicesCreate({ isOpen, setOpen }) {
     const { t } = useTranslation();
     const { createServiceMutation } = useServices();
 
-    // Local form state for the service + packages
+    // Local form state for service + packages
     const [localServiceData, setLocalServiceData] = useState({
         name: "",
         description: "",
     });
 
-    const [localPackages, setLocalPackages] = useState([
-        { price: "", duration_hours: "" },
-    ]);
+    const [localPackages, setLocalPackages] = useState([{ price: "", duration_hours: "" }]);
 
     const handlePackageFieldChange = (index, field, value) => {
         const newPackages = [...localPackages];
@@ -47,8 +45,7 @@ function ServicesCreate({ isOpen, setOpen }) {
             { serviceData: localServiceData, packages: formattedPackages },
             {
                 onSuccess: () => {
-                    toast.success(t('notifications.success'));
-                    // Defer state updates to avoid setState during render warning
+                    toast.success(t("notifications.success"));
                     setTimeout(() => {
                         setLocalServiceData({ name: "", description: "" });
                         setLocalPackages([{ price: "", duration_hours: "" }]);
@@ -57,28 +54,27 @@ function ServicesCreate({ isOpen, setOpen }) {
                 },
                 onError: (error) => {
                     console.error("Service creation error:", error);
-                    toast.error(t('notifications.error'));
+                    toast.error(t("notifications.error"));
                 },
             }
         );
     };
 
-    // Check loading state from the mutation
     const isLoading = createServiceMutation.isPending ?? createServiceMutation.isLoading ?? false;
 
     return (
         <Dialog open={isOpen} onOpenChange={setOpen}>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl bg-[#101825] text-white rounded-xl shadow-lg p-6">
                 <DialogHeader>
-                    <DialogTitle>{t('services.createTitle')}</DialogTitle>
-                    <DialogDescription>
-                        {t('services.createDescription')}
+                    <DialogTitle className="text-white">{t("services.createTitle")}</DialogTitle>
+                    <DialogDescription className="text-slate-400">
+                        {t("services.createDescription")}
                     </DialogDescription>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4 mt-4">
                     <Input
-                        placeholder={t('services.serviceName')}
+                        placeholder={t("services.serviceName")}
                         value={localServiceData.name}
                         onChange={(e) =>
                             setLocalServiceData({ ...localServiceData, name: e.target.value })
@@ -87,13 +83,10 @@ function ServicesCreate({ isOpen, setOpen }) {
                     />
 
                     <Textarea
-                        placeholder={t('services.serviceDescription')}
+                        placeholder={t("services.serviceDescription")}
                         value={localServiceData.description}
                         onChange={(e) =>
-                            setLocalServiceData({
-                                ...localServiceData,
-                                description: e.target.value,
-                            })
+                            setLocalServiceData({ ...localServiceData, description: e.target.value })
                         }
                         rows={5}
                     />
@@ -104,11 +97,9 @@ function ServicesCreate({ isOpen, setOpen }) {
                                 type="number"
                                 step="0.01"
                                 min="0"
-                                placeholder={t('services.price')}
+                                placeholder={t("services.price")}
                                 value={pkg.price}
-                                onChange={(e) =>
-                                    handlePackageFieldChange(idx, "price", e.target.value)
-                                }
+                                onChange={(e) => handlePackageFieldChange(idx, "price", e.target.value)}
                                 required
                                 className="flex-1"
                             />
@@ -116,11 +107,9 @@ function ServicesCreate({ isOpen, setOpen }) {
                                 type="number"
                                 step="0.5"
                                 min="0.5"
-                                placeholder={t('services.hours')}
+                                placeholder={t("services.hours")}
                                 value={pkg.duration_hours}
-                                onChange={(e) =>
-                                    handlePackageFieldChange(idx, "duration_hours", e.target.value)
-                                }
+                                onChange={(e) => handlePackageFieldChange(idx, "duration_hours", e.target.value)}
                                 required
                                 className="flex-1"
                             />
@@ -132,7 +121,7 @@ function ServicesCreate({ isOpen, setOpen }) {
                                         setLocalPackages(localPackages.filter((_, i) => i !== idx))
                                     }
                                 >
-                                    {t('services.remove')}
+                                    {t("services.remove")}
                                 </Button>
                             )}
                         </div>
@@ -141,15 +130,12 @@ function ServicesCreate({ isOpen, setOpen }) {
                     <Button
                         type="button"
                         onClick={() =>
-                            setLocalPackages([
-                                ...localPackages,
-                                { price: "", duration_hours: "" },
-                            ])
+                            setLocalPackages([...localPackages, { price: "", duration_hours: "" }])
                         }
                         className="w-full"
                         variant="outline"
                     >
-                        {t('services.addPackage')}
+                        {t("services.addPackage")}
                     </Button>
 
                     <Button
@@ -158,10 +144,8 @@ function ServicesCreate({ isOpen, setOpen }) {
                         variant="success"
                         className="w-full mt-4"
                     >
-                        {isLoading && (
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        )}
-                        {isLoading ? t('services.creating') : t('services.createService')}
+                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {isLoading ? t("services.creating") : t("services.createService")}
                     </Button>
                 </form>
             </DialogContent>

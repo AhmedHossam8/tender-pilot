@@ -2,18 +2,16 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { CheckCircle2, MapPin } from 'lucide-react';
+import { Badge, Button } from '../ui';
 import SkillBadge from './SkillBadge';
+import StarRating from './StarRating';
 
-/**
- * ProviderCard Component
- * Displays provider profile information in a card format
- */
 const ProviderCard = ({ provider, showFullDetails = false, onSelect }) => {
   const { t } = useTranslation();
   const {
     user_id,
     user_full_name,
-    user_email,
     headline,
     bio,
     skills = [],
@@ -24,10 +22,17 @@ const ProviderCard = ({ provider, showFullDetails = false, onSelect }) => {
     avatar,
   } = provider;
 
+  const getScoreColor = (score) => {
+    if (score >= 90) return 'bg-green-500';
+    if (score >= 70) return 'bg-blue-500';
+    if (score >= 50) return 'bg-yellow-500';
+    return 'bg-red-500';
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border border-gray-200">
+    <div className="bg-card border border-muted rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 flex flex-col gap-4">
       {/* Header */}
-      <div className="flex items-start gap-4 mb-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
         {/* Avatar */}
         <div className="flex-shrink-0">
           {avatar ? (
@@ -43,38 +48,25 @@ const ProviderCard = ({ provider, showFullDetails = false, onSelect }) => {
           )}
         </div>
 
-        {/* Name and headline */}
+        {/* Name and Headline */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="text-lg font-semibold text-gray-900 truncate">
+            <h3 className="text-lg font-semibold text-foreground truncate">
               {user_full_name}
             </h3>
             {verified && (
-              <svg
-                className="w-5 h-5 text-blue-500 flex-shrink-0"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                title="Verified"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              <Badge variant="success" className="flex items-center gap-1">
+                <CheckCircle2 className="w-4 h-4" />
+                {t('verified', 'Verified')}
+              </Badge>
             )}
           </div>
-          
           {headline && (
-            <p className="text-sm text-gray-600 mt-1">{headline}</p>
+            <p className="text-sm text-muted-foreground mt-1">{headline}</p>
           )}
-
           {location && (
-            <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
+            <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
+              <MapPin className="w-4 h-4 text-muted-foreground" />
               <span>{location}</span>
             </div>
           )}
@@ -82,44 +74,42 @@ const ProviderCard = ({ provider, showFullDetails = false, onSelect }) => {
 
         {/* Hourly Rate */}
         {hourly_rate && (
-          <div className="text-right flex-shrink-0">
-            <p className="text-2xl font-bold text-gray-900">${hourly_rate}</p>
-            <p className="text-xs text-gray-500">{t('perHour')}</p>
+          <div className="text-right flex-shrink-0 mt-2 sm:mt-0">
+            <p className="text-2xl font-bold text-foreground">${hourly_rate}</p>
+            <p className="text-xs text-muted-foreground">{t('perHour')}</p>
           </div>
         )}
       </div>
 
       {/* Bio */}
       {bio && (
-        <p className={`text-gray-700 mb-4 ${!showFullDetails && 'line-clamp-2'}`}>
+        <p className={`text-muted-foreground mb-4 ${!showFullDetails ? 'line-clamp-2' : ''}`}>
           {bio}
         </p>
       )}
 
       {/* Skills */}
       {skills.length > 0 && (
-        <div className="mb-4">
-          <div className="flex flex-wrap gap-2">
-            {skills.slice(0, showFullDetails ? undefined : 5).map((skill) => (
-              <SkillBadge key={skill.id || skill.name} skill={skill} size="sm" />
-            ))}
-            {!showFullDetails && skills.length > 5 && (
-              <span className="text-sm text-gray-500">+{skills.length - 5} more</span>
-            )}
-          </div>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {skills.slice(0, showFullDetails ? undefined : 5).map((skill) => (
+            <SkillBadge key={skill.id || skill.name} skill={skill} size="sm" />
+          ))}
+          {!showFullDetails && skills.length > 5 && (
+            <span className="text-sm text-muted-foreground">+{skills.length - 5} more</span>
+          )}
         </div>
       )}
 
-      {/* Profile Score */}
-      {ai_profile_score > 0 && (
+      {/* Profile Completeness */}
+      {typeof ai_profile_score === 'number' && ai_profile_score > 0 && (
         <div className="mb-4">
           <div className="flex items-center justify-between text-sm mb-1">
-            <span className="text-gray-600">Profile Completeness</span>
-            <span className="font-medium text-gray-900">{ai_profile_score}%</span>
+            <span className="text-muted-foreground">{t('profile.completeness.title', 'Profile Completeness')}</span>
+            <span className="font-medium text-foreground">{ai_profile_score}%</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-muted/20 rounded-full h-2 overflow-hidden">
             <div
-              className="bg-green-500 h-2 rounded-full transition-all"
+              className={`h-2 rounded-full transition-all ${getScoreColor(ai_profile_score)}`}
               style={{ width: `${ai_profile_score}%` }}
             />
           </div>
@@ -127,20 +117,23 @@ const ProviderCard = ({ provider, showFullDetails = false, onSelect }) => {
       )}
 
       {/* Actions */}
-      <div className="flex gap-2 mt-4">
-        <Link
+      <div className="flex flex-col sm:flex-row gap-2 mt-4">
+        <Button
+          as={Link}
           to={`/profiles/${user_id}`}
-          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-center font-medium"
+          className="flex-1 text-center"
         >
-          View Profile
-        </Link>
+          {t('viewProfile', 'View Profile')}
+        </Button>
+
         {onSelect && (
-          <button
+          <Button
+            variant="outline"
             onClick={() => onSelect(provider)}
-            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+            className="flex-1"
           >
-            Select
-          </button>
+            {t('select', 'Select')}
+          </Button>
         )}
       </div>
     </div>
@@ -151,14 +144,12 @@ ProviderCard.propTypes = {
   provider: PropTypes.shape({
     user_id: PropTypes.number.isRequired,
     user_full_name: PropTypes.string.isRequired,
-    user_email: PropTypes.string,
     headline: PropTypes.string,
     bio: PropTypes.string,
     skills: PropTypes.arrayOf(
       PropTypes.shape({
         id: PropTypes.number,
         name: PropTypes.string.isRequired,
-        category: PropTypes.string,
       })
     ),
     hourly_rate: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),

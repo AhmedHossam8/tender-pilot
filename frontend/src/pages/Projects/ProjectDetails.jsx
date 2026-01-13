@@ -26,7 +26,8 @@ import {
 } from "@/components/ui";
 import { ConfirmDialog } from "@/components/common";
 import { StatusBadge } from "@/components/ui";
-import { AISummaryCard, AIMatchScore, AIComplexityBadge } from "@/components/ai/AIComponents";
+import { AISummaryCard, AIMatchScoreBadge, AIComplexityBadge } from "@/components/ai/AIComponents";
+import { AIMatchScore } from "@/components/ai";
 import { Lightbulb, User } from 'lucide-react';
 
 import ProjectEditModal from "./ProjectEditModal";

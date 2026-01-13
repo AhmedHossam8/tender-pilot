@@ -20,8 +20,6 @@ import {
     SelectItem,
 } from "@/components/ui";
 
-import { LoadingSpinner } from "@/components/common";
-
 export default function ProjectEditModal({ open, onOpenChange, project, onSuccess }) {
     const { t } = useTranslation();
     const { updateProject } = useProjects();
@@ -53,24 +51,23 @@ export default function ProjectEditModal({ open, onOpenChange, project, onSucces
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         try {
             let payload;
             let headers = {};
 
-            // Use FormData only if there's an attachment
             if (form.attachment) {
                 payload = new FormData();
                 payload.append("title", form.title);
                 payload.append("description", form.description);
                 payload.append("budget", form.budget);
                 payload.append("category_id", form.categoryId);
-                payload.append("skill_ids", JSON.stringify(form.skillIds.map((id) => parseInt(id))));
+                payload.append(
+                    "skill_ids",
+                    JSON.stringify(form.skillIds.map((id) => parseInt(id)))
+                );
                 payload.append("attachments", form.attachment);
-
                 headers["Content-Type"] = "multipart/form-data";
             } else {
-                // Send JSON if no file
                 payload = {
                     title: form.title,
                     description: form.description,
@@ -90,25 +87,28 @@ export default function ProjectEditModal({ open, onOpenChange, project, onSucces
             onOpenChange(false);
             onSuccess?.(updated);
         } catch (err) {
-            console.log(err.response?.data); // DRF validation errors
+            console.log(err.response?.data);
             toast.error(t("project.updateError"));
         }
     };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl bg-[#101825] text-white">
                 <DialogHeader>
                     <DialogTitle>{t("project.edit")}</DialogTitle>
-                    <DialogDescription>{t("project.editDescription")}</DialogDescription>
+                    <DialogDescription className="text-gray-400">
+                        {t("project.editDescription")}
+                    </DialogDescription>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4 mt-2">
                     <Input
                         placeholder={t("project.title")}
                         value={form.title}
                         onChange={(e) => setForm({ ...form, title: e.target.value })}
                         required
+                        className="bg-[#1c1f2a] text-white border-gray-700 placeholder-gray-400 focus:ring-purple-500"
                     />
 
                     <Textarea
@@ -116,6 +116,7 @@ export default function ProjectEditModal({ open, onOpenChange, project, onSucces
                         value={form.description}
                         onChange={(e) => setForm({ ...form, description: e.target.value })}
                         rows={6}
+                        className="bg-[#1c1f2a] text-white border-gray-700 placeholder-gray-400 focus:ring-purple-500"
                     />
 
                     <Input
@@ -124,6 +125,7 @@ export default function ProjectEditModal({ open, onOpenChange, project, onSucces
                         value={form.budget}
                         onChange={(e) => setForm({ ...form, budget: e.target.value })}
                         required
+                        className="bg-[#1c1f2a] text-white border-gray-700 placeholder-gray-400 focus:ring-purple-500"
                     />
 
                     <Input
@@ -131,6 +133,7 @@ export default function ProjectEditModal({ open, onOpenChange, project, onSucces
                         onChange={(e) =>
                             setForm({ ...form, attachment: e.target.files?.[0] || null })
                         }
+                        className="bg-[#1c1f2a] text-white border-gray-700 placeholder-gray-400"
                     />
 
                     <Select
@@ -138,10 +141,10 @@ export default function ProjectEditModal({ open, onOpenChange, project, onSucces
                         onValueChange={(value) => setForm({ ...form, categoryId: value })}
                         disabled={categoriesLoading}
                     >
-                        <SelectTrigger>
+                        <SelectTrigger className="bg-[#1c1f2a] text-white border-gray-700 focus:ring-purple-500">
                             <SelectValue placeholder={t("project.selectCategory")} />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-[#101825] text-white">
                             {categories?.map((category) => (
                                 <SelectItem key={category.id} value={category.id.toString()}>
                                     {category.name}
@@ -163,14 +166,19 @@ export default function ProjectEditModal({ open, onOpenChange, project, onSucces
                                             : form.skillIds.filter((id) => id !== skill.id.toString());
                                         setForm({ ...form, skillIds: updated });
                                     }}
+                                    className="accent-purple-500"
                                 />
                                 <span>{skill.name}</span>
                             </label>
                         ))}
                     </div>
 
-                    <Button type="submit" disabled={updateProject.isPending}>
-                        {updateProject.isPending && <LoadingSpinner size="sm" className="mr-2" />}
+                    <Button
+                        type="submit"
+                        className="bg-purple-600 hover:bg-purple-700 border-0"
+                        disabled={updateProject.isPending}
+                    >
+                        {updateProject.isPending && <span className="loader mr-2"></span>}
                         {t("project.update")}
                     </Button>
                 </form>

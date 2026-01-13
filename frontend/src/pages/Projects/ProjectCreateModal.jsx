@@ -1,11 +1,16 @@
 import { useState } from "react";
 import { useProjects } from "../../hooks/useProjects";
+import { useCategories, useSkills } from "@/hooks/useCore";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { useCategories, useSkills } from "@/hooks/useCore";
 import { Loader2 } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui";
+
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Button,
   Input,
   Textarea,
@@ -16,8 +21,8 @@ import {
   DialogTrigger,
 } from "@/components/ui";
 
-function ProjectCreateModal({ trigger, onSuccess }) {
-  const { t, i18n } = useTranslation();
+export default function ProjectCreateModal({ trigger, onSuccess }) {
+  const { t } = useTranslation();
   const { createProject } = useProjects();
   const { data: categories, isLoading: categoriesLoading } = useCategories();
   const { data: skills, isLoading: skillsLoading } = useSkills();
@@ -42,7 +47,6 @@ function ProjectCreateModal({ trigger, onSuccess }) {
       formData.append("budget", form.budget);
       formData.append("category_id", form.categoryId);
 
-      // optional skills
       if (form.skillId) {
         formData.append("skill_ids", form.skillId);
       }
@@ -71,42 +75,41 @@ function ProjectCreateModal({ trigger, onSuccess }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger}
-      </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      <DialogContent className="max-w-2xl bg-[#101825] text-white">
         <DialogHeader>
           <DialogTitle>{t("project.create")}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+
+        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           <Input
-            placeholder="Title"
+            placeholder={t("project.title")}
             value={form.title}
-            onChange={(e) =>
-              setForm({ ...form, title: e.target.value })
-            }
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
             required
+            className="bg-[#1c1f2a] text-white border-gray-700 placeholder-gray-400 focus:ring-purple-500"
           />
 
           <Textarea
-            placeholder="Description"
+            placeholder={t("project.description")}
             value={form.description}
             onChange={(e) =>
               setForm({ ...form, description: e.target.value })
             }
             rows={6}
+            className="bg-[#1c1f2a] text-white border-gray-700 placeholder-gray-400 focus:ring-purple-500"
           />
 
           <Input
             type="number"
             step="0.01"
-            placeholder="Budget"
+            placeholder={t("project.budget")}
             value={form.budget}
             onChange={(e) => setForm({ ...form, budget: e.target.value })}
             required
+            className="bg-[#1c1f2a] text-white border-gray-700 placeholder-gray-400 focus:ring-purple-500"
           />
 
-          {/* Optional attachment */}
           <Input
             type="file"
             aria-label={t("project.attachment")}
@@ -116,6 +119,7 @@ function ProjectCreateModal({ trigger, onSuccess }) {
                 attachment: e.target.files?.[0] || null,
               })
             }
+            className="bg-[#1c1f2a] text-white border-gray-700 placeholder-gray-400"
           />
 
           <Select
@@ -123,10 +127,10 @@ function ProjectCreateModal({ trigger, onSuccess }) {
             onValueChange={(value) => setForm({ ...form, categoryId: value })}
             disabled={categoriesLoading}
           >
-            <SelectTrigger>
-              <SelectValue placeholder="Select a category" />
+            <SelectTrigger className="bg-[#1c1f2a] text-white border-gray-700 focus:ring-purple-500">
+              <SelectValue placeholder={t("project.selectCategory")} />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-[#101825] text-white">
               {categories?.map((category) => (
                 <SelectItem key={category.id} value={String(category.id)}>
                   {category.name}
@@ -140,10 +144,10 @@ function ProjectCreateModal({ trigger, onSuccess }) {
             onValueChange={(value) => setForm({ ...form, skillId: value })}
             disabled={skillsLoading}
           >
-            <SelectTrigger>
-              <SelectValue placeholder="Select skills" />
+            <SelectTrigger className="bg-[#1c1f2a] text-white border-gray-700 focus:ring-purple-500">
+              <SelectValue placeholder={t("project.selectSkills")} />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-[#101825] text-white">
               {skills?.map((skill) => (
                 <SelectItem key={skill.id} value={String(skill.id)}>
                   {skill.name}
@@ -152,14 +156,18 @@ function ProjectCreateModal({ trigger, onSuccess }) {
             </SelectContent>
           </Select>
 
-          <Button type="submit" disabled={createProject.isPending}>
-            {createProject.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            Create Project
+          <Button
+            type="submit"
+            className="bg-purple-600 hover:bg-purple-700 border-0"
+            disabled={createProject.isPending}
+          >
+            {createProject.isPending && (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            )}
+            {t("project.create")}
           </Button>
         </form>
       </DialogContent>
     </Dialog>
   );
 }
-
-export default ProjectCreateModal;

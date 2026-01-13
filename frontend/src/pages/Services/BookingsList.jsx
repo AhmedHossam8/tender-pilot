@@ -41,15 +41,9 @@ const BookingsList = () => {
     const [selectedBooking, setSelectedBooking] = React.useState(null);
     const [newStatus, setNewStatus] = React.useState("");
 
-    // Check if user is provider
     const isProvider = user?.user_type === "provider" || user?.user_type === "both";
 
-    const {
-        data: bookings,
-        isLoading,
-        isError,
-        error,
-    } = useQuery({
+    const { data: bookings, isLoading, isError, error } = useQuery({
         queryKey: ["bookings"],
         queryFn: async () => {
             const res = await bookingService.getAll();
@@ -57,7 +51,6 @@ const BookingsList = () => {
         },
     });
 
-    // Status update mutation (provider only)
     const statusMutation = useMutation({
         mutationFn: ({ bookingId, status }) => bookingService.update(bookingId, { status }),
         onSuccess: () => {
@@ -71,20 +64,13 @@ const BookingsList = () => {
         },
     });
 
-    // Create conversation mutation
     const conversationMutation = useMutation({
         mutationFn: async (otherUserId) => {
-            // First check if conversation already exists
             const conversations = await messagingService.getConversations();
             const existingConv = conversations.find(conv =>
                 conv.participants.some(p => p.user === otherUserId)
             );
-
-            if (existingConv) {
-                return { data: existingConv };
-            }
-
-            // Create new conversation
+            if (existingConv) return { data: existingConv };
             return messagingService.createConversation([otherUserId]);
         },
         onSuccess: (response) => {
@@ -116,16 +102,13 @@ const BookingsList = () => {
     };
 
     const handleCreateConversation = (booking) => {
-        // Determine who to chat with
         const otherUserId = isProvider
-            ? booking.user?.id  // Provider chats with client
-            : booking.package?.service?.created_by?.id; // Client chats with provider
-
+            ? booking.user?.id
+            : booking.package?.service?.created_by?.id;
         if (!otherUserId) {
             toast.error(t("bookings.conversationError"));
             return;
         }
-
         conversationMutation.mutate(otherUserId);
     };
 
@@ -141,9 +124,10 @@ const BookingsList = () => {
         )
 
     return (
-        <div className="p-6 min-h-screen bg-background">
+        <div className="p-6 min-h-screen bg-[#101825] text-white">
             <h1 className="text-2xl font-bold mb-6">{t("bookings.title")}</h1>
-            <Table>
+
+            <Table className="border border-gray-700">
                 <TableHeader>
                     <TableRow>
                         <TableHead>{isProvider ? t("bookings.client") : t("bookings.provider")}</TableHead>
@@ -166,19 +150,13 @@ const BookingsList = () => {
                             "Unknown";
 
                         return (
-                            <TableRow key={booking.id}>
-                                <TableCell className="font-medium">
-                                    {isProvider ? clientName : providerName}
-                                </TableCell>
+                            <TableRow key={booking.id} className="hover:bg-gray-900">
+                                <TableCell className="font-medium">{isProvider ? clientName : providerName}</TableCell>
                                 <TableCell>{serviceName}</TableCell>
                                 <TableCell>{packageName}</TableCell>
                                 <TableCell>{packagePrice}</TableCell>
-                                <TableCell>
-                                    <StatusBadge status={booking.status} />
-                                </TableCell>
-                                <TableCell>
-                                    {new Date(booking.scheduled_for).toLocaleString()}
-                                </TableCell>
+                                <TableCell><StatusBadge status={booking.status} /></TableCell>
+                                <TableCell>{new Date(booking.scheduled_for).toLocaleString()}</TableCell>
                                 <TableCell className="text-right">
                                     <div className="flex justify-end gap-2">
                                         <Button
@@ -190,7 +168,6 @@ const BookingsList = () => {
                                             <Eye className="h-4 w-4" />
                                         </Button>
 
-                                        {/* Status change button - Provider only */}
                                         {isProvider && (
                                             <Button
                                                 size="icon"
@@ -203,7 +180,6 @@ const BookingsList = () => {
                                             </Button>
                                         )}
 
-                                        {/* Message button - Both can use */}
                                         <Button
                                             size="icon"
                                             variant="ghost"
@@ -225,10 +201,10 @@ const BookingsList = () => {
                 </TableBody>
             </Table>
 
-            {/* Status Change Dialog - Provider only */}
+            {/* Status Change Dialog */}
             {isProvider && (
                 <Dialog open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>
-                    <DialogContent>
+                    <DialogContent className="bg-[#101825] border border-gray-700 text-white">
                         <DialogHeader>
                             <DialogTitle>{t("bookings.updateBookingStatus")}</DialogTitle>
                             <DialogDescription>
@@ -237,12 +213,14 @@ const BookingsList = () => {
                         </DialogHeader>
                         <div className="space-y-4 py-4">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium">{t("bookings.newStatus")}</label>
+                                <label className="text-sm font-medium">{
+                                    t("bookings.newStatus")
+                                }</label>
                                 <Select value={newStatus} onValueChange={setNewStatus}>
-                                    <SelectTrigger>
+                                    <SelectTrigger className="bg-[#101825] border border-gray-700">
                                         <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent className="bg-[#101825] border border-gray-700">
                                         <SelectItem value="pending">{t("status.pending")}</SelectItem>
                                         <SelectItem value="confirmed">{t("status.confirmed")}</SelectItem>
                                         <SelectItem value="completed">{t("status.completed")}</SelectItem>
@@ -262,7 +240,7 @@ const BookingsList = () => {
                                 {statusMutation.isPending && (
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                 )}
-                                {t("bookings.updateStatus")}
+                                {t("bookingsupdateStatus")}
                             </Button>
                         </div>
                     </DialogContent>

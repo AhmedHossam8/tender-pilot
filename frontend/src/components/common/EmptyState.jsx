@@ -1,15 +1,19 @@
-import * as React from "react"
-import { cn } from "@/lib/utils"
-import { FileText, Search, FolderOpen, Plus, AlertCircle } from "lucide-react"
-import { Button } from "@/components/ui/Button"
-import { useTranslation } from "react-i18next"
+import * as React from "react";
+import { cn } from "@/lib/utils";
+import { FileText, Search, FolderOpen, Plus, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { useTranslation } from "react-i18next";
 
+/**
+ * EmptyState Component
+ * Displays an illustration, title, description, and optional action button
+ */
 const illustrations = {
   default: FolderOpen,
   "no-results": Search,
   "no-documents": FileText,
   error: AlertCircle,
-}
+};
 
 export function EmptyState({
   icon,
@@ -21,7 +25,7 @@ export function EmptyState({
   className,
 }) {
   const { t } = useTranslation();
-  const Icon = icon || illustrations[illustration] || illustrations.default
+  const Icon = icon || illustrations[illustration] || illustrations.default;
 
   return (
     <div
@@ -30,23 +34,32 @@ export function EmptyState({
         className
       )}
     >
+      {/* Illustration */}
       <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mb-4">
         <Icon className="h-8 w-8 text-muted-foreground" />
       </div>
-      <h3 className="text-lg font-semibold mb-1">{title || t('noDataFound')}</h3>
+
+      {/* Title */}
+      <h3 className="text-lg font-semibold mb-1">
+        {title || t("noDataFound")}
+      </h3>
+
+      {/* Description */}
       {description && (
         <p className="text-sm text-muted-foreground max-w-sm mb-4">
           {description}
         </p>
       )}
+
+      {/* Action Button */}
       {action && (
-        <Button onClick={action}>
+        <Button onClick={action} variant="default">
           <Plus className="h-4 w-4 mr-2" />
-          {actionLabel || t('createNew')}
+          {actionLabel || t("createNew")}
         </Button>
       )}
     </div>
-  )
+  );
 }
 
 export default EmptyState;

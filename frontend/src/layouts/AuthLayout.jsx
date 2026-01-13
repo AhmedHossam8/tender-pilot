@@ -19,30 +19,39 @@ function AuthLayout({ className }) {
   return (
     <div
       className={cn(
-        "min-h-screen flex flex-col bg-gray-100",
+        "min-h-screen flex flex-col bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 text-white",
         className
       )}
     >
       {/* Header */}
-      <header className="p-4">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-white font-bold text-lg">TP</span>
+      <header className="p-6">
+        <Link to="/" className="flex items-center gap-3 w-fit">
+          <div className="h-11 w-11 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+            <span className="text-white font-bold text-lg">SH</span>
           </div>
-          <span className="text-xl font-bold">{t('common.websiteName')}</span>
+          <span className="text-xl font-bold tracking-tight">
+            {t("common.websiteName")}
+          </span>
         </Link>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center p-4">
+      <main className="flex-1 flex items-center justify-center px-4">
         <div className="w-full max-w-md">
-          <Outlet />
+          {/* Glass container for auth pages */}
+          <div className="rounded-2xl bg-white/5 backdrop-blur border border-white/10 shadow-xl p-6 md:p-8">
+            <Outlet />
+          </div>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="p-4 text-center text-sm text-muted-foreground">
-        <p>{t('footer.copyright', { year: new Date().getFullYear() })}</p>
+      <footer className="p-6 text-center text-sm text-white/50">
+        <p>
+          {t("footer.copyright", {
+            year: new Date().getFullYear(),
+          })}
+        </p>
       </footer>
     </div>
   );

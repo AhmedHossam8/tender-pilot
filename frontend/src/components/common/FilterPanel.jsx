@@ -1,33 +1,29 @@
-import * as React from "react"
-import { cn } from "@/lib/utils"
-import { Filter, X } from "lucide-react"
-import { Button } from "@/components/ui/Button"
-import { Badge } from "@/components/ui/Badge"
-import { useTranslation } from "react-i18next"
+import * as React from "react";
+import { cn } from "@/lib/utils";
+import { Filter, X } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+import { Input } from "@/components/ui/Input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/Select";
+import { useTranslation } from "react-i18next";
 
-function FilterPanel({
-  filters,
-  activeFilters = {},
-  onFilterChange,
-  onClearFilters,
-  className,
-}) {
+function FilterPanel({ filters, activeFilters = {}, onFilterChange, onClearFilters, className }) {
   const { t } = useTranslation();
 
   const activeFilterCount = Object.values(activeFilters).filter(
-    (value) => value !== undefined && value !== "" && value !== null
-  ).length
+    (value) => value !== undefined && value !== "" && value !== null && !(Array.isArray(value) && value.length === 0)
+  ).length;
 
   const handleFilterChange = (key, value) => {
     onFilterChange?.({
       ...activeFilters,
       [key]: value,
-    })
-  }
+    });
+  };
 
   const handleClearAll = () => {
-    onClearFilters?.()
-  }
+    onClearFilters?.();
+  };
 
   return (
     <div className={cn("bg-card border rounded-lg max-h-96 overflow-y-auto", className)}>
@@ -57,71 +53,67 @@ function FilterPanel({
 
       {/* Filter Content */}
       <div className="p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filters.map((filter) => (
-              <div key={filter.key} className="space-y-1.5">
-                <label className="text-sm font-medium text-foreground">
-                  {filter.label}
-                </label>
-                {filter.type === "select" && (
-                  <select
-                    value={activeFilters[filter.key] || ""}
-                    onChange={(e) => handleFilterChange(filter.key, e.target.value)}
-                    className="w-full h-9 rounded-md border bg-transparent px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  >
-                    <option value="">{t('all')}</option>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {filters.map((filter) => (
+            <div key={filter.key} className="space-y-1.5">
+              <label className="text-sm font-medium text-foreground">{filter.label}</label>
+
+              {filter.type === "select" && (
+                <Select
+                  value={activeFilters[filter.key] || ""}
+                  onValueChange={(value) => handleFilterChange(filter.key, value)}
+                >
+                  <SelectTrigger className="h-9 text-sm">
+                    <SelectValue placeholder={t('all')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">{t('all')}</SelectItem>
                     {filter.options?.map((option) => (
-                      <option key={option.value} value={option.value}>
+                      <SelectItem key={option.value} value={option.value}>
                         {option.label}
-                      </option>
+                      </SelectItem>
                     ))}
-                  </select>
-                )}
-                {filter.type === "text" && (
-                  <input
-                    type="text"
-                    value={activeFilters[filter.key] || ""}
-                    onChange={(e) => handleFilterChange(filter.key, e.target.value)}
-                    placeholder={filter.placeholder}
-                    className="w-full h-9 rounded-md border bg-transparent px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  />
-                )}
-                {filter.type === "number" && (
-                  <input
-                    type="number"
-                    value={activeFilters[filter.key] || ""}
-                    onChange={(e) => handleFilterChange(filter.key, e.target.value)}
-                    placeholder={filter.placeholder}
-                    className="w-full h-9 rounded-md border bg-transparent px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  />
-                )}
-                {filter.type === "select-multiple" && (
-                  <div className="space-y-2">
-                    {filter.options?.map((option) => (
-                      <label key={option.value} className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          checked={(activeFilters[filter.key] || []).includes(option.value)}
-                          onChange={(e) => {
-                            const current = activeFilters[filter.key] || [];
-                            const newValue = e.target.checked
-                              ? [...current, option.value]
-                              : current.filter((v) => v !== option.value);
-                            handleFilterChange(filter.key, newValue);
-                          }}
-                          className="rounded border-gray-300"
-                        />
-                        <span className="text-sm">{option.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+                  </SelectContent>
+                </Select>
+              )}
+
+              {(filter.type === "text" || filter.type === "number") && (
+                <Input
+                  type={filter.type}
+                  value={activeFilters[filter.key] || ""}
+                  onChange={(e) => handleFilterChange(filter.key, e.target.value)}
+                  placeholder={filter.placeholder}
+                  className="h-9 text-sm"
+                />
+              )}
+
+              {filter.type === "select-multiple" && (
+                <div className="space-y-2">
+                  {filter.options?.map((option) => (
+                    <label key={option.value} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={(activeFilters[filter.key] || []).includes(option.value)}
+                        onChange={(e) => {
+                          const current = activeFilters[filter.key] || [];
+                          const newValue = e.target.checked
+                            ? [...current, option.value]
+                            : current.filter((v) => v !== option.value);
+                          handleFilterChange(filter.key, newValue);
+                        }}
+                        className="rounded border-gray-300"
+                      />
+                      <span className="text-sm">{option.label}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
+      </div>
     </div>
-  )
+  );
 }
 
-export { FilterPanel }
+export { FilterPanel };

@@ -290,7 +290,7 @@ const HelpPage = () => {
   };
 
   return (
-    <div className="p-8 min-h-screen bg-background">
+    <div className="p-8 min-h-screen">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">

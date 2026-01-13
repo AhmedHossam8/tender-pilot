@@ -1,18 +1,22 @@
 import { cn } from "@/lib/utils"
 
+// Base Skeleton
 function Skeleton({ className, ...props }) {
   return (
     <div
-      className={cn("animate-pulse rounded-md bg-muted", className)}
+      className={cn(
+        "animate-pulse rounded-md bg-gray-700/40", // darker, semi-transparent for dark theme
+        className
+      )}
       {...props}
     />
   )
 }
 
-// Pre-built skeleton patterns
+// Skeleton Card
 function SkeletonCard() {
   return (
-    <div className="rounded-lg border bg-card p-6 space-y-4">
+    <div className="rounded-lg border border-gray-700/50 bg-[#101825] p-6 space-y-4 shadow-sm">
       <div className="flex items-center justify-between">
         <Skeleton className="h-4 w-24" />
         <Skeleton className="h-4 w-4 rounded-full" />
@@ -23,17 +27,18 @@ function SkeletonCard() {
   )
 }
 
+// Skeleton Table
 function SkeletonTable({ rows = 5 }) {
   return (
     <div className="space-y-2">
-      <div className="flex gap-4 p-4 bg-muted rounded-t-lg">
+      <div className="flex gap-4 p-4 bg-gray-700/30 rounded-t-lg">
         <Skeleton className="h-4 w-24" />
         <Skeleton className="h-4 w-32" />
         <Skeleton className="h-4 w-20" />
         <Skeleton className="h-4 w-28" />
       </div>
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="flex gap-4 p-4 border-b">
+        <div key={i} className="flex gap-4 p-4 border-b border-gray-700/30">
           <Skeleton className="h-4 w-24" />
           <Skeleton className="h-4 w-32" />
           <Skeleton className="h-4 w-20" />
@@ -44,6 +49,7 @@ function SkeletonTable({ rows = 5 }) {
   )
 }
 
+// Skeleton List
 function SkeletonList({ items = 3 }) {
   return (
     <div className="space-y-4">
@@ -60,16 +66,17 @@ function SkeletonList({ items = 3 }) {
   )
 }
 
+// Skeleton Text
 function SkeletonText({ lines = 3 }) {
   return (
     <div className="space-y-2">
       {Array.from({ length: lines }).map((_, i) => (
-        <Skeleton 
-          key={i} 
+        <Skeleton
+          key={i}
           className={cn(
             "h-4",
             i === lines - 1 ? "w-3/4" : "w-full"
-          )} 
+          )}
         />
       ))}
     </div>

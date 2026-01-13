@@ -36,8 +36,8 @@ const ChatPage = () => {
     refetchInterval: 5000,
     retry: 2,
     retryDelay: 1000,
-    enabled: !!id, // Only run if we have an ID
-    staleTime: 1000, // Consider data stale after 1 second
+    enabled: !!id,
+    staleTime: 1000,
   });
 
   const sendMutation = useMutation({
@@ -70,13 +70,13 @@ const ChatPage = () => {
   if (isError) {
     return (
       <div className="container mx-auto p-4 max-w-4xl">
-        <Card>
+        <Card className="bg-gray-900 text-white">
           <CardContent className="p-6">
             <div className="text-center space-y-4">
               <h2 className="text-xl font-semibold text-destructive">
                 Failed to load conversation
               </h2>
-              <p className="text-muted-foreground">
+              <p className="text-gray-300">
                 {error?.message || 'An error occurred while loading messages'}
               </p>
               <div className="flex gap-2 justify-center">
@@ -108,30 +108,30 @@ const ChatPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-4 h-screen flex flex-col max-w-4xl">
+    <div className="container mx-auto p-4 h-screen flex flex-col max-w-4xl bg-[#101825]">
       {/* Header */}
-      <Card className="mb-4">
+      <Card className="mb-4 bg-gray-900 text-white">
         <CardHeader className="flex flex-row items-center gap-4 py-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate('/app/messages')}
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-5 w-5 text-white" />
           </Button>
-          <CardTitle className="text-xl">
+          <CardTitle className="text-xl text-white">
             {t('chat.title', 'Conversation')}
           </CardTitle>
         </CardHeader>
       </Card>
 
       {/* Messages Area */}
-      <Card className="flex-1 flex flex-col overflow-hidden">
+      <Card className="flex-1 flex flex-col overflow-hidden bg-gray-900 text-white">
         <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
           {isLoading ? (
             <div className="space-y-4">
               {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-16 w-3/4" />
+                <Skeleton key={i} className="h-16 w-3/4 bg-gray-700" />
               ))}
             </div>
           ) : !messages || messages.length === 0 ? (
@@ -156,18 +156,18 @@ const ChatPage = () => {
                     className={cn(
                       "rounded-lg px-4 py-2",
                       isOwnMessage
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted"
+                        ? "bg-primary text-white"
+                        : "bg-gray-700 text-white"
                     )}
                   >
                     {!isOwnMessage && msg.sender_name && (
-                      <div className="text-xs font-semibold mb-1 opacity-70">
+                      <div className="text-xs font-semibold mb-1 text-gray-300">
                         {msg.sender_name}
                       </div>
                     )}
                     <div className="break-words">{msg.content}</div>
                   </div>
-                  <div className="text-xs text-muted-foreground mt-1 px-2">
+                  <div className="text-xs text-gray-400 mt-1 px-2">
                     {formatTime(msg.timestamp)}
                   </div>
                 </div>
@@ -178,7 +178,7 @@ const ChatPage = () => {
         </CardContent>
 
         {/* Input Area */}
-        <div className="border-t p-4">
+        <div className="border-t border-gray-700 p-4">
           <form onSubmit={handleSend} className="flex gap-2">
             <Input
               type="text"
@@ -186,7 +186,7 @@ const ChatPage = () => {
               onChange={(e) => setMessage(e.target.value)}
               placeholder={t('chat.placeholder', 'Type a message...')}
               disabled={sendMutation.isPending || isLoading}
-              className="flex-1"
+              className="flex-1 bg-gray-800 text-white placeholder-gray-400 border-gray-600 focus:border-primary focus:ring-primary"
               autoFocus
             />
             <Button
@@ -195,9 +195,9 @@ const ChatPage = () => {
               size="icon"
             >
               {sendMutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin text-white" />
               ) : (
-                <Send className="h-4 w-4" />
+                <Send className="h-4 w-4 text-white" />
               )}
             </Button>
           </form>

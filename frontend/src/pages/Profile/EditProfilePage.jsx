@@ -1,103 +1,93 @@
-import React, { useState, useEffect } from 'react';
-import { useAuthStore } from '../../contexts/authStore';
-import ProfileService from '../../services/profile.service';
-import SkillBadge from '../../components/profile/SkillBadge';
-import ProfileCompletenessWidget from '../../components/profile/ProfileCompletenessWidget';
-import { toast } from 'sonner';
-import { useTranslation } from 'react-i18next';
+import React, { useState, useEffect } from "react";
+import { useAuthStore } from "@/contexts/authStore";
+import ProfileService from "@/services/profile.service";
+import SkillBadge from "@/components/profile/SkillBadge";
+import ProfileCompletenessWidget from "@/components/profile/ProfileCompletenessWidget";
+import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
-/**
- * EditProfilePage
- * Page for editing current user's profile
- */
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Button,
+  Input,
+  Textarea,
+  Badge,
+} from "@/components/ui";
+
 const EditProfilePage = () => {
   const { t } = useTranslation();
-  const { user, userType, profile, updateProfile } = useAuthStore();
+  const { userType, profile, updateProfile } = useAuthStore();
+
   const [loading, setLoading] = useState(false);
   const [skills, setSkills] = useState([]);
   const [selectedSkills, setSelectedSkills] = useState([]);
+  const [newLanguage, setNewLanguage] = useState("");
+
   const [formData, setFormData] = useState({
-    bio: '',
-    headline: '',
-    hourly_rate: '',
-    location: '',
-    portfolio_url: '',
+    bio: "",
+    headline: "",
+    hourly_rate: "",
+    location: "",
+    portfolio_url: "",
     languages: [],
   });
-  const [newLanguage, setNewLanguage] = useState('');
 
-  // Load profile data and skills
   useEffect(() => {
     loadData();
   }, [profile]);
 
   const loadData = async () => {
     try {
-      // Load available skills
       const skillsRes = await ProfileService.getSkills();
       setSkills(Array.isArray(skillsRes.data) ? skillsRes.data : []);
 
-      // Load current profile
-      if (profile) {
-        setFormData({
-          bio: profile.bio || '',
-          headline: profile.headline || '',
-          hourly_rate: profile.hourly_rate || '',
-          location: profile.location || '',
-          portfolio_url: profile.portfolio_url || '',
-          languages: profile.languages || [],
-        });
-        setSelectedSkills(profile.skills || []);
-      } else {
-        // Fetch profile if not in store
-        const profileRes = await ProfileService.getMyProfile();
-        setFormData({
-          bio: profileRes.data.bio || '',
-          headline: profileRes.data.headline || '',
-          hourly_rate: profileRes.data.hourly_rate || '',
-          location: profileRes.data.location || '',
-          portfolio_url: profileRes.data.portfolio_url || '',
-          languages: profileRes.data.languages || [],
-        });
-        setSelectedSkills(profileRes.data.skills || []);
-      }
-    } catch (error) {
-      console.error('Error loading data:', error);
-      toast.error(t('profile.errors.loadFailed'));
+      const data = profile ?? (await ProfileService.getMyProfile()).data;
+
+      setFormData({
+        bio: data.bio || "",
+        headline: data.headline || "",
+        hourly_rate: data.hourly_rate || "",
+        location: data.location || "",
+        portfolio_url: data.portfolio_url || "",
+        languages: data.languages || [],
+      });
+
+      setSelectedSkills(data.skills || []);
+    } catch {
+      toast.error(t("profile.errors.loadFailed"));
     }
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((p) => ({ ...p, [name]: value }));
   };
 
   const handleSkillToggle = (skill) => {
-    const isSelected = selectedSkills.some((s) => s.id === skill.id);
-    if (isSelected) {
-      setSelectedSkills(selectedSkills.filter((s) => s.id !== skill.id));
-    } else {
-      setSelectedSkills([...selectedSkills, skill]);
-    }
+    setSelectedSkills((prev) =>
+      prev.some((s) => s.id === skill.id)
+        ? prev.filter((s) => s.id !== skill.id)
+        : [...prev, skill]
+    );
   };
 
   const handleAddLanguage = () => {
-    if (newLanguage.trim() && !formData.languages.includes(newLanguage.trim())) {
-      setFormData((prev) => ({
-        ...prev,
-        languages: [...prev.languages, newLanguage.trim()],
+    if (newLanguage && !formData.languages.includes(newLanguage)) {
+      setFormData((p) => ({
+        ...p,
+        languages: [...p.languages, newLanguage],
       }));
-      setNewLanguage('');
+      setNewLanguage("");
     }
   };
 
   const handleRemoveLanguage = (lang) => {
-    setFormData((prev) => ({
-      ...prev,
-      languages: prev.languages.filter((l) => l !== lang),
+    setFormData((p) => ({
+      ...p,
+      languages: p.languages.filter((l) => l !== lang),
     }));
   };
 
@@ -110,209 +100,146 @@ const EditProfilePage = () => {
         ...formData,
         skill_ids: selectedSkills.map((s) => s.id),
       };
-
-      const response = await ProfileService.updateMyProfile(payload);
-      updateProfile(response.data);
-      toast.success(t('profile.success.updated'));
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      toast.error(error.response?.data?.detail || t('profile.errors.updateFailed'));
+      const res = await ProfileService.updateMyProfile(payload);
+      updateProfile(res.data);
+      toast.success(t("profile.success.updated"));
+    } catch {
+      toast.error(t("profile.errors.updateFailed"));
     } finally {
       setLoading(false);
     }
   };
 
-  const isProvider = userType === 'provider' || userType === 'both';
+  const isProvider = userType === "provider" || userType === "both";
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column - Profile Completeness Widget */}
+    <div className="min-h-screen bg-[#101825] text-gray-300 px-4 py-8">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        {/* LEFT */}
         <div className="lg:col-span-1">
-          <div className="sticky top-6">
-            <ProfileCompletenessWidget
-              score={profile?.ai_profile_score || 0}
-              profile={profile}
-              showSuggestions={true}
-            />
-          </div>
+          <ProfileCompletenessWidget
+            score={profile?.ai_profile_score || 0}
+            profile={profile}
+            showSuggestions
+          />
         </div>
-        
-        {/* Right Column - Edit Form */}
+
+        {/* RIGHT */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h1 className="text-3xl font-bold text-gray-900 mb-6">{t('profile.editProfile')}</h1>
+          <Card className="bg-gray-900 border border-gray-800">
+            <CardHeader>
+              <CardTitle className="text-xl text-white">
+                {t("profile.editProfile")}
+              </CardTitle>
+            </CardHeader>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Headline */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t('profile.professionalHeadline')}
-            </label>
-            <input
-              type="text"
-              name="headline"
-              value={formData.headline}
-              onChange={handleInputChange}
-              placeholder={t('profile.headlinePlaceholder')}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              maxLength={200}
-            />
-          </div>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-5">
 
-          {/* Bio */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t('profile.bio')}
-            </label>
-            <textarea
-              name="bio"
-              value={formData.bio}
-              onChange={handleInputChange}
-              rows={4}
-              placeholder={t('profile.bioPlaceholder')}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          {/* Skills */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t('profile.skills')} ({selectedSkills.length} {t('profile.selected')})
-            </label>
-            <div className="border border-gray-300 rounded-lg p-4 max-h-64 overflow-y-auto">
-              <div className="flex flex-wrap gap-2">
-                {Array.isArray(skills) && skills.length > 0 ? (
-                  skills.map((skill) => (
-                    <button
-                      key={skill.id}
-                      type="button"
-                      onClick={() => handleSkillToggle(skill)}
-                      className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                        selectedSkills.some((s) => s.id === skill.id)
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      {skill.name}
-                    </button>
-                  ))
-                ) : (
-                  <p className="text-sm text-gray-500">{t('profile.noSkillsAvailable')}</p>
-                )}
-              </div>
-            </div>
-            {selectedSkills.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-2">
-                <span className="text-sm text-gray-600">{t('profile.selected')}:</span>
-                {selectedSkills.map((skill) => (
-                  <SkillBadge
-                    key={skill.id}
-                    skill={skill}
-                    size="sm"
-                    onRemove={() => handleSkillToggle(skill)}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Hourly Rate (for providers) */}
-          {isProvider && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t('profile.hourlyRate')}
-              </label>
-              <input
-                type="number"
-                name="hourly_rate"
-                value={formData.hourly_rate}
-                onChange={handleInputChange}
-                placeholder={t('profile.hourlyRatePlaceholder')}
-                min="0"
-                step="0.01"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-          )}
-
-          {/* Location */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t('profile.location')}
-            </label>
-            <input
-              type="text"
-              name="location"
-              value={formData.location}
-              onChange={handleInputChange}
-              placeholder={t('profile.locationPlaceholder')}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          {/* Languages */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t('profile.languages')}
-            </label>
-            <div className="flex gap-2 mb-2">
-              <input
-                type="text"
-                value={newLanguage}
-                onChange={(e) => setNewLanguage(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddLanguage())}
-                placeholder={t('profile.languagePlaceholder')}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <button
-                type="button"
-                onClick={handleAddLanguage}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                {t('common.add')}
-              </button>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {formData.languages.map((lang) => (
-                <SkillBadge
-                  key={lang}
-                  skill={lang}
-                  variant="gray"
-                  size="sm"
-                  onRemove={() => handleRemoveLanguage(lang)}
+                <Input
+                  placeholder={t("profile.professionalHeadline")}
+                  name="headline"
+                  value={formData.headline}
+                  onChange={handleInputChange}
+                  className="text-gray-400"
                 />
-              ))}
-            </div>
-          </div>
 
-          {/* Portfolio URL */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              {t('profile.portfolioUrl')}
-            </label>
-            <input
-              type="url"
-              name="portfolio_url"
-              value={formData.portfolio_url}
-              onChange={handleInputChange}
-              placeholder={t('profile.portfolioPlaceholder')}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
+                <Textarea
+                  placeholder={t("profile.bio")}
+                  name="bio"
+                  rows={4}
+                  value={formData.bio}
+                  onChange={handleInputChange}
+                />
 
-          {/* Submit */}
-          <div className="flex gap-4">
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-            >
-              {loading ? t('profile.saving') : t('profile.saveProfile')}
-            </button>
-          </div>
-        </form>
-          </div>
+                {/* Skills */}
+                <div>
+                  <p className="text-sm mb-2 text-gray-300">
+                    {t("profile.skills")} ({selectedSkills.length})
+                  </p>
+                  <div className="flex flex-wrap gap-2 bg-gray-800 p-3 rounded-lg border border-gray-700">
+                    {skills.map((skill) => {
+                      const active = selectedSkills.some((s) => s.id === skill.id);
+                      return (
+                        <Badge
+                          key={skill.id}
+                          onClick={() => handleSkillToggle(skill)}
+                          className={`cursor-pointer ${active
+                              ? "bg-blue-600 text-white"
+                              : "bg-gray-700 hover:bg-gray-600"
+                            }`}
+                        >
+                          {skill.name}
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {isProvider && (
+                  <Input
+                    type="number"
+                    placeholder={t("profile.hourlyRate")}
+                    name="hourly_rate"
+                    value={formData.hourly_rate}
+                    onChange={handleInputChange}
+                  />
+                )}
+
+                <Input
+                  placeholder={t("profile.location")}
+                  name="location"
+                  value={formData.location}
+                  onChange={handleInputChange}
+                />
+
+                {/* Languages */}
+                <div>
+                  <p className="text-sm mb-2">{t("profile.languages")}</p>
+                  <div className="flex gap-2 mb-2">
+                    <Input
+                      value={newLanguage}
+                      onChange={(e) => setNewLanguage(e.target.value)}
+                      placeholder={t("profile.languagePlaceholder")}
+                    />
+                    <Button type="button" onClick={handleAddLanguage}>
+                      {t("common.add")}
+                    </Button>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {formData.languages.map((lang) => (
+                      <Badge
+                        key={lang}
+                        variant="secondary"
+                        onClick={() => handleRemoveLanguage(lang)}
+                        className="cursor-pointer"
+                      >
+                        {lang} ✕
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                <Input
+                  placeholder={t("profile.portfolioUrl")}
+                  name="portfolio_url"
+                  value={formData.portfolio_url}
+                  onChange={handleInputChange}
+                />
+
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full"
+                >
+                  {loading ? t("profile.saving") : t("profile.saveProfile")}
+                </Button>
+
+              </form>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

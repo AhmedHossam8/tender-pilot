@@ -24,16 +24,16 @@ const ServiceCard = ({ service }) => {
     return (
         <div
             onClick={handleClick}
-            className="cursor-pointer p-4 border rounded shadow hover:shadow-lg transition"
+            className="cursor-pointer p-4 rounded-xl bg-[#101825] border border-gray-700 shadow-sm hover:shadow-md transition-colors"
         >
-            <h2 className="text-xl font-semibold">{service.name}</h2>
-            <p className="text-muted-foreground">{service.description}</p>
+            <h2 className="text-xl font-semibold text-white">{service.name}</h2>
+            <p className="text-slate-400">{service.description}</p>
 
             <div className="mt-2 flex gap-2 flex-wrap">
                 {service.skills?.map((skill) => (
                     <span
                         key={skill.id}
-                        className="px-2 py-1 text-sm bg-gray-200 rounded"
+                        className="px-2 py-1 text-sm bg-blue-600/20 text-blue-400 rounded"
                     >
                         {skill.name}
                     </span>
@@ -41,7 +41,7 @@ const ServiceCard = ({ service }) => {
             </div>
 
             {service.packages?.[0]?.price && (
-                <p className="mt-2 font-bold">
+                <p className="mt-2 font-bold text-white">
                     ${service.packages[0].price}
                 </p>
             )}
