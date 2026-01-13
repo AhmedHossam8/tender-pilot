@@ -11,6 +11,7 @@ from typing import Dict, List, Optional, Tuple
 from django.contrib.auth import get_user_model
 from django.db.models import Avg, Count, Q
 from django.utils import timezone
+from django.utils.translation import get_language, gettext as _, override
 from datetime import timedelta
 
 from apps.ai_engine.services.provider import get_ai_provider as get_provider
@@ -74,8 +75,10 @@ class AIMatchingService:
         ]
         """
         try:
+            language_code = get_language() or 'en'
+            cache_enabled = use_cache and language_code.startswith('en')
             # Check cache first
-            if use_cache:
+            if cache_enabled:
                 cached_results = MatchingCache.get_project_matches(project.id)
                 if cached_results:
                     self.logger.info(f"Using cached matches for project {project.id}")
@@ -102,7 +105,7 @@ class AIMatchingService:
             for provider in potential_providers:
                 try:
                     # Check individual provider cache
-                    if use_cache:
+                    if cache_enabled:
                         cached_match = MatchingCache.get_match_score(project.id, provider.id)
                         if cached_match:
                             cached_match['provider_id'] = provider.id
@@ -115,7 +118,8 @@ class AIMatchingService:
                     provider_data = self._extract_provider_data(provider)
                     match_result = self.calculate_compatibility_score(
                         project_data,
-                        provider_data
+                        provider_data,
+                        language=language_code
                     )
                     
                     # Check if we got fallback response indicating AI is unavailable
@@ -134,7 +138,7 @@ class AIMatchingService:
                         results.append(result)
                         
                         # Cache individual match
-                        if use_cache:
+                        if cache_enabled:
                             MatchingCache.set_match_score(project.id, provider.id, match_result)
                         
                 except Exception as e:
@@ -145,7 +149,7 @@ class AIMatchingService:
             results.sort(key=lambda x: x.get('match_score', 0), reverse=True)
             
             # Cache the full ranking
-            if use_cache and results:
+            if cache_enabled and results:
                 MatchingCache.set_project_matches(project.id, results)
             
             return results[:limit]
@@ -157,7 +161,8 @@ class AIMatchingService:
     def calculate_compatibility_score(
         self,
         project_data: Dict,
-        provider_data: Dict
+        provider_data: Dict,
+        language: str = 'en'
     ) -> Optional[Dict]:
         """
         Calculate a detailed compatibility score between a project and provider.
@@ -183,8 +188,12 @@ class AIMatchingService:
         }
         """
         try:
+            # Normalize language to descriptive name for the prompt
+            lang = language or 'en'
+            lang_name = 'Arabic' if lang.lower().startswith('ar') else 'English'
+
             # Generate the prompt
-            prompt = get_match_score_prompt(project_data, provider_data)
+            prompt = get_match_score_prompt(project_data, provider_data, language=lang_name)
             
             # Call AI provider
             response = self.ai_provider.generate(
@@ -205,11 +214,11 @@ class AIMatchingService:
                     self.logger.warning("AI response missing required fields")
                     return self._fallback_scoring(project_data, provider_data)
             
-            return self._fallback_scoring(project_data, provider_data)
+            return self._fallback_scoring(project_data, provider_data, language=lang)
             
         except Exception as e:
             self.logger.error(f"Error calculating compatibility score: {str(e)}")
-            return self._fallback_scoring(project_data, provider_data)
+            return self._fallback_scoring(project_data, provider_data, language=lang)
     
     def generate_cover_letter(
         self,
@@ -292,11 +301,11 @@ class AIMatchingService:
                 return result
             
             # Fallback: simple calculation
-            return self._fallback_pricing(project_data, provider_data)
+            return self._fallback_pricing(project_data, provider_data, language=lang)
             
         except Exception as e:
             self.logger.error(f"Error suggesting pricing: {str(e)}")
-            return self._fallback_pricing(project_data, provider_data)
+            return self._fallback_pricing(project_data, provider_data, language=lang)
     
     # Helper methods
     
@@ -384,7 +393,8 @@ class AIMatchingService:
     def _fallback_scoring(
         self,
         project_data: Dict,
-        provider_data: Dict
+        provider_data: Dict,
+        language: str = 'en'
     ) -> Dict:
         """
         Provide a basic fallback scoring when AI is unavailable.
@@ -410,22 +420,24 @@ class AIMatchingService:
         if provider_data.get('average_rating', 0) >= 4.0:
             score += 15
         
-        return {
-            'match_score': min(score, 100),
-            'matching_skills': [],
-            'skill_gaps': [],
-            'budget_compatible': True,
-            'budget_assessment': 'Unable to assess without AI',
-            'experience_assessment': 'Unable to assess without AI',
-            'potential_concerns': ['AI matching unavailable'],
-            'recommendation': 'Fair Match',
-            'reasoning': 'Basic rule-based scoring used (AI unavailable)'
-        }
+        with override(language or 'en'):
+            return {
+                'match_score': min(score, 100),
+                'matching_skills': [],
+                'skill_gaps': [],
+                'budget_compatible': True,
+                'budget_assessment': _('Unable to assess without AI'),
+                'experience_assessment': _('Unable to assess without AI'),
+                'potential_concerns': [_('AI matching unavailable')],
+                'recommendation': _('Fair Match'),
+                'reasoning': _('Basic rule-based scoring used (AI unavailable)')
+            }
     
     def _fallback_pricing(
         self,
         project_data: Dict,
-        provider_data: Dict
+        provider_data: Dict,
+        language: str = 'en'
     ) -> Dict:
         """
         Provide basic fallback pricing when AI is unavailable.
@@ -444,15 +456,16 @@ class AIMatchingService:
         
         suggested = budget_mid * 0.9  # Suggest 90% of midpoint
         
-        return {
-            'suggested_amount': suggested,
-            'pricing_strategy': 'Budget-based estimate (AI unavailable)',
-            'min_acceptable': budget_mid * 0.7,
-            'max_justifiable': budget_mid * 1.1,
-            'win_probability': 'Medium',
-            'justification': 'Basic calculation based on project budget',
-            'alternative_approaches': []
-        }
+        with override(language or 'en'):
+            return {
+                'suggested_amount': suggested,
+                'pricing_strategy': _('Budget-based estimate (AI unavailable)'),
+                'min_acceptable': budget_mid * 0.7,
+                'max_justifiable': budget_mid * 1.1,
+                'win_probability': _('Medium'),
+                'justification': _('Basic calculation based on project budget'),
+                'alternative_approaches': []
+            }
     
     def _get_default_market_data(self, project_data: Dict) -> Dict:
         """

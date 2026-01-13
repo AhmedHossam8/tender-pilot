@@ -1,6 +1,6 @@
-import * as React from "react"
-import { cn } from "@/lib/utils"
-import { AlertTriangle } from "lucide-react"
+import * as React from "react";
+import { cn } from "@/lib/utils";
+import { AlertTriangle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -8,10 +8,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/Dialog"
-import { Button } from "@/components/ui/Button"
-import { useTranslation } from "react-i18next"
+} from "@/components/ui/Dialog";
+import { Button } from "@/components/ui/Button";
+import { useTranslation } from "react-i18next";
 
+/**
+ * ConfirmDialog Component
+ * Reusable confirmation dialog with optional destructive style, icon, and loading state
+ */
 function ConfirmDialog({
   open,
   onOpenChange,
@@ -25,21 +29,21 @@ function ConfirmDialog({
   loading = false,
   icon,
 }) {
-  const { t } = useTranslation()
-  const Icon = icon || (variant === "destructive" ? AlertTriangle : null)
+  const { t } = useTranslation();
+  const Icon = icon || (variant === "destructive" ? AlertTriangle : null);
 
   const handleConfirm = async () => {
     if (onConfirm) {
-      await onConfirm()
+      await onConfirm();
     }
-    // Don't auto-close - let parent handle closing after async operation
-  }
+    // Parent handles closing after async operation
+  };
 
   const handleCancel = () => {
-    if (loading) return // Prevent cancel during loading
-    onCancel?.()
-    onOpenChange?.(false)
-  }
+    if (loading) return; // Prevent cancel during loading
+    onCancel?.();
+    onOpenChange?.(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -71,21 +75,18 @@ function ConfirmDialog({
             </div>
           </div>
         </DialogHeader>
-        <DialogFooter>
+
+        <DialogFooter className="flex justify-end gap-2">
           <Button variant="outline" onClick={handleCancel} disabled={loading}>
             {cancelLabel || t("cancel")}
           </Button>
-          <Button
-            variant={variant}
-            onClick={handleConfirm}
-            disabled={loading}
-          >
+          <Button variant={variant} onClick={handleConfirm} disabled={loading}>
             {loading ? t("loading") : confirmLabel || t("confirm")}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
-export { ConfirmDialog }
+export { ConfirmDialog };

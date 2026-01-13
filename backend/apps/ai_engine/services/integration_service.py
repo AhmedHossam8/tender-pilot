@@ -10,6 +10,7 @@ Automatically triggers AI analysis at key points in the business cycle:
 import logging
 from typing import Dict, Any, Optional
 from django.utils import timezone
+from django.utils.translation import get_language
 from apps.ai_engine.services.analysis_service import ProjectAnalysisService
 from apps.ai_engine.services.matching_service import AIMatchingService
 
@@ -90,7 +91,7 @@ class AIIntegrationService:
     
     
     @staticmethod
-    def auto_score_bid_on_submission(bid, user) -> Optional[Dict[str, Any]]:
+    def auto_score_bid_on_submission(bid, user, language: Optional[str] = None) -> Optional[Dict[str, Any]]:
         """
         Automatically score and analyze bid when submitted.
         
@@ -128,9 +129,12 @@ class AIIntegrationService:
             }
             
             # Calculate compatibility score
+            language_code = (language or getattr(user, 'preferred_language', None) or get_language() or 'en')
+
             score_result = matching_service.calculate_compatibility_score(
                 project_data=project_data,
-                provider_data=provider_data
+                provider_data=provider_data,
+                language=language_code
             )
             
             if not score_result:
@@ -140,8 +144,8 @@ class AIIntegrationService:
             # Generate comprehensive AI feedback on the bid
             feedback = {
                 'match_score': score_result.get('match_score', 0),
-                'recommendation': score_result.get('recommendation', 'No recommendation'),
-                'reasoning': score_result.get('reasoning', 'No detailed analysis available'),
+                'recommendation': score_result.get('recommendation', ''),
+                'reasoning': score_result.get('reasoning', ''),
                 'matching_skills': score_result.get('matching_skills', []),
                 'skill_gaps': score_result.get('skill_gaps', []),
                 'budget_compatible': score_result.get('budget_compatible', True),

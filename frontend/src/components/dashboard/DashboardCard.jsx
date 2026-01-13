@@ -1,71 +1,76 @@
 import React from 'react';
+import { Card, CardContent } from '@/components/ui/Card';
 
 /**
- * DashboardCard Component
+ * DashboardCard Component (UI library version)
  * Reusable card for displaying statistics and metrics
  */
-const DashboardCard = ({ 
-  title, 
-  value, 
-  subtitle, 
-  icon, 
-  trend, 
+const DashboardCard = ({
+  title,
+  value,
+  subtitle,
+  icon,
+  trend,
   trendDirection = 'up',
   color = 'blue',
-  onClick 
+  onClick
 }) => {
-  const colorClasses = {
-    blue: 'bg-blue-50 text-blue-600',
-    green: 'bg-green-50 text-green-600',
-    yellow: 'bg-yellow-50 text-yellow-600',
-    purple: 'bg-purple-50 text-purple-600',
-    red: 'bg-red-50 text-red-600',
-    indigo: 'bg-indigo-50 text-indigo-600',
+  // Define trend colors based on theme
+  const trendColor = trendDirection === 'up' ? 'text-green-300' : 'text-red-300';
+
+  const iconBgClass = {
+    blue: 'bg-blue-500/20 text-blue-300',
+    green: 'bg-green-500/20 text-green-300',
+    yellow: 'bg-yellow-500/20 text-yellow-300',
+    purple: 'bg-purple-500/20 text-purple-300',
+    red: 'bg-red-500/20 text-red-300',
+    indigo: 'bg-indigo-500/20 text-indigo-300',
+  }[color] || 'bg-blue-500/20 text-blue-300';
+
+  const TrendIcon = () => {
+    if (!trend) return null;
+
+    return trendDirection === 'up' ? (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+      </svg>
+    ) : (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+      </svg>
+    );
   };
 
-  const iconBgClass = colorClasses[color] || colorClasses.blue;
-
   return (
-    <div 
-      className={`bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow ${
-        onClick ? 'cursor-pointer' : ''
-      }`}
+    <Card
       onClick={onClick}
+      className="hover:shadow-lg transition-shadow cursor-pointer bg-[#0f1623] border border-white/10"
     >
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
-          <p className="text-3xl font-bold text-gray-900 mb-1">{value}</p>
-          {subtitle && (
-            <p className="text-sm text-gray-500">{subtitle}</p>
-          )}
+      <CardContent className="flex items-center justify-between gap-4 py-5">
+        {/* Left Section */}
+        <div className="flex-1 flex flex-col gap-1">
+          <p className="text-sm font-medium text-slate-300">{title}</p>
+          <p className="text-3xl font-bold text-white leading-tight">{value}</p>
+          {subtitle && <p className="text-sm text-slate-400">{subtitle}</p>}
+
           {trend && (
-            <div className="flex items-center gap-1 mt-2">
-              {trendDirection === 'up' ? (
-                <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
-              ) : (
-                <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
-                </svg>
-              )}
-              <span className={`text-sm font-medium ${
-                trendDirection === 'up' ? 'text-green-600' : 'text-red-600'
-              }`}>
-                {trend}
-              </span>
+            <div
+              className={`inline-flex items-center gap-2 mt-2 px-2 py-1 rounded-full text-sm font-medium ${
+                trendDirection === 'up'
+                  ? 'bg-green-500/10 text-green-300'
+                  : 'bg-red-500/10 text-red-300'
+              }`}
+            >
+              <TrendIcon />
+              <span className={trendColor}>{trend}</span>
             </div>
           )}
         </div>
-        
-        {icon && (
-          <div className={`p-3 rounded-lg ${iconBgClass}`}>
-            {icon}
-          </div>
-        )}
-      </div>
-    </div>
+
+        {/* Right Icon */}
+        {icon && <div className={`p-3 rounded-xl ${iconBgClass}`}>{icon}</div>}
+      </CardContent>
+    </Card>
   );
 };
 

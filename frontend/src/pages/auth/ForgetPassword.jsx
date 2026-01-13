@@ -3,6 +3,9 @@ import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import api from "@/lib/api";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
 
 export default function ForgotPassword() {
   const { t } = useTranslation();
@@ -24,38 +27,42 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto space-y-6 p-4">
-      <h1 className="text-2xl md:text-3xl font-bold text-center">{t('auth.resetPassword')}</h1>
+    <div className="w-full max-w-md mx-auto space-y-6 p-1">
+      <div className="text-center space-y-2">
+        <h1 className="text-2xl md:text-3xl font-bold text-white">{t('auth.resetPassword')}</h1>
+        <p className="text-sm text-slate-300">
+          {t('auth.resetPasswordSubtitle', 'Enter your email to receive a password reset link.')}
+        </p>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+          <Label htmlFor="email" className="block text-sm font-medium">
             {t('auth.email')}
-          </label>
-          <input
+          </Label>
+          <Input
             id="email"
             type="email"
             placeholder={t('auth.enterEmail')}
-            className="w-full border rounded-lg px-3 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
         </div>
 
-        <button
+        <Button
           type="submit"
           disabled={loading}
-          className="w-full bg-primary text-white py-2 md:py-3 rounded-lg disabled:opacity-50 transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+          className="w-full"
         >
           {loading ? t('auth.sending') : t('auth.sendResetLink')}
-        </button>
+        </Button>
       </form>
 
       <div className="text-center">
         <Link 
           to="/login" 
-          className="text-sm text-primary hover:underline focus:outline-none focus:underline"
+          className="text-sm text-blue-300 hover:underline focus:outline-none focus:underline"
         >
           {t('auth.backToLogin')}
         </Link>

@@ -66,13 +66,13 @@ const SearchResultsPage = () => {
   
   if (!query) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <Search className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+          <Search className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+          <h2 className="text-2xl font-semibold text-foreground mb-2">
             {t('search.noQuery', 'Search for something')}
           </h2>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             {t('search.noQueryDesc', 'Use the search bar to find projects, services, or providers')}
           </p>
         </div>
@@ -81,14 +81,14 @@ const SearchResultsPage = () => {
   }
   
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
             {t('search.resultsFor', 'Search results for')} "{query}"
           </h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             {loading ? (
               t('search.searching', 'Searching...')
             ) : (
@@ -98,7 +98,7 @@ const SearchResultsPage = () => {
         </div>
         
         {/* Tabs */}
-        <div className="mb-6 border-b border-gray-200">
+        <div className="mb-6 border-b border-white/10">
           <nav className="-mb-px flex space-x-8">
             {tabs.map((tab) => (
               <button
@@ -108,14 +108,14 @@ const SearchResultsPage = () => {
                   py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap
                   ${activeTab === tab.id
                     ? 'border-primary text-primary'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-white/20'
                   }
                 `}
               >
                 {tab.label}
                 {tab.count > 0 && (
                   <span className={`ml-2 py-0.5 px-2 rounded-full text-xs ${
-                    activeTab === tab.id ? 'bg-primary text-white' : 'bg-gray-200 text-gray-700'
+                    activeTab === tab.id ? 'bg-primary text-primary-foreground' : 'bg-white/10 text-foreground'
                   }`}>
                     {tab.count}
                   </span>
@@ -164,11 +164,11 @@ const SearchResultsPage = () => {
             {/* No Results */}
             {!loading && getTotalResults() === 0 && (
               <div className="text-center py-12">
-                <Search className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <Search className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-foreground mb-2">
                   {t('search.noResults', 'No results found')}
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-muted-foreground">
                   {t('search.tryDifferent', 'Try a different search term or filter')}
                 </p>
               </div>
@@ -186,8 +186,8 @@ const ResultSection = ({ title, icon, items, renderItem }) => {
     <div>
       <div className="flex items-center gap-2 mb-4">
         {icon}
-        <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
-        <span className="text-gray-500">({items.length})</span>
+        <h2 className="text-xl font-semibold text-foreground">{title}</h2>
+        <span className="text-muted-foreground">({items.length})</span>
       </div>
       <div className="grid grid-cols-1 gap-4">
         {items.map(renderItem)}
@@ -201,21 +201,21 @@ const ProjectCard = ({ project }) => {
   return (
     <Link
       to={`/projects/${project.id}`}
-      className="block bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+      className="block bg-white/5 rounded-xl shadow-sm border border-white/10 p-6 hover:shadow-md hover:bg-white/10 transition-shadow backdrop-blur-sm"
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">{project.title}</h3>
-          <p className="text-gray-600 line-clamp-2">{project.description}</p>
+          <h3 className="text-lg font-semibold text-foreground mb-1">{project.title}</h3>
+          <p className="text-muted-foreground line-clamp-2">{project.description}</p>
         </div>
         <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-          project.status === 'open' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+          project.status === 'open' ? 'bg-green-500/20 text-green-300' : 'bg-white/10 text-foreground'
         }`}>
           {project.status}
         </span>
       </div>
       
-      <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+      <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
         {project.client && (
           <div className="flex items-center gap-1">
             <Users className="h-4 w-4" />
@@ -244,12 +244,12 @@ const ServiceCard = ({ service }) => {
   return (
     <Link
       to={`/services/${service.id}`}
-      className="block bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+      className="block bg-white/5 rounded-xl shadow-sm border border-white/10 p-6 hover:shadow-md hover:bg-white/10 transition-shadow backdrop-blur-sm"
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">{service.title}</h3>
-          <p className="text-gray-600 line-clamp-2">{service.description}</p>
+          <h3 className="text-lg font-semibold text-foreground mb-1">{service.title}</h3>
+          <p className="text-muted-foreground line-clamp-2">{service.description}</p>
         </div>
         {service.rating && (
           <div className="flex items-center gap-1">
@@ -259,7 +259,7 @@ const ServiceCard = ({ service }) => {
         )}
       </div>
       
-      <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+      <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
         {service.provider && (
           <div className="flex items-center gap-1">
             <Users className="h-4 w-4" />
@@ -288,7 +288,7 @@ const ProviderCard = ({ provider }) => {
   return (
     <Link
       to={`/profiles/${provider.id}`}
-      className="block bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+      className="block bg-white/5 rounded-xl shadow-sm border border-white/10 p-6 hover:shadow-md hover:bg-white/10 transition-shadow backdrop-blur-sm"
     >
       <div className="flex items-start gap-4">
         {provider.avatar ? (
@@ -304,22 +304,22 @@ const ProviderCard = ({ provider }) => {
         )}
         
         <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">{provider.name}</h3>
-          <p className="text-sm text-gray-600 mb-2">{provider.title || 'Service Provider'}</p>
-          <p className="text-gray-600 line-clamp-2">{provider.bio}</p>
+          <h3 className="text-lg font-semibold text-foreground mb-1">{provider.name}</h3>
+          <p className="text-sm text-muted-foreground mb-2">{provider.title || 'Service Provider'}</p>
+          <p className="text-muted-foreground line-clamp-2">{provider.bio}</p>
           
           <div className="flex flex-wrap gap-2 mt-3">
             {provider.skills?.map((skill, idx) => (
               <span
                 key={idx}
-                className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded"
+                className="px-2 py-1 bg-primary/10 text-primary text-xs font-medium rounded"
               >
                 {skill}
               </span>
             ))}
           </div>
           
-          <div className="flex gap-4 mt-3 text-sm text-gray-500">
+        <div className="flex gap-4 mt-3 text-sm text-muted-foreground">
             {provider.hourly_rate && (
               <div className="flex items-center gap-1">
                 <DollarSign className="h-4 w-4" />

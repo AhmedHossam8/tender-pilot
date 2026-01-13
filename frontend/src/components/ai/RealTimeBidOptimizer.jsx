@@ -6,45 +6,42 @@
 
 import React, { useEffect, useState } from 'react';
 import { AlertCircle, CheckCircle, Info, TrendingUp, Zap } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import { Card, CardContent } from '@/components/ui/Card';
 import { useTranslation } from 'react-i18next';
 
 export function RealTimeBidOptimizer({ bidData, projectData, onSuggestionApply }) {
   const { t } = useTranslation();
   const [suggestions, setSuggestions] = useState([]);
   const [overallScore, setOverallScore] = useState(70);
-  
+
   useEffect(() => {
     // Analyze bid data and generate suggestions
     const newSuggestions = analyzeBid(bidData, projectData, t);
     setSuggestions(newSuggestions);
-    
+
     // Calculate overall score
     const score = calculateOverallScore(bidData, projectData, newSuggestions);
     setOverallScore(score);
   }, [bidData, projectData]);
-  
+
   const criticalSuggestions = suggestions.filter(s => s.priority === 'high');
   const mediumSuggestions = suggestions.filter(s => s.priority === 'medium');
   const infoSuggestions = suggestions.filter(s => s.priority === 'low');
-  
+
   return (
     <div className="space-y-4">
       {/* Overall Score */}
-      <Card className={`border-2 ${
-        overallScore >= 80 ? 'border-green-500 bg-green-50' :
-        overallScore >= 60 ? 'border-yellow-500 bg-yellow-50' :
-        'border-red-500 bg-red-50'
-      }`}>
+      <Card className={`border-2 ${overallScore >= 80 ? 'border-green-500 bg-green-50' :
+          overallScore >= 60 ? 'border-yellow-500 bg-yellow-50' :
+            'border-red-500 bg-red-50'
+        }`}>
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Zap className={`h-5 w-5 ${
-                overallScore >= 80 ? 'text-green-600' :
-                overallScore >= 60 ? 'text-yellow-600' :
-                'text-red-600'
-              }`} />
+              <Zap className={`h-5 w-5 ${overallScore >= 80 ? 'text-green-600' :
+                  overallScore >= 60 ? 'text-yellow-600' :
+                    'text-red-600'
+                }`} />
               <span className="font-semibold">{t('bidStrength')}</span>
             </div>
             <div className="text-right">
@@ -52,7 +49,17 @@ export function RealTimeBidOptimizer({ bidData, projectData, onSuggestionApply }
               <span className="text-sm text-gray-600">/100</span>
             </div>
           </div>
-          <Progress value={overallScore} className="h-2" />
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div
+              className={`h-2 rounded-full ${overallScore >= 80
+                  ? "bg-green-500"
+                  : overallScore >= 60
+                    ? "bg-yellow-500"
+                    : "bg-red-500"
+                }`}
+              style={{ width: `${overallScore}%` }}
+            />
+          </div>
           <p className="text-xs text-gray-600 mt-2">
             {overallScore >= 80 && t('excellentBid')}
             {overallScore >= 60 && overallScore < 80 && t('goodBid')}
@@ -60,7 +67,7 @@ export function RealTimeBidOptimizer({ bidData, projectData, onSuggestionApply }
           </p>
         </CardContent>
       </Card>
-      
+
       {/* Suggestions List */}
       {suggestions.length > 0 && (
         <div className="space-y-3">
@@ -79,7 +86,7 @@ export function RealTimeBidOptimizer({ bidData, projectData, onSuggestionApply }
               ))}
             </div>
           )}
-          
+
           {mediumSuggestions.length > 0 && (
             <div className="space-y-2">
               <h4 className="text-sm font-semibold text-yellow-700 flex items-center gap-2">
@@ -95,7 +102,7 @@ export function RealTimeBidOptimizer({ bidData, projectData, onSuggestionApply }
               ))}
             </div>
           )}
-          
+
           {infoSuggestions.length > 0 && (
             <div className="space-y-2">
               <h4 className="text-sm font-semibold text-blue-700 flex items-center gap-2">
@@ -113,7 +120,7 @@ export function RealTimeBidOptimizer({ bidData, projectData, onSuggestionApply }
           )}
         </div>
       )}
-      
+
       {suggestions.length === 0 && (
         <Card>
           <CardContent className="p-6 text-center">
@@ -130,7 +137,7 @@ export function RealTimeBidOptimizer({ bidData, projectData, onSuggestionApply }
 function SuggestionCard({ suggestion, onApply }) {
   const { t } = useTranslation();
   const { type, priority, message, suggestion: suggestionText, category } = suggestion;
-  
+
   const getIcon = () => {
     switch (type) {
       case 'warning': return <AlertCircle className="h-4 w-4" />;
@@ -139,7 +146,7 @@ function SuggestionCard({ suggestion, onApply }) {
       default: return <Info className="h-4 w-4" />;
     }
   };
-  
+
   const getColors = () => {
     switch (priority) {
       case 'high': return 'border-red-200 bg-red-50';
@@ -148,7 +155,7 @@ function SuggestionCard({ suggestion, onApply }) {
       default: return 'border-gray-200 bg-gray-50';
     }
   };
-  
+
   const getTextColor = () => {
     switch (priority) {
       case 'high': return 'text-red-700';
@@ -157,7 +164,7 @@ function SuggestionCard({ suggestion, onApply }) {
       default: return 'text-gray-700';
     }
   };
-  
+
   return (
     <Card className={`border ${getColors()}`}>
       <CardContent className="p-3">
@@ -185,7 +192,7 @@ function analyzeBid(bidData, projectData, t) {
   const suggestions = [];
   const { proposed_amount, proposed_timeline, cover_letter } = bidData || {};
   const { budget } = projectData || {};
-  
+
   // Pricing analysis
   if (proposed_amount && budget) {
     const ratio = proposed_amount / budget;
@@ -207,7 +214,7 @@ function analyzeBid(bidData, projectData, t) {
       });
     }
   }
-  
+
   // Timeline analysis
   if (proposed_timeline) {
     if (proposed_timeline < 7) {
@@ -228,7 +235,7 @@ function analyzeBid(bidData, projectData, t) {
       });
     }
   }
-  
+
   // Cover letter analysis
   if (cover_letter) {
     const wordCount = cover_letter.split(' ').length;
@@ -249,7 +256,7 @@ function analyzeBid(bidData, projectData, t) {
         suggestion: t('longCoverLetterSuggestion')
       });
     }
-    
+
     // Check for key elements
     if (!cover_letter.toLowerCase().includes('experience') && !cover_letter.toLowerCase().includes('worked')) {
       suggestions.push({
@@ -261,20 +268,20 @@ function analyzeBid(bidData, projectData, t) {
       });
     }
   }
-  
+
   return suggestions;
 }
 
 function calculateOverallScore(bidData, projectData, suggestions) {
   let score = 100;
-  
+
   // Deduct points for critical issues
   const criticalCount = suggestions.filter(s => s.priority === 'high').length;
   const mediumCount = suggestions.filter(s => s.priority === 'medium').length;
-  
+
   score -= (criticalCount * 15);
   score -= (mediumCount * 8);
-  
+
   return Math.max(score, 0);
 }
 

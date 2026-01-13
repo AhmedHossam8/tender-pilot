@@ -1,19 +1,17 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Search, Calendar, DollarSign, MapPin, ArrowRight, Briefcase, TrendingUp, Clock, Users, Sparkles } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Search, Calendar, DollarSign, MapPin, ArrowRight, Briefcase } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Card } from '@/components/ui/Card';
 import { useAuthStore } from '@/contexts/authStore';
 import api from '@/lib/api';
+import { SearchBar as CommonSearchBar } from '@/components/common';
 
 const BrowseProjects = () => {
+  const [searchQuery, setSearchQuery] = useState('');
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
-  const [searchQuery, setSearchQuery] = useState('');
 
   const { data: projectsData, isLoading } = useQuery({
     queryKey: ['public-projects', searchQuery],
@@ -26,154 +24,191 @@ const BrowseProjects = () => {
 
   const projects = projectsData?.results || [];
 
-  const handleProjectClick = (projectId) => {
-    if (isAuthenticated) {
-      navigate(`/app/projects/${projectId}`);
-    } else {
-      // Store intended destination and redirect to login
-      sessionStorage.setItem('redirectAfterLogin', `/app/projects/${projectId}`);
-      navigate('/login', { state: { message: 'Please sign in to view project details and submit bids.' } });
-    }
-  };
-
   const getStatusColor = (status) => {
     const colors = {
-      draft: 'bg-gray-100 text-gray-800',
-      open: 'bg-green-100 text-green-800',
-      in_progress: 'bg-blue-100 text-blue-800',
-      completed: 'bg-purple-100 text-purple-800',
-      closed: 'bg-red-100 text-red-800',
+      draft: 'bg-slate-500/20 text-slate-300',
+      open: 'bg-green-500/20 text-green-300',
+      in_progress: 'bg-blue-500/20 text-blue-300',
+      completed: 'bg-purple-500/20 text-purple-300',
+      closed: 'bg-red-500/20 text-red-300',
     };
     return colors[status] || colors.draft;
   };
 
+  const filteredProjects = projects;
+
+  const handleProjectClick = (projectId) => {
+    if (isAuthenticated) {
+      navigate(`/app/projects/${projectId}`);
+    } else {
+      sessionStorage.setItem(
+        'redirectAfterLogin',
+        `/app/projects/${projectId}`
+      );
+      navigate('/login', {
+        state: {
+          message: t('public.browseProjects.signInPrompt'),
+        },
+      });
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 text-white">
+      {/* Animated Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1),transparent_50%)]" />
+        <div className="absolute top-0 -left-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
+        <div
+          className="absolute bottom-0 right-0 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse"
+          style={{ animationDelay: '1s' }}
+        />
+      </div>
+
       {/* Header Section */}
-      <section className="bg-gradient-to-r from-primary/10 to-primary/5 py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              {t('public.browseProjects.title')}
+      <section className="relative py-20 overflow-hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.05)_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,black,transparent)]" />
+
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 backdrop-blur-sm mb-6">
+              <Sparkles className="w-4 h-4 text-blue-400" />
+              <span className="text-sm text-blue-300">{t('public.browseProjects.badge')}</span>
+            </div>
+
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-black mb-6">
+              <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                {t('public.browseProjects.title')}
+              </span>
             </h1>
-            <p className="text-lg text-muted-foreground mb-8">
+
+            <p className="text-xl text-slate-300 mb-10 max-w-2xl mx-auto">
               {t('public.browseProjects.description')}
             </p>
-            
-            {/* Search Bar */}
+
+            {/* Search */}
             <div className="relative max-w-2xl mx-auto">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
-              <Input
-                type="text"
-                placeholder={t('public.browseProjects.searchPlaceholder')}
+              <CommonSearchBar
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 py-6 text-lg"
+                onChange={setSearchQuery}
+                onSearch={setSearchQuery}
+                placeholder={t('public.browseProjects.searchPlaceholder')}
+                className="mt-2"
               />
+            </div>
+
+            {/* Stats */}
+            <div className="flex justify-center gap-8 mt-8 flex-wrap text-slate-400">
+              <div className="flex items-center gap-2">
+                <Briefcase className="w-5 h-5 text-blue-400" />
+                <span>{projects.length} {t('public.browseProjects.projectsLabel')}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-green-400" />
+                <span>{t('public.browseProjects.highDemand')}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-purple-400" />
+                <span>{t('public.browseProjects.verifiedClients')}</span>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Projects Grid */}
-      <section className="py-12">
+      <section className="py-16 relative z-10">
         <div className="container mx-auto px-4">
           {isLoading ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {[...Array(4)].map((_, i) => (
-                <Card key={i} className="p-6 animate-pulse">
-                  <div className="h-6 bg-muted rounded mb-4"></div>
-                  <div className="h-4 bg-muted rounded mb-2"></div>
-                  <div className="h-4 bg-muted rounded w-2/3"></div>
-                </Card>
-              ))}
-            </div>
+            <div className="text-center py-20 text-slate-400">{t('common.loading')}</div>
           ) : projects.length === 0 ? (
-            <div className="text-center py-16">
-              <p className="text-muted-foreground text-lg mb-4">{t('public.browseProjects.noProjects')}</p>
-              <Link to="/register">
-                <Button>{t('public.browseProjects.postFirst')}</Button>
-              </Link>
+            <div className="text-center py-20">
+              <Search className="w-10 h-10 mx-auto mb-4 text-slate-400" />
+              <h3 className="text-2xl font-bold mb-2">{t('public.browseProjects.noProjects')}</h3>
+              <p className="text-slate-400 mb-6">{t('search.tryDifferent')}</p>
+              <button
+                onClick={() => setSearchQuery('')}
+                className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl font-semibold"
+              >
+                {t('help.clearSearch')}
+              </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-7xl mx-auto">
               {projects.map((project) => (
-                <Card
+                <div
                   key={project.id}
-                  className="p-6 hover:shadow-lg transition-shadow cursor-pointer"
                   onClick={() => handleProjectClick(project.id)}
+                  className="group bg-white/5 rounded-2xl border border-white/10 p-6 transition duration-150 hover:border-white/30 hover:bg-white/10 hover:shadow-xl hover:shadow-blue-500/10 cursor-pointer"
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <h3 className="text-xl font-semibold flex-1">{project.title}</h3>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
-                      {project.status?.replace('_', ' ')}
+                  <div className="flex justify-between mb-4">
+                    <h3 className="text-xl font-bold group-hover:text-blue-400">
+                      {project.title}
+                    </h3>
+                    <span className={`px-3 py-1 text-xs rounded ${getStatusColor(project.status)}`}>
+                      {project.status?.replace('_', ' ').toUpperCase()}
                     </span>
                   </div>
 
-                  <p className="text-muted-foreground mb-4 line-clamp-3">
+                  <p className="text-slate-400 mb-6 line-clamp-3">
                     {project.description}
                   </p>
 
-                  <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
                     {project.budget && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <DollarSign className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">${project.budget.toLocaleString()}</span>
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="w-4 h-4 text-green-400" />
+                        ${project.budget.toLocaleString()}
                       </div>
                     )}
                     {project.deadline && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span>{new Date(project.deadline).toLocaleDateString()}</span>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-blue-400" />
+                        {new Date(project.deadline).toLocaleDateString()}
                       </div>
                     )}
                     {project.category && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Briefcase className="h-4 w-4 text-muted-foreground" />
-                        <span>{typeof project.category === 'object' ? project.category.name : project.category}</span>
+                      <div className="flex items-center gap-2">
+                        <Briefcase className="w-4 h-4 text-purple-400" />
+                        {typeof project.category === 'object'
+                          ? project.category.name
+                          : project.category}
                       </div>
                     )}
                     {project.bid_count !== undefined && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <span className="text-muted-foreground">{project.bid_count} {t('public.browseProjects.bids')}</span>
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-orange-400" />
+                        {project.bid_count} {t('public.browseProjects.bids')}
                       </div>
                     )}
                   </div>
 
                   {project.created_by_name && (
-                    <div className="flex items-center justify-between pt-4 border-t">
-                      <span className="text-sm text-muted-foreground">
-                        {t('public.browseProjects.postedBy')} <span className="font-medium text-foreground">{project.created_by_name}</span>
+                    <div className="flex justify-between items-center pt-4 border-t border-white/10">
+                      <span className="text-sm text-slate-400">
+                        {t('public.browseProjects.postedBy')} <strong>{project.created_by_name}</strong>
                       </span>
-                      <ArrowRight className="h-4 w-4 text-primary" />
+                      <ArrowRight className="text-blue-400 group-hover:translate-x-1 transition" />
                     </div>
                   )}
-
-                  {!isAuthenticated && (
-                    <div className="mt-4 pt-4 border-t">
-                      <p className="text-xs text-muted-foreground text-center">
-                        {t('public.browseProjects.signInToView')}
-                      </p>
-                    </div>
-                  )}
-                </Card>
+                </div>
               ))}
             </div>
           )}
 
-          {/* CTA for non-authenticated users */}
+          {/* CTA */}
           {!isAuthenticated && projects.length > 0 && (
-            <div className="mt-16 text-center bg-secondary/30 rounded-lg p-8">
-              <h3 className="text-2xl font-bold mb-4">{t('public.browseProjects.readyToBid')}</h3>
-              <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+            <div className="mt-20 text-center bg-blue-600/20 rounded-2xl p-12 max-w-4xl mx-auto">
+              <h3 className="text-3xl font-bold mb-4">{t('public.browseProjects.readyToBid')}</h3>
+              <p className="text-slate-300 mb-8">
                 {t('public.browseProjects.readyToBidDesc')}
               </p>
               <div className="flex gap-4 justify-center">
-                <Link to="/register">
-                  <Button size="lg">{t('public.browseProjects.createAccount')}</Button>
+                <Link to="/register" className="px-8 py-4 bg-blue-600 rounded-xl font-semibold">
+                  {t('public.browseProjects.createAccount')}
                 </Link>
-                <Link to="/login">
-                  <Button size="lg" variant="outline">{t('public.browseProjects.signIn')}</Button>
+                <Link to="/login" className="px-8 py-4 border border-white/20 rounded-xl">
+                  {t('public.browseProjects.signIn')}
                 </Link>
               </div>
             </div>
@@ -185,3 +220,40 @@ const BrowseProjects = () => {
 };
 
 export default BrowseProjects;
+
+<style>{`
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-pulse {
+  animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.6s ease-out;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+`}</style>

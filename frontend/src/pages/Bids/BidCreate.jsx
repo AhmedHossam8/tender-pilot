@@ -215,31 +215,47 @@ const BidCreate = () => {
 
     return (
         <div className="container mx-auto py-6">
-            <Card className="max-w-3xl mx-auto">
+            <Card className="max-w-3xl mx-auto bg-[#101825] border border-white/10 text-white">
                 <CardHeader>
-                    <CardTitle>{t("bid.create", "Submit a Bid")}</CardTitle>
+                    <CardTitle className="text-white">
+                        {t("bid.create", "Submit a Bid")}
+                    </CardTitle>
                 </CardHeader>
+
                 <CardContent className="space-y-4">
                     {/* Project Select */}
                     <div>
-                        <label className="block text-sm font-medium mb-2">
+                        <label className="block text-sm font-medium mb-2 text-white">
                             {t("bid.selectProject", "Select Project")}
                         </label>
+
                         <Select value={selectedProject} onValueChange={setSelectedProject}>
-                            <SelectTrigger>
-                                <SelectValue placeholder={t("bid.selectProjectPlaceholder", "Choose a project...")} />
+                            <SelectTrigger className="bg-transparent border-white/20 text-white">
+                                <SelectValue
+                                    placeholder={t(
+                                        "bid.selectProjectPlaceholder",
+                                        "Choose a project..."
+                                    )}
+                                />
                             </SelectTrigger>
-                            <SelectContent>
+
+                            <SelectContent className="bg-[#101825] border-white/10 text-white">
                                 {projectsToShow.map((project) => (
-                                    <SelectItem key={project.id} value={project.id.toString()}>
-                                        {project.title} - ${project.budget}
+                                    <SelectItem
+                                        key={project.id}
+                                        value={project.id.toString()}
+                                        className="focus:bg-white/10"
+                                    >
+                                        {project.title} – ${project.budget}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
+
                         {selectedProjectData && (
-                            <p className="text-xs text-gray-600 mt-2">
-                                Budget: ${selectedProjectData.budget} | Category: {selectedProjectData.category_name}
+                            <p className="text-xs text-white/60 mt-2">
+                                Budget: ${selectedProjectData.budget} · Category:{" "}
+                                {selectedProjectData.category_name}
                             </p>
                         )}
                     </div>
@@ -247,53 +263,62 @@ const BidCreate = () => {
                     {/* Amount & Timeline */}
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium mb-2">
+                            <label className="block text-sm font-medium mb-2 text-white">
                                 {t("bid.proposedAmount", "Proposed Amount ($)")}
                             </label>
+
                             <input
                                 type="number"
                                 value={proposedAmount}
                                 onChange={(e) => setProposedAmount(e.target.value)}
                                 placeholder="0.00"
-                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 rounded-lg bg-transparent border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-white/30"
                             />
+
                             {selectedProjectData?.budget && proposedAmount && (
-                                <p className="text-xs mt-1 text-muted-foreground">
-                                    {((proposedAmount / selectedProjectData.budget) * 100).toFixed(0)}% of project budget
+                                <p className="text-xs text-white/60 mt-1">
+                                    {(
+                                        (proposedAmount / selectedProjectData.budget) *
+                                        100
+                                    ).toFixed(0)}
+                                    % of project budget
                                 </p>
                             )}
                         </div>
+
                         <div>
-                            <label className="block text-sm font-medium mb-2">
+                            <label className="block text-sm font-medium mb-2 text-white">
                                 {t("bid.proposedTimeline", "Timeline (days)")}
                             </label>
+
                             <input
                                 type="number"
                                 value={proposedTimeline}
                                 onChange={(e) => setProposedTimeline(e.target.value)}
                                 placeholder="0"
-                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 rounded-lg bg-transparent border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-white/30"
                             />
                         </div>
                     </div>
 
                     {/* AI Suggestions */}
                     {showSuggestions && realTimeSuggestions.data && (
-                        <div className="p-4 bg-yellow-50 dark:bg-yellow-950 border-l-4 border-yellow-400 rounded-lg">
+                        <div className="p-4 rounded-lg border border-white/10 bg-white/5">
                             <div className="flex items-start gap-2">
-                                <Lightbulb className="h-5 w-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
-                                <div className="flex-1">
-                                    <h4 className="font-semibold text-sm mb-2 text-yellow-900 dark:text-yellow-100">
+                                <Lightbulb className="h-5 w-5 text-yellow-400 mt-0.5" />
+                                <div>
+                                    <h4 className="text-sm font-semibold mb-2 text-white">
                                         💡 AI Suggestions
                                     </h4>
+
                                     {realTimeSuggestions.data.suggestions?.length > 0 ? (
-                                        <ul className="text-sm space-y-1 text-yellow-800 dark:text-yellow-200">
+                                        <ul className="text-sm space-y-1 text-white/80">
                                             {realTimeSuggestions.data.suggestions.map((s, idx) => (
                                                 <li key={idx}>• {s}</li>
                                             ))}
                                         </ul>
                                     ) : (
-                                        <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                                        <p className="text-sm text-white/60">
                                             Your bid looks good! Keep writing to get more suggestions.
                                         </p>
                                     )}
@@ -305,40 +330,72 @@ const BidCreate = () => {
                     {/* Cover Letter */}
                     <div>
                         <div className="flex items-center justify-between mb-2">
-                            <label className="block text-sm font-medium">
+                            <label className="text-sm font-medium text-white">
                                 {t("bid.coverLetter", "Cover Letter")}
                             </label>
+
                             <Button
                                 type="button"
                                 variant="outline"
                                 size="sm"
                                 onClick={handleGenerateCoverLetter}
                                 disabled={!selectedProject || generatingLetter}
-                                className="flex items-center gap-2"
+                                className="border-white/20 text-white hover:bg-white/10 gap-2"
                             >
                                 <Sparkles className="h-4 w-4" />
-                                {generatingLetter ? t("bid.generating", "Generating...") : t("bid.generateAI", "Generate with AI")}
+                                {generatingLetter
+                                    ? t("bid.generating", "Generating...")
+                                    : t("bid.generateAI", "Generate with AI")}
                             </Button>
                         </div>
+
                         <Textarea
                             value={coverLetter}
                             onChange={(e) => setCoverLetter(e.target.value)}
-                            placeholder={t("bid.coverLetterPlaceholder", "Explain why you're the best fit for this project...")}
                             rows={8}
-                            className="font-mono text-sm"
+                            placeholder={t(
+                                "bid.coverLetterPlaceholder",
+                                "Explain why you're the best fit for this project..."
+                            )}
+                            className="bg-transparent border border-white/20 text-white placeholder:text-white/40 font-mono text-sm"
                         />
-                        <div className="flex items-center justify-between mt-1">
-                            <p className="text-xs text-gray-500">{coverLetter.split(' ').length} words</p>
-                            {coverLetter && <p className="text-xs text-muted-foreground">{t("bid.reviewNote", "Review and personalize before submitting")}</p>}
+
+                        <div className="flex justify-between mt-1">
+                            <p className="text-xs text-white/50">
+                                {coverLetter.split(" ").length} words
+                            </p>
+                            {coverLetter && (
+                                <p className="text-xs text-white/50">
+                                    {t(
+                                        "bid.reviewNote",
+                                        "Review and personalize before submitting"
+                                    )}
+                                </p>
+                            )}
                         </div>
                     </div>
                 </CardContent>
+
                 <CardFooter className="flex justify-end gap-3">
-                    <Button variant="outline" onClick={() => navigate(-1)} disabled={isSubmitting}>
+                    <Button
+                        variant="outline"
+                        onClick={() => navigate(-1)}
+                        disabled={isSubmitting}
+                        className="border-white/20 text-white hover:bg-white/10"
+                    >
                         {t("common.cancel", "Cancel")}
                     </Button>
-                    <Button onClick={handleSubmit} disabled={isSubmitting || !selectedProject || !coverLetter.trim()} className="gap-2">
-                        {isSubmitting ? <LoadingSpinner className="h-4 w-4" /> : t("bid.submit", "Submit Bid")}
+
+                    <Button
+                        onClick={handleSubmit}
+                        disabled={isSubmitting || !selectedProject || !coverLetter.trim()}
+                        className="bg-white text-black hover:bg-white/90 gap-2"
+                    >
+                        {isSubmitting ? (
+                            <LoadingSpinner className="h-4 w-4" />
+                        ) : (
+                            t("bid.submit", "Submit Bid")
+                        )}
                     </Button>
                 </CardFooter>
             </Card>

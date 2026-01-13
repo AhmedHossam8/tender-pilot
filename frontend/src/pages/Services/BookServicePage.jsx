@@ -56,46 +56,34 @@ const BookServicePage = () => {
     const [scheduledTime, setScheduledTime] = useState("");
     const [isReviewing, setIsReviewing] = useState(false);
 
-    // --- Fetch service details ---
+    // Fetch service details
     const { data, isLoading, isError, error } = useQuery({
         queryKey: ["service", serviceId],
         queryFn: () => serviceService.getById(serviceId),
         enabled: !!serviceId,
     });
 
-    // Normalize data: support both axios {data: ...} and direct object
     const service = data?.data ?? data;
-
     const selectedPackageObj = service?.packages?.find(
         (pkg) => String(pkg.id) === String(selectedPackage)
     );
-
-    // Combine date and time into ISO format
     const scheduledFor = scheduledDate && scheduledTime
         ? `${scheduledDate}T${scheduledTime}`
         : "";
 
-    // --- Booking mutation ---
+    // Booking mutation
     const bookingMutation = useMutation({
-        mutationFn: (bookingData) => {
-            console.log("Booking data being sent:", bookingData);
-            return bookingService.create(bookingData);
-        },
+        mutationFn: (bookingData) => bookingService.create(bookingData),
         onSuccess: () => {
             toast.success(t("services.bookingSuccess"));
             queryClient.invalidateQueries(["bookings"]);
             navigate("/app/bookings");
         },
         onError: (err) => {
-            console.error("Booking error:", err);
-            console.error("Error response:", err?.response?.data);
-            toast.error(
-                err?.response?.data?.error || t("services.bookingError")
-            );
+            toast.error(err?.response?.data?.error || t("services.bookingError"));
         },
     });
 
-    // --- Loading / Skeleton UI ---
     if (isLoading) {
         return (
             <div className="p-6 max-w-3xl mx-auto space-y-4">
@@ -105,7 +93,6 @@ const BookServicePage = () => {
         );
     }
 
-    // --- Error UI ---
     if (isError) {
         return (
             <p className="text-center mt-10 text-red-500">
@@ -114,7 +101,6 @@ const BookServicePage = () => {
         );
     }
 
-    // --- Handle case where service is undefined ---
     if (!service) {
         return (
             <p className="text-center mt-10 text-gray-500">
@@ -123,7 +109,6 @@ const BookServicePage = () => {
         );
     }
 
-    // --- Booking handler ---
     const handleBooking = () => {
         if (!selectedPackage || !scheduledDate || !scheduledTime) {
             toast.error(t("services.selectPackageAndDate"));
@@ -145,29 +130,26 @@ const BookServicePage = () => {
             return;
         }
 
-        const bookingPayload = {
+        bookingMutation.mutate({
             package_id: Number(selectedPackage),
             scheduled_for: scheduledFor,
-        };
-
-        console.log("Submitting booking with payload:", bookingPayload);
-        bookingMutation.mutate(bookingPayload);
+        });
     };
 
     return (
         <div className="p-6 max-w-3xl mx-auto space-y-6">
             {/* Service info */}
             <div>
-                <h1 className="text-3xl font-bold">{service.name}</h1>
-                <p className="text-muted-foreground">{service.description}</p>
+                <h1 className="text-3xl font-bold text-white">{service.name}</h1>
+                <p className="text-slate-400">{service.description}</p>
             </div>
 
             {/* Booking card */}
             {canBookService ? (
-                <Card>
+                <Card className="bg-[#101825] border border-gray-700">
                     <CardHeader>
-                        <CardTitle>{t("services.bookPackage")}</CardTitle>
-                        <CardDescription>
+                        <CardTitle className="text-white">{t("services.bookPackage")}</CardTitle>
+                        <CardDescription className="text-slate-400">
                             {t("services.bookPackageDescription")}
                         </CardDescription>
                     </CardHeader>
@@ -175,7 +157,7 @@ const BookServicePage = () => {
                     <CardContent className="space-y-4">
                         {/* Package select */}
                         <div>
-                            <p className="text-sm font-medium mb-1">
+                            <p className="text-sm font-medium mb-1 text-white">
                                 {t("services.packages")}
                             </p>
                             <Select
@@ -185,7 +167,7 @@ const BookServicePage = () => {
                                 <SelectTrigger>
                                     <SelectValue placeholder={t("services.selectPackage")} />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className="bg-[#101825] border border-gray-700">
                                     {service.packages?.length > 0 ? (
                                         service.packages.map((pkg) => (
                                             <SelectItem key={pkg.id} value={String(pkg.id)}>
@@ -201,11 +183,10 @@ const BookServicePage = () => {
                             </Select>
                         </div>
 
-                        {/* Date and Time inputs */}
+                        {/* Date & Time inputs */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {/* Date input */}
                             <div>
-                                <p className="text-sm font-medium mb-1">
+                                <p className="text-sm font-medium mb-1 text-white">
                                     {t("services.date") || "Date"}
                                 </p>
                                 <Input
@@ -216,9 +197,8 @@ const BookServicePage = () => {
                                 />
                             </div>
 
-                            {/* Time dropdown */}
                             <div>
-                                <p className="text-sm font-medium mb-1">
+                                <p className="text-sm font-medium mb-1 text-white">
                                     {t("services.time") || "Time"}
                                 </p>
                                 <Select
@@ -228,7 +208,7 @@ const BookServicePage = () => {
                                     <SelectTrigger>
                                         <SelectValue placeholder={t("services.selectTime") || "Select time"} />
                                     </SelectTrigger>
-                                    <SelectContent className="max-h-[300px]">
+                                    <SelectContent className="bg-[#101825] border border-gray-700 max-h-[300px]">
                                         {timeSlots.map((slot) => (
                                             <SelectItem key={slot.value} value={slot.value}>
                                                 {slot.label}
@@ -240,21 +220,21 @@ const BookServicePage = () => {
                         </div>
 
                         {isReviewing && selectedPackageObj && (
-                            <div className="mt-4 border-t pt-4 space-y-3">
-                                <p className="text-sm font-semibold">
+                            <div className="mt-4 border-t border-gray-700 pt-4 space-y-3">
+                                <p className="text-sm font-semibold text-white">
                                     {t("services.reviewBooking")}
                                 </p>
-                                <div className="text-sm space-y-1">
+                                <div className="text-sm space-y-1 text-slate-400">
                                     <p>
-                                        <span className="font-medium">{t("services.package")}:</span>{" "}
+                                        <span className="font-medium">Package:</span>{" "}
                                         {selectedPackageObj.name} — ${selectedPackageObj.price}
                                     </p>
                                     <p>
-                                        <span className="font-medium">{t("services.scheduledFor")}:</span>{" "}
+                                        <span className="font-medium">Scheduled For:</span>{" "}
                                         {new Date(scheduledFor).toLocaleString()}
                                     </p>
                                 </div>
-                                <div className="rounded border bg-muted p-3 text-xs text-muted-foreground">
+                                <div className="rounded border border-gray-700 bg-[#101825] p-3 text-xs text-slate-400">
                                     <p className="font-semibold mb-1">
                                         {t("services.paymentPlaceholderTitle")}
                                     </p>
@@ -296,7 +276,6 @@ const BookServicePage = () => {
                                             : t("services.reviewAndContinue")}
                         </Button>
                     </CardFooter>
-
                 </Card>
             ) : (
                 <p className="text-center text-gray-500 mt-4">

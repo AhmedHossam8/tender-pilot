@@ -1,389 +1,270 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-import { useTranslation } from "react-i18next";
-import { useAuthStore } from "@/contexts/authStore";
-
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import bidService from '../../services/bid.service';
+import { Plus, RefreshCw } from 'lucide-react';
 import {
   Button,
   Card,
   CardHeader,
-  CardTitle,
   CardContent,
-  Table,
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
-  StatusBadge,
-} from "@/components/ui";
+  CardTitle,
+  Skeleton,
+  Badge,
+} from '@/components/ui';
 
-import { LoadingSpinner, EmptyState, ConfirmDialog } from "@/components/common";
-import { Edit, Trash2, Plus, Check, X, Star } from "lucide-react";
-import { useBids, useChangeBidStatus } from "../../hooks/useBids";
-import bidService from "../../services/bid.service";
-
-const BidList = () => {
-  const { t, i18n } = useTranslation();
-  const auth = useAuthStore();
-  const user = auth.user;
-  const role = auth.role;
+const BidsList = ({ userRole }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  
-  // Determine filter based on user type
-  const bidFilter = auth.isProvider() ? { type: 'sent' } : auth.isClient() ? { type: 'received' } : {};
-  const { data: bids, isLoading, isError, error, refetch } = useBids(bidFilter);
-  const changeBidStatus = useChangeBidStatus();
 
-  // Local state
-  const [bidList, setBidList] = useState([]);
-  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
-  const [selectedBid, setSelectedBid] = useState(null);
-  const [confirmAction, setConfirmAction] = useState(null); // 'withdraw', 'accept', 'reject', 'shortlist'
-  const [loading, setLoading] = useState(false); // Loading state for actions
+  // Default tab based on user role
+  const defaultTab = userRole === 'provider' ? 'sent' : 'received';
+  const [activeTab, setActiveTab] = useState(defaultTab);
+  const [bids, setBids] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [statusFilter, setStatusFilter] = useState('all');
 
-  // Initialize local state once after bids load
   useEffect(() => {
-    if (!isLoading && !isError && bids) {
-      // Ensure bids is always an array
-      const bidsArray = Array.isArray(bids) ? bids : [];
-      setBidList(bidsArray);
-    }
-  }, [bids, isLoading, isError]);
+    loadBids();
+  }, [activeTab, statusFilter]);
 
-  // Helper function to check if a project has an accepted bid
-  const hasAcceptedBid = (projectId) => {
-    return bidList.some(b => b.project === projectId && b.status === 'accepted');
-  };
-
-  // Helper function to check if this specific bid is the accepted one
-  const isAcceptedBid = (bid) => {
-    return bid.status === 'accepted';
-  };
-
-  const handleWithdraw = async (bid) => {
-    setLoading(true);
+  const loadBids = async () => {
     try {
-      await bidService.withdrawBid(bid.id);
-      toast.success(t("Bid withdrawn successfully!"));
-      refetch();
-    } catch (error) {
-      toast.error(t("Failed to withdraw bid"));
+      setLoading(true);
+      setError(null);
+
+      // Build params
+      let params = {};
+      if (userRole === 'provider') {
+        params.type = 'sent';
+      } else if (userRole === 'client') {
+        params.type = 'received';
+      }
+
+      if (statusFilter !== 'all') params.status = statusFilter;
+
+      const response = await bidService.getBids(params);
+
+      // Check structure
+      const bidsData = Array.isArray(response.data)
+        ? response.data
+        : response.data?.results ?? [];
+
+      setBids(bidsData);
+    } catch (err) {
+      setError('Failed to load bids. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleStatusChange = async (bid, status) => {
-    setLoading(true);
-    try {
-      await changeBidStatus.mutateAsync({ id: bid.id, status });
-      
-      // Show success message based on action
-      const messages = {
-        'accepted': t('Bid accepted successfully!'),
-        'rejected': t('Bid rejected successfully!'),
-        'shortlisted': t('Bid shortlisted successfully!')
-      };
-      toast.success(messages[status] || t('Bid status updated!'));
-      
-      refetch();
-    } catch (error) {
-      const errorMessage = error.response?.data?.error || 
-                          error.response?.data?.status?.[0] || 
-                          t("Failed to update bid status");
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const openConfirmDialog = (bid, action) => {
-    setSelectedBid(bid);
-    setConfirmAction(action);
-    setConfirmDialogOpen(true);
-  };
-
-  const handleConfirm = () => {
-    if (!selectedBid || !confirmAction) return;
-
-    switch (confirmAction) {
-      case 'withdraw':
-        handleWithdraw(selectedBid);
-        break;
-      case 'accept':
-      case 'reject':
+  const getStatusBadgeClass = (status) => {
+    switch (status) {
+      case 'pending':
+        return 'bg-yellow-600 text-gray-900';
       case 'shortlisted':
-        handleStatusChange(selectedBid, confirmAction);
-        break;
-    }
-
-    setConfirmDialogOpen(false);
-    setSelectedBid(null);
-    setConfirmAction(null);
-  };
-
-  const getConfirmDialogProps = () => {
-    switch (confirmAction) {
-      case 'withdraw':
-        return {
-          title: t("Withdraw Bid?"),
-          description: t("This action cannot be undone. Are you sure you want to withdraw this bid?"),
-          confirmLabel: t("Withdraw"),
-          variant: "destructive"
-        };
-      case 'accept':
-        return {
-          title: t("Accept Bid?"),
-          description: t("Accepting this bid will automatically reject all other bids for this project and move the project to 'In Progress'. Are you sure?"),
-          confirmLabel: t("Accept"),
-          variant: "default"
-        };
-      case 'reject':
-        return {
-          title: t("Reject Bid?"),
-          description: selectedBid?.status === 'accepted' 
-            ? t("Rejecting this accepted bid will allow you to accept other bids for this project. Are you sure?")
-            : t("Are you sure you want to reject this bid? This action cannot be undone."),
-          confirmLabel: t("Reject"),
-          variant: "destructive"
-        };
-      case 'shortlisted':
-        return {
-          title: t("Shortlist Bid?"),
-          description: t("Are you sure you want to shortlist this bid?"),
-          confirmLabel: t("Shortlist"),
-          variant: "default"
-        };
+        return 'bg-blue-600 text-white';
+      case 'accepted':
+        return 'bg-green-600 text-white';
+      case 'rejected':
+        return 'bg-red-600 text-white';
+      case 'withdrawn':
+        return 'bg-gray-600 text-white';
       default:
-        return {
-          title: t("Confirm Action"),
-          description: t("Are you sure?"),
-          confirmLabel: t("Confirm"),
-          variant: "default"
-        };
+        return 'bg-gray-700 text-white';
     }
   };
 
-  if (isLoading)
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <LoadingSpinner size="xl" />
-      </div>
-    );
+  const formatCurrency = (amount) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
 
-  if (isError || error)
-    return <EmptyState title={t("bid.loadError", "Failed to load bids")} />;
+  const handleBidClick = (bidId) => navigate(`/app/bids/${bidId}`);
+  const handleCreateBid = () => navigate('/app/bids/create');
 
-  if (!Array.isArray(bidList) || bidList.length === 0)
-    return <EmptyState title={t("bid.noBids", "No bids found")} />;
+  const translateRecommendation = (text) => {
+    if (!text) return '';
+    const normalized = text.toLowerCase();
+    if (normalized.includes('strong')) return t('bids.strongMatch');
+    if (normalized.includes('good')) return t('bids.goodMatch');
+    if (normalized.includes('fair')) return t('bids.fairMatch');
+    if (normalized.includes('weak') || normalized.includes('poor')) return t('bids.weakMatch');
+    return text;
+  };
 
-  const dialogProps = getConfirmDialogProps();
-
-  // Render for PROVIDER
-  if (auth.isProvider()) {
-    return (
-      <div
-        className={`p-8 min-h-screen bg-background ${i18n.language === "ar" ? "rtl" : "ltr"}`}
-      >
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">{t("My Bids")}</h1>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("Submitted Bids")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("Project")}</TableHead>
-                  <TableHead>{t("Proposed Amount")}</TableHead>
-                  <TableHead>{t("Timeline (Days)")}</TableHead>
-                  <TableHead>{t("Status")}</TableHead>
-                  <TableHead className="text-right">{t("Actions")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {bidList.map((bid) => (
-                  <TableRow key={bid.id}>
-                    <TableCell className="font-medium">{bid.project_title || bid.project}</TableCell>
-                    <TableCell>${bid.proposed_amount}</TableCell>
-                    <TableCell>{bid.proposed_timeline} days</TableCell>
-                    <TableCell>
-                      <StatusBadge status={bid.status || "pending"} />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Link to={`/app/bids/${bid.id}`}>
-                          <Button size="sm" variant="ghost" disabled={loading}>
-                            <Edit className="h-4 w-4 mr-1" />
-                            {t("View")}
-                          </Button>
-                        </Link>
-
-                        {bid.status === "pending" && (
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            disabled={loading}
-                            onClick={() => openConfirmDialog(bid, 'withdraw')}
-                          >
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            {t("Withdraw")}
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-
-        <ConfirmDialog
-          open={confirmDialogOpen}
-          onOpenChange={setConfirmDialogOpen}
-          title={dialogProps.title}
-          description={dialogProps.description}
-          confirmLabel={dialogProps.confirmLabel}
-          variant={dialogProps.variant}
-          loading={loading}
-          onConfirm={handleConfirm}
-        />
-      </div>
-    );
-  }
-
-  // Render for CLIENT
   return (
-    <div
-      className={`p-8 min-h-screen bg-background ${i18n.language === "ar" ? "rtl" : "ltr"}`}
-    >
+    <div className="container mx-auto px-4 py-8 bg-[#101825] min-h-screen text-gray-300 text-sm">
+      {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">{t("Bids")}</h1>
-        {user?.role === "provider" && (
-          <Link to="/app/bids/create">
-            <Button>
-              <Plus className="h-4 w-4 ml-2 rtl:ml-0 rtl:mr-2" />
-              {t("Submit Bid")}
-            </Button>
-          </Link>
+        <h1 className="text-2xl font-bold">{t('bids.title')}</h1>
+        {userRole == 'client' && (
+          <Button onClick={handleCreateBid} className="flex items-center" variant="default">
+            <Plus className="h-4 w-4 mr-2" />
+            {t('bids.create', 'Submit New Bid')}
+          </Button>
         )}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("Received Bids")}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t("Project")}</TableHead>
-                <TableHead>{t("Provider")}</TableHead>
-                <TableHead>{t("Amount")}</TableHead>
-                <TableHead>{t("Timeline")}</TableHead>
-                <TableHead>{t("Status")}</TableHead>
-                <TableHead className="text-right">{t("Actions")}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {bidList.map((bid) => {
-                const projectHasAcceptedBid = hasAcceptedBid(bid.project);
-                const thisIsAcceptedBid = isAcceptedBid(bid);
-                const canModify = !projectHasAcceptedBid || thisIsAcceptedBid;
-                
-                return (
-                <TableRow key={bid.id}>
-                  <TableCell className="font-medium">{bid.project_title || bid.project}</TableCell>
-                  <TableCell>{bid.service_provider_name || "Unknown"}</TableCell>
-                  <TableCell>${bid.proposed_amount}</TableCell>
-                  <TableCell>{bid.proposed_timeline} days</TableCell>
-                  <TableCell>
-                    <StatusBadge status={bid.status || "pending"} />
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Link to={`/app/bids/${bid.id}`}>
-                        <Button size="sm" variant="ghost" disabled={loading}>
-                          {t("View Details")}
-                        </Button>
-                      </Link>
+      {/* Tabs (only show if userRole is not restricted to one tab) */}
+      {userRole === 'admin' && (
+        <div className="mb-6 border-b border-gray-700">
+          <nav className="-mb-px flex space-x-8">
+            {['sent', 'received'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`pb-3 px-1 border-b-2 font-medium text-xs ${activeTab === tab
+                  ? 'border-blue-500 text-white'
+                  : 'border-transparent text-gray-400 hover:text-white hover:border-gray-600'
+                  }`}
+              >
+                {tab === 'sent' ? t('bids.sentBids') : t('bids.receivedBids')}
+              </button>
+            ))}
+          </nav>
+        </div>
+      )}
 
-                      {/* Show reject button for accepted bids */}
-                      {thisIsAcceptedBid && (
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          disabled={loading}
-                          onClick={() => openConfirmDialog(bid, 'reject')}
-                        >
-                          <X className="h-4 w-4 mr-1" />
-                          {t("Reject")}
-                        </Button>
-                      )}
+      {/* Status Filter */}
+      <div className="mb-6 flex items-center gap-3">
+        <label className="text-xs font-medium text-gray-400">{t('bids.filterByStatus')}</label>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="px-3 py-2 bg-gray-800 text-gray-300 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm min-w-[170px]"
+        >
+          <option value="all">{t('bids.allStatuses')}</option>
+          <option value="pending">{t('status.pending')}</option>
+          <option value="shortlisted">{t('bids.shortlist')}</option>
+          <option value="accepted">{t('status.accepted', 'Accepted')}</option>
+          <option value="rejected">{t('status.rejected', 'Rejected')}</option>
+          <option value="withdrawn">{t('bids.withdrawBid', 'Withdrawn')}</option>
+        </select>
+      </div>
 
-                      {/* Show action buttons for pending/shortlisted bids if no other bid is accepted */}
-                      {(bid.status === "pending" || bid.status === "shortlisted") && canModify && (
-                        <>
-                          <Button
-                            size="sm"
-                            variant="default"
-                            disabled={loading}
-                            onClick={() => openConfirmDialog(bid, 'accept')}
-                          >
-                            <Check className="h-4 w-4 mr-1" />
-                            {t("Accept")}
-                          </Button>
+      {/* Loading State */}
+      {loading && (
+        <div className="py-12">
+          <Skeleton className="h-6 w-1/3 mb-4" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Skeleton key={i} className="h-36 rounded-lg" />
+            ))}
+          </div>
+        </div>
+      )}
 
-                          {bid.status === "pending" && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled={loading}
-                              onClick={() => openConfirmDialog(bid, 'shortlisted')}
-                            >
-                              <Star className="h-4 w-4 mr-1" />
-                              {t("Shortlist")}
-                            </Button>
-                          )}
+      {/* Error State */}
+      {error && (
+        <Card className="bg-red-900 border-red-700 mb-6">
+          <CardContent>
+            <p className="text-red-100 text-sm">{error}</p>
+            <Button onClick={loadBids} variant="outline" className="mt-2 flex items-center text-sm">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              {t('common.tryAgain', 'Try Again')}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            disabled={loading}
-                            onClick={() => openConfirmDialog(bid, 'reject')}
-                          >
-                            <X className="h-4 w-4 mr-1" />
-                            {t("Reject")}
-                          </Button>
-                        </>
-                      )}
+      {/* Bids List */}
+      {!loading && !error && (
+        <>
+          {bids.length === 0 ? (
+            <Card className="bg-gray-900 text-center py-12">
+              <CardContent>
+                <svg
+                  className="mx-auto h-12 w-12 text-gray-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                <h3 className="mt-2 text-sm font-medium text-gray-300">{t('bids.noBids')}</h3>
+                <p className="mt-1 text-xs text-gray-400">
+                  {activeTab === 'sent' ? t('bids.noSentBids') : t('bids.noReceivedBids')}
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {bids.map((bid) => (
+                <Card
+                  key={bid.id}
+                  className="bg-gray-900 cursor-pointer hover:shadow-lg overflow-hidden"
+                  onClick={() => handleBidClick(bid.id)}
+                >
+                  <CardContent>
+                    <CardTitle className="text-gray-350 mb-2 line-clamp-2 text-md mt-4">
+                      {bid.project_title}
+                    </CardTitle>
+
+                    {activeTab === 'received' && (
+                      <p className="text-xs text-gray-400 mb-3">
+                        {t('bids.applicant', 'By')}: {bid.service_provider_name}
+                      </p>
+                    )}
+
+                    <div className="flex justify-between items-center mb-3 text-xs">
+                      <div>
+                        <p className="text-gray-400">{t('bids.amount')}</p>
+                        <p className="text-sm font-bold text-gray-350">
+                          {formatCurrency(bid.proposed_amount)}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-gray-400">{t('bids.deliveryTime')}</p>
+                        <p className="text-sm font-semibold text-gray-200">
+                          {bid.proposed_timeline} {t('bids.days')}
+                        </p>
+                      </div>
                     </div>
-                  </TableCell>
-                </TableRow>
-              )})}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
 
-      <ConfirmDialog
-        open={confirmDialogOpen}
-        onOpenChange={setConfirmDialogOpen}
-        title={dialogProps.title}
-        description={dialogProps.description}
-        confirmLabel={dialogProps.confirmLabel}
-        variant={dialogProps.variant}
-        loading={loading}
-        onConfirm={handleConfirm}
-      />
+                    {bid.ai_score !== undefined && bid.ai_score !== null && (
+                      <div className="mb-3 bg-gray-800/70 rounded-lg p-3 border border-gray-700/80">
+                        <div className="flex items-center justify-between text-xs text-gray-300 font-medium">
+                          <span>{t('bids.aiScore')}</span>
+                          <span className="text-white">{Math.round(bid.ai_score)}/100</span>
+                        </div>
+                        <div className="mt-2 h-2 rounded-full bg-gray-900 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-green-400"
+                            style={{ width: `${Math.min(Math.max(bid.ai_score, 0), 100)}%` }}
+                          />
+                        </div>
+                        {bid.ai_feedback?.recommendation && (
+                          <p className="text-[11px] text-gray-400 mt-2 line-clamp-1">
+                            <span className="text-gray-300 font-medium mr-1">{t('bids.recommendation')}:</span>
+                            {translateRecommendation(bid.ai_feedback.recommendation)}
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="flex justify-between items-center text-xs">
+                      <Badge className={getStatusBadgeClass(bid.status)}>
+                        {bid.status_display || bid.status}
+                      </Badge>
+                      <span className="text-gray-400">
+                        {new Date(bid.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 };
 
-export default BidList;
+export default BidsList;

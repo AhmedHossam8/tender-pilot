@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -20,9 +20,6 @@ import {
 } from "@/components/ui";
 
 import {
-  LoadingSpinner,
-  SearchBar,
-  FilterPanel,
   ConfirmDialog,
 } from "@/components/common";
 
@@ -32,8 +29,14 @@ import { useCategories, useSkills } from "../../hooks/useCore";
 import ProjectCreateModal from "./ProjectCreateModal";
 import ProjectEditModal from "./ProjectEditModal";
 
-function ProjectsList() {
+export default function ProjectsList() {
   const { t } = useTranslation();
+  const auth = useAuthStore();
+  const canCreateProject = auth.isClient();
+
+  const { projects = [], isLoading, isError } = useProjects();
+  const { data: categories, isLoading: categoriesLoading } = useCategories();
+  const { data: skills, isLoading: skillsLoading } = useSkills();
 
   const [searchValue, setSearchValue] = useState("");
   const [activeFilters, setActiveFilters] = useState({});
@@ -43,16 +46,9 @@ function ProjectsList() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
 
-  const { projects = [], isLoading, isError } = useProjects();
-  const { data: categories, isLoading: categoriesLoading } = useCategories();
-  const { data: skills, isLoading: skillsLoading } = useSkills();
-
-  const auth = useAuthStore();
-  const canCreateProject = auth.isClient();
-
   const isAnyLoading = isLoading || categoriesLoading || skillsLoading;
 
-  // Filters definition
+  // Filters
   const filters = [
     {
       key: "category",
@@ -80,7 +76,6 @@ function ProjectsList() {
     },
   ];
 
-  // Filtered projects
   const filteredProjects = useMemo(() => {
     let data = [...projects];
 
@@ -107,13 +102,8 @@ function ProjectsList() {
       );
     }
 
-    if (activeFilters.budget_min) {
-      data = data.filter((p) => p.budget >= activeFilters.budget_min);
-    }
-
-    if (activeFilters.budget_max) {
-      data = data.filter((p) => p.budget <= activeFilters.budget_max);
-    }
+    if (activeFilters.budget_min) data = data.filter((p) => p.budget >= activeFilters.budget_min);
+    if (activeFilters.budget_max) data = data.filter((p) => p.budget <= activeFilters.budget_max);
 
     return data;
   }, [projects, searchValue, activeFilters]);
@@ -124,20 +114,17 @@ function ProjectsList() {
     setDeleting(false);
   };
 
-  // Loading state
   if (isAnyLoading) {
     return (
-      <div className="space-y-6">
-        {/* Search & Filters Skeleton */}
-        <Card>
+      <div className="space-y-6 p-6">
+        <Card className="bg-[#101825] text-white border-gray-700">
           <CardContent className="space-y-4">
             <Skeleton className="h-10 w-full max-w-md" />
             <Skeleton className="h-8 w-full" />
           </CardContent>
         </Card>
 
-        {/* Projects Table Skeleton */}
-        <Card>
+        <Card className="bg-[#101825] text-white border-gray-700">
           <CardContent>
             <SkeletonTable rows={5} />
           </CardContent>
@@ -146,160 +133,130 @@ function ProjectsList() {
     );
   }
 
-  // Error state
   if (isError) {
-    return <p className="text-center text-red-500">{t("projects.loadError")}</p>;
+    return (
+      <p className="text-center text-red-500 mt-6">{t("projects.loadError")}</p>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-[#101825] text-gray-400 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header Section */}
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">
-              {t("projects.title")}
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              {t("projects.subtitle")}
-            </p>
+            <h1 className="text-3xl font-bold text-gray-300">{t("projects.title")}</h1>
+            <p className="text-gray-400 mt-1">{t("projects.subtitle")}</p>
           </div>
           {canCreateProject && (
             <ProjectCreateModal
               trigger={
-                <Button size="lg" disabled={isAnyLoading}>
+                <Button
+                  size="lg"
+                  className="bg-purple-600 hover:bg-blue-700 border-0 text-gray-400 hover:bg-gray-900/20"
+                >
                   <Plus className="h-5 w-5 mr-2" />
                   {t("projects.create")}
                 </Button>
               }
-              onSuccess={() => queryClient.invalidateQueries(["projects"])}
+              onSuccess={() => window.location.reload()}
             />
           )}
         </div>
 
-        {/* Search & Filters */}
-        <Card>
+        {/* Search */}
+        <Card className="bg-[#101825] border-gray-700">
           <CardContent className="p-6 space-y-4">
-            <SearchBar
+            <input
+              type="text"
               value={searchValue}
-              onChange={setSearchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
               placeholder={t("projects.searchPlaceholder")}
-            />
-            <FilterPanel
-              filters={filters}
-              activeFilters={activeFilters}
-              onFilterChange={setActiveFilters}
-              onClearFilters={() => setActiveFilters({})}
+              className="w-full px-3 py-2 rounded-lg border border-gray-700 bg-[#101825] text-gray-400 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
           </CardContent>
         </Card>
 
         {/* Projects Table */}
-        <Card>
-          <CardContent className="p-0">
+        <Card className="bg-[#101825] border-gray-700">
+          <CardContent className="p-0 overflow-x-auto">
             {filteredProjects.length === 0 ? (
-              <div className="p-12 text-center">
-                <p className="text-muted-foreground text-lg mb-4">
-                  {searchValue || Object.keys(activeFilters).length > 0
-                    ? t("projects.noProjectsFiltered")
-                    : t("projects.noProjects")}
-                </p>
-                {!searchValue && Object.keys(activeFilters).length === 0 && (
-                  <ProjectCreateModal
-                    trigger={
-                      <Button>
-                        <Plus className="h-4 w-4 mr-2" />
-                        {t("projects.createFirstProject")}
-                      </Button>
-                    }
-                    onSuccess={() => window.location.reload()}
-                  />
-                )}
+              <div className="p-12 text-center text-gray-400">
+                {searchValue || Object.keys(activeFilters).length > 0
+                  ? t("projects.noProjectsFiltered")
+                  : t("projects.noProjects")}
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-muted/50">
-                      <TableHead className="font-semibold px-6">{t("projects.title")}</TableHead>
-                      <TableHead className="font-semibold px-6">{t("projects.status")}</TableHead>
-                      <TableHead className="font-semibold px-6 text-right">{t("projects.actions")}</TableHead>
-                    </TableRow>
-                  </TableHeader>
+              <Table className="text-gray-400">
+                <TableHeader>
+                  <TableRow className="bg-gray-800">
+                    <TableHead className="px-6 py-3 text-gray-300">{t("projects.title")}</TableHead>
+                    <TableHead className="px-6 py-3 text-gray-300">{t("projects.status")}</TableHead>
+                    <TableHead className="px-6 py-3 text-right text-gray-300">{t("projects.actions")}</TableHead>
+                  </TableRow>
+                </TableHeader>
 
-                  <TableBody>
-                    {filteredProjects.map((project) => (
-                      <TableRow key={project.id} className="hover:bg-muted/50 transition-colors">
-                        <TableCell className="px-6 py-4">
-                          <div className="space-y-1">
-                            <Link
-                              to={`/app/projects/${project.id}`}
-                              className="font-medium text-foreground hover:text-primary hover:underline transition-colors"
-                            >
-                              {project.title}
-                            </Link>
-                            {project.description && (
-                              <p className="text-sm text-muted-foreground line-clamp-1">
-                                {project.description}
-                              </p>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="px-6 py-4">
-                          <StatusBadge status={project.status || "draft"} />
-                        </TableCell>
-                        <TableCell className="px-6 py-4">
-                          <div className="flex justify-end gap-2">
-                            <Link to={`/app/projects/${project.id}`}>
-                              <Button size="sm" variant="ghost" disabled={isAnyLoading}>
-                                <Eye className="h-4 w-4 mr-1" />
-                                {t("projects.view")}
+                <TableBody>
+                  {filteredProjects.map((project) => (
+                    <TableRow
+                      key={project.id}
+                      className="hover:bg-gray-700 transition-colors"
+                    >
+                      <TableCell className="px-6 py-4">
+                        <Link
+                          to={`/app/projects/${project.id}`}
+                          className="font-medium text-gray-400 hover:text-gray-300 hover:underline"
+                        >
+                          {project.title}
+                        </Link>
+                      </TableCell>
+                      <TableCell className="px-6 py-4">
+                        <StatusBadge status={project.status || "draft"} />
+                      </TableCell>
+                      <TableCell className="px-6 py-4">
+                        <div className="flex justify-end gap-2">
+                          <Link to={`/app/projects/${project.id}`}>
+                            <Button size="sm" variant="outline" className="text-gray-400 border-gray-700 hover:bg-gray-900/20">
+                              <Eye className="h-4 w-4 mr-1" />
+                              {t("projects.view")}
+                            </Button>
+                          </Link>
+
+                          {project.is_owner && project.status === "open" && (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-gray-400 border-gray-700 hover:bg-gray-900/20"
+                                onClick={() => {
+                                  setEditingProject(project);
+                                  setEditModalOpen(true);
+                                }}
+                              >
+                                <Edit className="h-4 w-4 mr-1" />
+                                {t("projects.edit")}
                               </Button>
-                            </Link>
 
-                            {project.is_owner && project.status === "open" && (
-                              <>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  disabled={isAnyLoading}
-                                  onClick={() => {
-                                    setEditingProject(project);
-                                    setEditModalOpen(true);
-                                  }}
-                                >
-                                  <Edit className="h-4 w-4 mr-1" />
-                                  {t("projects.edit")}
-                                </Button>
-
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                                  disabled={isAnyLoading || deleting}
-                                  onClick={() => {
-                                    setSelectedProject(project);
-                                    setConfirmDialogOpen(true);
-                                  }}
-                                >
-                                  {deleting ? (
-                                    <LoadingSpinner size="sm" />
-                                  ) : (
-                                    <>
-                                      <Trash2 className="h-4 w-4 mr-1" />
-                                      {t("projects.delete")}
-                                    </>
-                                  )}
-                                </Button>
-                              </>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                className="text-gray-400 border-gray-700"
+                                onClick={() => {
+                                  setSelectedProject(project);
+                                  setConfirmDialogOpen(true);
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4 mr-1" />
+                                {t("projects.delete")}
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             )}
           </CardContent>
         </Card>
@@ -324,13 +281,8 @@ function ProjectsList() {
         open={editModalOpen}
         onOpenChange={setEditModalOpen}
         project={editingProject}
-        onSuccess={() => {
-          setEditModalOpen(false);
-          window.location.reload();
-        }}
+        onSuccess={() => window.location.reload()}
       />
-    </div>
+    </div >
   );
 }
-
-export default ProjectsList;

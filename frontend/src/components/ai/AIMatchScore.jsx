@@ -143,7 +143,7 @@ const AIMatchScore = ({
         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
           <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
         </svg>
-        <span>{t('aiMatchScore')}</span>
+        <span>{t('ai.matchScore')}</span>
       </div>
 
       {/* Detailed Feedback (Optional) */}
@@ -153,7 +153,7 @@ const AIMatchScore = ({
             onClick={() => setDetailsOpen(!detailsOpen)}
             className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium text-sm"
           >
-            {detailsOpen ? t('hideDetails') : t('showDetails')}
+            {detailsOpen ? t('ai.hideDetails') : t('ai.showDetails')}
             <svg
               className={`w-4 h-4 transition-transform ${detailsOpen ? 'rotate-180' : ''}`}
               fill="none"
@@ -169,7 +169,7 @@ const AIMatchScore = ({
               {/* Reasoning - Always show this first if available */}
               {feedback.reasoning && (
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-1">{t('aiAnalysis')}</h4>
+                  <h4 className="font-semibold text-gray-900 mb-1">{t('ai.analysis')}</h4>
                   <p className="text-sm text-gray-700 italic">{feedback.reasoning}</p>
                 </div>
               )}
@@ -177,7 +177,7 @@ const AIMatchScore = ({
               {/* Matching Skills */}
               {feedback.matching_skills && feedback.matching_skills.length > 0 && (
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-1">{t('matchingSkills')}</h4>
+                  <h4 className="font-semibold text-gray-900 mb-1">{t('ai.matchingSkills')}</h4>
                   <div className="flex flex-wrap gap-2">
                     {feedback.matching_skills.map((skill, index) => (
                       <span
@@ -194,7 +194,7 @@ const AIMatchScore = ({
               {/* Skill Gaps */}
               {feedback.skill_gaps && feedback.skill_gaps.length > 0 && (
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-1">{t('skillGaps')}</h4>
+                  <h4 className="font-semibold text-gray-900 mb-1">{t('ai.skillGaps')}</h4>
                   <div className="flex flex-wrap gap-2">
                     {feedback.skill_gaps.map((skill, index) => (
                       <span
@@ -211,7 +211,7 @@ const AIMatchScore = ({
               {/* Budget Assessment */}
               {feedback.budget_assessment && (
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-1">{t('budgetAssessment')}</h4>
+                  <h4 className="font-semibold text-gray-900 mb-1">{t('ai.budgetAssessment')}</h4>
                   <p className="text-sm text-gray-700">{feedback.budget_assessment}</p>
                 </div>
               )}
@@ -219,7 +219,7 @@ const AIMatchScore = ({
               {/* Experience Assessment */}
               {feedback.experience_assessment && (
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-1">{t('experienceLevel')}</h4>
+                  <h4 className="font-semibold text-gray-900 mb-1">{t('ai.experienceLevel')}</h4>
                   <p className="text-sm text-gray-700">{feedback.experience_assessment}</p>
                 </div>
               )}
@@ -227,7 +227,7 @@ const AIMatchScore = ({
               {/* Concerns */}
               {feedback.potential_concerns && feedback.potential_concerns.length > 0 && (
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-1">{t('potentialConcerns')}</h4>
+                  <h4 className="font-semibold text-gray-900 mb-1">{t('ai.potentialConcerns')}</h4>
                   <ul className="list-disc list-inside space-y-1">
                     {feedback.potential_concerns.map((concern, index) => (
                       <li key={index} className="text-sm text-gray-700">{concern}</li>

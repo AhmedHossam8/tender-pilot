@@ -14,7 +14,7 @@ import {
     SkeletonText,
 } from "@/components/ui";
 import { toast } from "sonner";
-import { ConfirmDialog, LoadingSpinner } from "@/components/common";
+import { ConfirmDialog } from "@/components/common";
 
 const ServiceDetailPage = () => {
     const { id } = useParams();
@@ -38,10 +38,9 @@ const ServiceDetailPage = () => {
         mutationFn: () => serviceService.delete(id),
         onSuccess: () => {
             queryClient.invalidateQueries(["services"]);
-            // Close dialog first, then show toast and navigate
             setConfirmDialogOpen(false);
             setTimeout(() => {
-                toast.success(t('notifications.success'));
+                toast.success("Service deleted successfully");
                 navigate("/app/services");
             }, 100);
         },
@@ -54,7 +53,6 @@ const ServiceDetailPage = () => {
     });
 
     const handleDelete = async () => {
-        // Don't close dialog immediately, wait for mutation
         await deleteMutation.mutateAsync();
     };
 
@@ -63,8 +61,8 @@ const ServiceDetailPage = () => {
             <div className="p-6 max-w-4xl mx-auto space-y-6">
                 <SkeletonText lines={2} />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <SkeletonCard />
-                    <SkeletonCard />
+                    <SkeletonCard className="bg-[#101825]" />
+                    <SkeletonCard className="bg-[#101825]" />
                 </div>
             </div>
         );
@@ -80,7 +78,7 @@ const ServiceDetailPage = () => {
 
     if (!service) {
         return (
-            <p className="text-center mt-10 text-gray-500">Service not found</p>
+            <p className="text-center mt-10 text-slate-400">Service not found</p>
         );
     }
 
@@ -89,8 +87,8 @@ const ServiceDetailPage = () => {
             {/* Header */}
             <div className="flex justify-between items-start gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold">{service.name}</h1>
-                    <p className="text-muted-foreground">{service.description}</p>
+                    <h1 className="text-3xl font-bold text-white">{service.name}</h1>
+                    <p className="text-slate-400">{service.description}</p>
                 </div>
 
                 {isOwner && (
@@ -119,30 +117,30 @@ const ServiceDetailPage = () => {
 
             {/* Packages */}
             <div>
-                <h2 className="text-2xl font-semibold mb-2">Packages</h2>
+                <h2 className="text-2xl font-semibold text-white mb-2">Packages</h2>
 
                 {service.packages?.length === 0 && (
-                    <p className="text-sm text-muted-foreground">No packages available</p>
+                    <p className="text-sm text-slate-400">No packages available</p>
                 )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {service.packages?.map((pkg) => (
-                        <Card key={pkg.id}>
+                        <Card key={pkg.id} className="bg-[#101825] border border-white/10">
                             <CardHeader>
-                                <CardTitle>{pkg.name}</CardTitle>
+                                <CardTitle className="text-white">{pkg.name}</CardTitle>
                             </CardHeader>
 
-                            <CardContent className="space-y-1">
+                            <CardContent className="space-y-1 text-white">
                                 <p>
                                     <strong>Price:</strong> ${pkg.price}
                                 </p>
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-sm text-slate-400">
                                     Duration: {pkg.duration_hours} hours
                                 </p>
                             </CardContent>
 
                             <CardFooter>
-                                <Button disabled variant="outline">
+                                <Button disabled variant="outline" className="text-white border-white/20 mt-5">
                                     Provider View
                                 </Button>
                             </CardFooter>
