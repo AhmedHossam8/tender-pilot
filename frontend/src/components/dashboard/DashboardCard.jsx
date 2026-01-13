@@ -44,31 +44,31 @@ const DashboardCard = ({
   return (
     <Card
       onClick={onClick}
-      className={`hover:shadow-lg transition-shadow cursor-pointer`}
+      className="hover:shadow-lg transition-shadow cursor-pointer bg-[#0f1623] border border-white/10"
     >
-      <CardContent className="flex items-start justify-between gap-4">
+      <CardContent className="flex items-center justify-between gap-4 py-5">
         {/* Left Section */}
-        <div className="flex-1">
-          <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <p className="text-3xl font-bold text-foreground">{value}</p>
-          {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
+        <div className="flex-1 flex flex-col gap-1">
+          <p className="text-sm font-medium text-slate-300">{title}</p>
+          <p className="text-3xl font-bold text-white leading-tight">{value}</p>
+          {subtitle && <p className="text-sm text-slate-400">{subtitle}</p>}
 
-        {trend && (
-          <div
-            className={`flex items-center gap-2 mt-2 px-2 py-1 rounded-full text-sm font-medium ${
-              trendDirection === 'up'
-                ? 'bg-green-500/10 text-green-300'
-                : 'bg-red-500/10 text-red-300'
-            }`}
-          >
-            <TrendIcon />
-            <span className={trendColor}>{trend}</span>
-          </div>
-        )}
+          {trend && (
+            <div
+              className={`inline-flex items-center gap-2 mt-2 px-2 py-1 rounded-full text-sm font-medium ${
+                trendDirection === 'up'
+                  ? 'bg-green-500/10 text-green-300'
+                  : 'bg-red-500/10 text-red-300'
+              }`}
+            >
+              <TrendIcon />
+              <span className={trendColor}>{trend}</span>
+            </div>
+          )}
         </div>
 
         {/* Right Icon */}
-        {icon && <div className={`p-3 rounded-lg ${iconBgClass}`}>{icon}</div>}
+        {icon && <div className={`p-3 rounded-xl ${iconBgClass}`}>{icon}</div>}
       </CardContent>
     </Card>
   );

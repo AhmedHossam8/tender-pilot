@@ -114,9 +114,9 @@ function Sidebar({ collapsed, onToggleCollapse, isRtl }) {
 
   return (
     <aside className={cn(
-      "flex flex-col bg-[#101825] text-white h-screen transition-all duration-300",
+      "flex flex-col bg-[#0d1420]/95 backdrop-blur-md text-white h-screen transition-all duration-300 border-r border-white/10 shadow-2xl shadow-black/40",
       collapsed ? "w-16" : "w-64",
-      isRtl ? "rtl absolute right-0" : "absolute left-0"
+      isRtl ? "rtl fixed inset-y-0 right-0" : "fixed inset-y-0 left-0"
     )}>
       {/* Logo */}
       <div className="flex items-center h-16 px-4 border-b border-gray-700">
@@ -133,7 +133,7 @@ function Sidebar({ collapsed, onToggleCollapse, isRtl }) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+      <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-900/80">
         {navigation.map((item) => {
           const isActive = location.pathname.startsWith(item.href);
           const unreadCount = item.showBadge ? unreadData?.unread_count || 0 : 0;
@@ -168,7 +168,7 @@ function Sidebar({ collapsed, onToggleCollapse, isRtl }) {
       </nav>
 
       {/* Bottom Navigation */}
-      <div className="px-2 py-4 border-t border-gray-700">
+      <div className="px-2 py-4 border-t border-gray-700/70 bg-[#0c121d]/90 backdrop-blur">
         {bottomNavigation.map((item) => (
           <NavLink
             key={item.name}

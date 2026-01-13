@@ -47,7 +47,7 @@ const BrowseProjects = () => {
       );
       navigate('/login', {
         state: {
-          message: 'Please sign in to view project details and submit bids.',
+          message: t('public.browseProjects.signInPrompt'),
         },
       });
     }
@@ -73,17 +73,17 @@ const BrowseProjects = () => {
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 backdrop-blur-sm mb-6">
               <Sparkles className="w-4 h-4 text-blue-400" />
-              <span className="text-sm text-blue-300">Live Projects</span>
+              <span className="text-sm text-blue-300">{t('public.browseProjects.badge')}</span>
             </div>
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-black mb-6">
               <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                Browse Projects
+                {t('public.browseProjects.title')}
               </span>
             </h1>
 
             <p className="text-xl text-slate-300 mb-10 max-w-2xl mx-auto">
-              Discover real opportunities posted by verified clients
+              {t('public.browseProjects.description')}
             </p>
 
             {/* Search */}
@@ -92,7 +92,7 @@ const BrowseProjects = () => {
                 value={searchQuery}
                 onChange={setSearchQuery}
                 onSearch={setSearchQuery}
-                placeholder="Search projects..."
+                placeholder={t('public.browseProjects.searchPlaceholder')}
                 className="mt-2"
               />
             </div>
@@ -101,15 +101,15 @@ const BrowseProjects = () => {
             <div className="flex justify-center gap-8 mt-8 flex-wrap text-slate-400">
               <div className="flex items-center gap-2">
                 <Briefcase className="w-5 h-5 text-blue-400" />
-                <span>{projects.length} Projects</span>
+                <span>{projects.length} {t('public.browseProjects.projectsLabel')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-green-400" />
-                <span>High Demand</span>
+                <span>{t('public.browseProjects.highDemand')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Users className="w-5 h-5 text-purple-400" />
-                <span>Verified Clients</span>
+                <span>{t('public.browseProjects.verifiedClients')}</span>
               </div>
             </div>
           </div>
@@ -120,17 +120,17 @@ const BrowseProjects = () => {
       <section className="py-16 relative z-10">
         <div className="container mx-auto px-4">
           {isLoading ? (
-            <div className="text-center py-20 text-slate-400">Loading projects...</div>
+            <div className="text-center py-20 text-slate-400">{t('common.loading')}</div>
           ) : projects.length === 0 ? (
             <div className="text-center py-20">
               <Search className="w-10 h-10 mx-auto mb-4 text-slate-400" />
-              <h3 className="text-2xl font-bold mb-2">No Projects Found</h3>
-              <p className="text-slate-400 mb-6">Try a different keyword</p>
+              <h3 className="text-2xl font-bold mb-2">{t('public.browseProjects.noProjects')}</h3>
+              <p className="text-slate-400 mb-6">{t('search.tryDifferent')}</p>
               <button
                 onClick={() => setSearchQuery('')}
                 className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl font-semibold"
               >
-                Clear Search
+                {t('help.clearSearch')}
               </button>
             </div>
           ) : (
@@ -178,7 +178,7 @@ const BrowseProjects = () => {
                     {project.bid_count !== undefined && (
                       <div className="flex items-center gap-2">
                         <Users className="w-4 h-4 text-orange-400" />
-                        {project.bid_count} bids
+                        {project.bid_count} {t('public.browseProjects.bids')}
                       </div>
                     )}
                   </div>
@@ -186,7 +186,7 @@ const BrowseProjects = () => {
                   {project.created_by_name && (
                     <div className="flex justify-between items-center pt-4 border-t border-white/10">
                       <span className="text-sm text-slate-400">
-                        Posted by <strong>{project.created_by_name}</strong>
+                        {t('public.browseProjects.postedBy')} <strong>{project.created_by_name}</strong>
                       </span>
                       <ArrowRight className="text-blue-400 group-hover:translate-x-1 transition" />
                     </div>
@@ -199,16 +199,16 @@ const BrowseProjects = () => {
           {/* CTA */}
           {!isAuthenticated && projects.length > 0 && (
             <div className="mt-20 text-center bg-blue-600/20 rounded-2xl p-12 max-w-4xl mx-auto">
-              <h3 className="text-3xl font-bold mb-4">Ready to Start Bidding?</h3>
+              <h3 className="text-3xl font-bold mb-4">{t('public.browseProjects.readyToBid')}</h3>
               <p className="text-slate-300 mb-8">
-                Create an account to submit proposals and win projects
+                {t('public.browseProjects.readyToBidDesc')}
               </p>
               <div className="flex gap-4 justify-center">
                 <Link to="/register" className="px-8 py-4 bg-blue-600 rounded-xl font-semibold">
-                  Create Account
+                  {t('public.browseProjects.createAccount')}
                 </Link>
                 <Link to="/login" className="px-8 py-4 border border-white/20 rounded-xl">
-                  Sign In
+                  {t('public.browseProjects.signIn')}
                 </Link>
               </div>
             </div>

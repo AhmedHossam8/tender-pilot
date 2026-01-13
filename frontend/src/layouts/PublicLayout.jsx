@@ -3,8 +3,10 @@ import { Menu, X } from 'lucide-react';
 import { Outlet } from "react-router-dom";
 import { useNavigate, useLocation } from "react-router-dom";
 import LanguageSwitcher from "@/components/common/LanguageSwitcher";
+import { useTranslation } from 'react-i18next';
 
 const PublicLayout = () => {
+  const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -17,10 +19,10 @@ const PublicLayout = () => {
   }, []);
 
   const navigation = [
-    { name: "Home", path: "/" },
-    { name: "Browse Services", path: "/browse/services" },
-    { name: "Browse Projects", path: "/browse/projects" },
-    { name: "Features", path: "/", scrollTo: "features" },
+    { name: t('navigation.home'), path: "/" },
+    { name: t('navigation.browseServices'), path: "/browse/services" },
+    { name: t('navigation.browseProjects'), path: "/browse/projects" },
+    { name: t('navigation.features'), path: "/", scrollTo: "features" },
   ];
 
   const navigate = useNavigate();
@@ -79,7 +81,7 @@ const PublicLayout = () => {
             {/* Logo */}
             <a href="/" className="flex items-center group">
               <span className="text-3xl font-black bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent group-hover:scale-105 transition-transform">
-                ServiceHub
+                {t('common.websiteName')}
               </span>
             </a>
 
@@ -101,12 +103,12 @@ const PublicLayout = () => {
               <LanguageSwitcher />
               <a href="/login">
                 <button className="px-5 py-2.5 text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 rounded-lg transition-all">
-                  Sign In
+                  {t('auth.signIn')}
                 </button>
               </a>
               <a href="/register">
                 <button className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-semibold text-sm transition-all hover:scale-105 hover:shadow-lg hover:shadow-blue-500/50">
-                  Get Started
+                  {t('auth.getStarted')}
                 </button>
               </a>
             </div>
@@ -142,12 +144,12 @@ const PublicLayout = () => {
                 <LanguageSwitcher />
                 <a href="/login" onClick={() => setMobileMenuOpen(false)}>
                   <button className="w-full px-4 py-3 text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 rounded-lg transition-all">
-                    Sign In
+                    {t('auth.signIn')}
                   </button>
                 </a>
                 <a href="/register" onClick={() => setMobileMenuOpen(false)}>
                   <button className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg font-semibold text-sm transition-all hover:scale-105">
-                    Get Started
+                    {t('auth.getStarted')}
                   </button>
                 </a>
               </div>
@@ -168,43 +170,43 @@ const PublicLayout = () => {
             {/* Brand */}
             <div className="lg:col-span-2 space-y-4">
               <h3 className="text-3xl font-black bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                ServiceHub
+                {t('common.websiteName')}
               </h3>
               <p className="text-slate-400 leading-relaxed max-w-md">
-                Connecting businesses with exceptional talent. Experience the future of work with intelligent matching and seamless collaboration.
+                {t('footer.tagline')}
               </p>
             </div>
 
             {/* Quick Links */}
             <div>
-              <h4 className="font-bold text-lg mb-6 text-white">Platform</h4>
+              <h4 className="font-bold text-lg mb-6 text-white">{t('footer.platform')}</h4>
               <ul className="space-y-3 text-sm">
-                <li><a href="/#about" className="text-slate-400 hover:text-white transition-colors hover:translate-x-1 inline-block">About Us</a></li>
-                <li><a href="/#features" className="text-slate-400 hover:text-white transition-colors hover:translate-x-1 inline-block">Features</a></li>
-                <li><a href="/#how-it-works" className="text-slate-400 hover:text-white transition-colors hover:translate-x-1 inline-block">How It Works</a></li>
-                <li><a href="#" className="text-slate-400 hover:text-white transition-colors hover:translate-x-1 inline-block">Pricing</a></li>
+                <li><a href="/#about" className="text-slate-400 hover:text-white transition-colors hover:translate-x-1 inline-block">{t('footer.aboutUs')}</a></li>
+                <li><a href="/#features" className="text-slate-400 hover:text-white transition-colors hover:translate-x-1 inline-block">{t('footer.features')}</a></li>
+                <li><a href="/#how-it-works" className="text-slate-400 hover:text-white transition-colors hover:translate-x-1 inline-block">{t('footer.howItWorks')}</a></li>
+                <li><a href="#" className="text-slate-400 hover:text-white transition-colors hover:translate-x-1 inline-block">{t('footer.pricing')}</a></li>
               </ul>
             </div>
 
             {/* For Users */}
             <div>
-              <h4 className="font-bold text-lg mb-6 text-white">For Users</h4>
+              <h4 className="font-bold text-lg mb-6 text-white">{t('footer.forUsers')}</h4>
               <ul className="space-y-3 text-sm">
-                <li><a href="/browse/services" className="text-slate-400 hover:text-white transition-colors hover:translate-x-1 inline-block">Browse Services</a></li>
-                <li><a href="/browse/projects" className="text-slate-400 hover:text-white transition-colors hover:translate-x-1 inline-block">Browse Projects</a></li>
-                <li><a href="/login" className="text-slate-400 hover:text-white transition-colors hover:translate-x-1 inline-block">Sign In</a></li>
-                <li><a href="/register" className="text-slate-400 hover:text-white transition-colors hover:translate-x-1 inline-block">Register</a></li>
+                <li><a href="/browse/services" className="text-slate-400 hover:text-white transition-colors hover:translate-x-1 inline-block">{t('navigation.browseServices')}</a></li>
+                <li><a href="/browse/projects" className="text-slate-400 hover:text-white transition-colors hover:translate-x-1 inline-block">{t('navigation.browseProjects')}</a></li>
+                <li><a href="/login" className="text-slate-400 hover:text-white transition-colors hover:translate-x-1 inline-block">{t('auth.signIn')}</a></li>
+                <li><a href="/register" className="text-slate-400 hover:text-white transition-colors hover:translate-x-1 inline-block">{t('auth.register')}</a></li>
               </ul>
             </div>
 
             {/* Legal */}
             <div>
-              <h4 className="font-bold text-lg mb-6 text-white">Legal</h4>
+              <h4 className="font-bold text-lg mb-6 text-white">{t('footer.legal')}</h4>
               <ul className="space-y-3 text-sm">
-                <li><a href="#" className="text-slate-400 hover:text-white transition-colors hover:translate-x-1 inline-block">Privacy Policy</a></li>
-                <li><a href="#" className="text-slate-400 hover:text-white transition-colors hover:translate-x-1 inline-block">Terms of Service</a></li>
-                <li><a href="#" className="text-slate-400 hover:text-white transition-colors hover:translate-x-1 inline-block">Cookie Policy</a></li>
-                <li><a href="#" className="text-slate-400 hover:text-white transition-colors hover:translate-x-1 inline-block">GDPR</a></li>
+                <li><a href="#" className="text-slate-400 hover:text-white transition-colors hover:translate-x-1 inline-block">{t('footer.privacyPolicy')}</a></li>
+                <li><a href="#" className="text-slate-400 hover:text-white transition-colors hover:translate-x-1 inline-block">{t('footer.termsOfService')}</a></li>
+                <li><a href="#" className="text-slate-400 hover:text-white transition-colors hover:translate-x-1 inline-block">{t('footer.cookiePolicy')}</a></li>
+                <li><a href="#" className="text-slate-400 hover:text-white transition-colors hover:translate-x-1 inline-block">{t('footer.gdpr')}</a></li>
               </ul>
             </div>
           </div>
@@ -212,12 +214,12 @@ const PublicLayout = () => {
           {/* Bottom Bar */}
           <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-slate-400">
-              © {new Date().getFullYear()} ServiceHub. All rights reserved.
+              {t('footer.copyright', { year: new Date().getFullYear() })}
             </p>
             <div className="flex items-center gap-6 text-sm text-slate-400">
-              <a href="#" className="hover:text-white transition-colors">Status</a>
-              <a href="#" className="hover:text-white transition-colors">Support</a>
-              <a href="#" className="hover:text-white transition-colors">Documentation</a>
+              <a href="#" className="hover:text-white transition-colors">{t('footer.status')}</a>
+              <a href="#" className="hover:text-white transition-colors">{t('footer.support')}</a>
+              <a href="#" className="hover:text-white transition-colors">{t('footer.documentation')}</a>
             </div>
           </div>
         </div>

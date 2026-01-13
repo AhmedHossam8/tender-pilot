@@ -40,8 +40,10 @@ const ProviderDashboard = () => {
     activeBids: bidsData.filter(b => b.status === 'pending').length,
     totalBids: bidsData.length,
     acceptedBids: bidsData.filter(b => b.status === 'accepted').length,
-    completedProjects: 0, // replace with actual logic if available
-    totalEarnings: 0,      // replace with actual logic if available
+    completedProjects: bidsData.filter(b => b.status === 'completed').length,
+    totalEarnings: bidsData
+        .filter(b => b.status === 'completed')
+        .reduce((sum, b) => sum + (b.proposed_amount || 0), 0),
     averageRating: profile?.average_rating || 0,
   }), [servicesData, bidsData, profile]);
 
