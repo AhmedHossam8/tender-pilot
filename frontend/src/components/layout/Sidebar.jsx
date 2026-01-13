@@ -122,12 +122,13 @@ function Sidebar({ collapsed, onToggleCollapse, isRtl }) {
       <div className="flex items-center h-16 px-4 border-b border-gray-700">
         <NavLink
           to={isClient() ? "/app/dashboard/client" : isProvider() ? "/app/dashboard/provider" : "/app"}
-          className="flex items-center w-full"
+          className="flex items-center w-full gap-3"
         >
-          {!collapsed ? (
-            <span className="text-xl font-bold text-white">{t("common.websiteName")}</span>
-          ) : (
-            <span className="text-xl font-bold text-white mx-auto">SH</span>
+          <div className="h-11 w-11 rounded-xl bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center shadow-lg flex-shrink-0">
+            <span className="text-white font-bold text-lg">SH</span>
+          </div>
+          {!collapsed && (
+            <span className="text-xl font-bold text-white tracking-tight">{t("common.websiteName", "ServiceHub")}</span>
           )}
         </NavLink>
       </div>

@@ -90,7 +90,9 @@ function AppLayout({ showFooter = false }) {
         <Header onMenuClick={handleMobileMenuClick} user={user} unreadCount={unreadCount} />
 
         <main className="flex-1 p-4 md:p-6">
-          <Outlet />
+          <div className="bg-gray-900/80 border border-gray-800 rounded-2xl shadow-xl p-4 md:p-6">
+            <Outlet />
+          </div>
         </main>
 
         {showFooter && <Footer />}

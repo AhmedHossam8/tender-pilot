@@ -139,7 +139,7 @@ const BrowseProjects = () => {
                 <div
                   key={project.id}
                   onClick={() => handleProjectClick(project.id)}
-                  className="group bg-white/5 rounded-2xl border border-white/10 p-6 hover:scale-[1.02] transition cursor-pointer"
+                  className="group bg-white/5 rounded-2xl border border-white/10 p-6 transition duration-150 hover:border-white/30 hover:bg-white/10 hover:shadow-xl hover:shadow-blue-500/10 cursor-pointer"
                 >
                   <div className="flex justify-between mb-4">
                     <h3 className="text-xl font-bold group-hover:text-blue-400">

@@ -8,6 +8,7 @@ to calculate compatibility scores between projects and service providers.
 
 # Prompt template for calculating match score between project and provider
 MATCH_SCORE_PROMPT = """You are an expert marketplace matching system. Analyze the compatibility between a project and a service provider.
+Always respond using {language} for all string fields (recommendation, reasoning, assessments).
 
 PROJECT DETAILS:
 Title: {project_title}
@@ -231,7 +232,7 @@ Return questions in JSON format:
 }}"""
 
 
-def get_match_score_prompt(project_data: dict, provider_data: dict) -> str:
+def get_match_score_prompt(project_data: dict, provider_data: dict, language: str = 'English') -> str:
     """
     Generate the complete prompt for calculating match score.
     
@@ -259,7 +260,8 @@ def get_match_score_prompt(project_data: dict, provider_data: dict) -> str:
         average_rating=provider_data.get('average_rating', 0),
         languages=', '.join(provider_data.get('languages', [])),
         location=provider_data.get('location', 'Not specified'),
-        portfolio_summary=provider_data.get('portfolio_summary', 'No portfolio available')
+        portfolio_summary=provider_data.get('portfolio_summary', 'No portfolio available'),
+        language=language or 'English'
     )
 
 

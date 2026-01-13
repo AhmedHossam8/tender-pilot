@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import bidService from '../../services/bid.service';
-import { AIMatchScore } from '../../components/ai';
 import { Plus, RefreshCw } from 'lucide-react';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
@@ -96,14 +95,14 @@ const BidsList = () => {
       </div>
 
       {/* Status Filter */}
-      <div className="mb-6">
-        <label className="text-sm font-medium text-gray-300 mr-3">
-          {t('bids.filterByStatus')}:
+      <div className="mb-6 flex items-center gap-3 flex-wrap">
+        <label className="text-sm font-medium text-gray-300">
+          {t('bids.filterByStatus')}
         </label>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2 bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="px-3 py-2 bg-gray-800 text-white border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm min-w-[180px]"
         >
           <option value="all">{t('bids.allStatuses')}</option>
           <option value="pending">{t('status.pending')}</option>
@@ -201,15 +200,23 @@ const BidsList = () => {
                     </div>
 
                     {/* AI Match Score */}
-                    {bid.ai_score && (
-                      <div className="mb-3 bg-gray-800 rounded-lg p-3 border border-gray-700">
-                        <AIMatchScore
-                          score={bid.ai_score}
-                          recommendation={bid.ai_feedback?.recommendation || bid.ai_recommendation}
-                          showDetails={true}
-                          feedback={bid.ai_feedback}
-                          size="small"
-                        />
+                    {bid.ai_score !== undefined && bid.ai_score !== null && (
+                      <div className="mb-3 bg-gray-800/70 rounded-lg p-3 border border-gray-700/80">
+                        <div className="flex items-center justify-between text-xs text-gray-300 font-medium">
+                          <span>{t('bids.aiScore')}</span>
+                          <span className="text-white">{Math.round(bid.ai_score)}/100</span>
+                        </div>
+                        <div className="mt-2 h-2 rounded-full bg-gray-900 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-green-400"
+                            style={{ width: `${Math.min(Math.max(bid.ai_score, 0), 100)}%` }}
+                          />
+                        </div>
+                        {bid.ai_feedback?.recommendation && (
+                          <p className="text-[11px] text-gray-400 mt-2 line-clamp-1">
+                            {bid.ai_feedback.recommendation}
+                          </p>
+                        )}
                       </div>
                     )}
 

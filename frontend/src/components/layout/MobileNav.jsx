@@ -54,7 +54,7 @@ function MobileNav({ isOpen, onClose, className, isRtl = false }) {
       )}>
         {/* Header */}
         <div className="flex items-center justify-between h-16 px-4 border-b border-white/10">
-          <span className="text-xl font-bold">TenderPilot</span>
+          <span className="text-xl font-bold">{t("common.websiteName", "ServiceHub")}</span>
           <Button
             variant="ghost"
             size="icon"

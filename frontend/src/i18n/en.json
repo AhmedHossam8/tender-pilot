@@ -62,11 +62,23 @@
       "registrationFailed": "Registration failed",
       "resetFailed": "Failed to send reset email"
     },
+    "loginSubtitle": "Sign in to access your dashboard and projects.",
     "success": {
       "welcome": "Welcome back!",
       "accountCreated": "Account created successfully",
       "resetSent": "Password reset email sent"
     }
+  },
+  "ai": {
+    "showDetails": "Show details",
+    "hideDetails": "Hide details",
+    "matchScore": "AI Match Score",
+    "matchingSkills": "Matching skills",
+    "skillGaps": "Skill gaps",
+    "budgetAssessment": "Budget assessment",
+    "experienceLevel": "Experience assessment",
+    "potentialConcerns": "Potential concerns",
+    "analysis": "AI Analysis"
   },
   "landing": {
     "hero": {
@@ -222,7 +234,7 @@
     "support": "Support",
     "documentation": "Documentation",
     "rightsReserved": "All rights reserved.",
-    "copyright": "© {{year}} TenderPilot. All rights reserved.",
+    "copyright": "© {{year}} ServiceHub. All rights reserved.",
     "help": "Help"
   },
   "public": {
@@ -963,6 +975,7 @@
   },
   "bids": {
     "title": "My Bids",
+    "details": "Bid Details",
     "subtitle": "Manage all your bids and proposals",
     "sentBids": "Sent Bids",
     "receivedBids": "Received Bids",
@@ -1032,7 +1045,8 @@
     "viewProfile": "View Profile",
     "shortlist": "Shortlist", 
     "accept": "Accept",
-    "reject": "Reject"
+    "reject": "Reject",
+    "submittedBy": "Submitted by"
   },
   "bookings": {
     "title": "Bookings",

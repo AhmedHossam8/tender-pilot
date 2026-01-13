@@ -98,7 +98,8 @@ class BidViewSet(viewsets.ModelViewSet):
         try:
             AIIntegrationService.auto_score_bid_on_submission(
                 bid=bid,
-                user=self.request.user
+                user=self.request.user,
+                language=getattr(self.request, 'LANGUAGE_CODE', None)
             )
         except Exception as e:
             logger.warning(f"Auto-scoring for bid {bid.id} failed: {e}")

@@ -67,6 +67,16 @@ export default function BidDetail() {
     const isBidOwner = bid.is_owner;
     const isPending = bid.status === "pending";
 
+    const translateRecommendation = (text) => {
+        if (!text) return '';
+        const normalized = text.toLowerCase();
+        if (normalized.includes('strong')) return t('bids.strongMatch');
+        if (normalized.includes('good')) return t('bids.goodMatch');
+        if (normalized.includes('fair')) return t('bids.fairMatch');
+        if (normalized.includes('weak') || normalized.includes('poor')) return t('bids.weakMatch');
+        return text;
+    };
+
     const handleDecision = async (status) => {
         try {
             await changeBidStatus.mutateAsync({ id: bid.id, status });
@@ -94,7 +104,7 @@ export default function BidDetail() {
             <div className="max-w-4xl mx-auto space-y-6">
 
                 <div className="flex justify-between items-center">
-                    <h1 className="text-3xl font-bold">{t("bid.details", "Bid Details")}</h1>
+                    <h1 className="text-3xl font-bold">{t("bids.details", t("bids.title"))}</h1>
                     <Button variant="outline" onClick={() => navigate("/app/bids")}>
                         {t("common.goBack", "Go Back")}
                     </Button>
@@ -105,10 +115,10 @@ export default function BidDetail() {
                         <div>
                             <CardTitle>{bid.project_title}</CardTitle>
                             <p className="text-sm text-gray-400 mt-1">
-                                {t('bids.submittedBy', 'Submitted by')}: {bid.service_provider?.first_name} {bid.service_provider?.last_name}
+                                {t('bids.submittedBy')}: {bid.service_provider?.first_name} {bid.service_provider?.last_name}
                             </p>
                         </div>
-                        <Badge className="capitalize">{bid.status}</Badge>
+                        <Badge className="capitalize">{bid.status_display || t(`status.${bid.status}`, bid.status)}</Badge>
                     </CardHeader>
 
                     <CardContent className="space-y-6">
@@ -124,16 +134,25 @@ export default function BidDetail() {
                             </div>
                         </div>
 
-                        {/* AI Score */}
-                        {bid.ai_score && (
-                            <div>
-                                <h3 className="text-sm text-gray-400 font-semibold mb-2">{t('bids.aiScore', 'AI Match Score')}</h3>
-                                <div className="flex items-center gap-2">
-                                    <div className="flex-1 bg-gray-800 h-2 rounded-full overflow-hidden">
-                                        <div className="h-full bg-blue-600" style={{ width: `${bid.ai_score}%` }} />
-                                    </div>
-                                    <span className="font-semibold">{bid.ai_score}/100</span>
+                        {/* AI Match Score */}
+                        {bid.ai_score !== undefined && bid.ai_score !== null && (
+                            <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
+                                <div className="flex items-center justify-between text-sm font-medium text-gray-300">
+                                    <span>{t('bids.aiScore', 'AI Match Score')}</span>
+                                    <span className="text-white">{Math.round(bid.ai_score)}/100</span>
                                 </div>
+                                <div className="mt-3 h-2 rounded-full bg-gray-800 overflow-hidden">
+                                    <div
+                                        className="h-full rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-green-400"
+                                        style={{ width: `${Math.min(Math.max(bid.ai_score, 0), 100)}%` }}
+                                    />
+                                </div>
+                                {(bid.ai_feedback?.recommendation || bid.ai_recommendation) && (
+                                    <p className="mt-3 text-sm text-gray-400">
+                                        <span className="text-gray-200 font-medium mr-1">{t('bids.recommendation')}:</span>
+                                        {translateRecommendation(bid.ai_feedback?.recommendation || bid.ai_recommendation)}
+                                    </p>
+                                )}
                             </div>
                         )}
 

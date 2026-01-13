@@ -63,11 +63,23 @@
       "registrationFailed": "فشل في إنشاء الحساب",
       "resetFailed": "فشل في إرسال بريد إعادة التعيين"
     },
+      "loginSubtitle": "سجّل الدخول للوصول إلى لوحة التحكم والمشاريع.",
     "success": {
       "welcome": "أهلاً بعودتك!",
       "accountCreated": "تم إنشاء الحساب بنجاح",
       "resetSent": "تم إرسال بريد إعادة تعيين كلمة المرور"
     }
+  },
+  "ai": {
+    "showDetails": "عرض التفاصيل",
+    "hideDetails": "إخفاء التفاصيل",
+    "matchScore": "نتيجة المطابقة بالذكاء الاصطناعي",
+    "matchingSkills": "المهارات المتطابقة",
+    "skillGaps": "الفجوات المهارية",
+    "budgetAssessment": "تقييم الميزانية",
+    "experienceLevel": "تقييم الخبرة",
+    "potentialConcerns": "الملاحظات المحتملة",
+    "analysis": "تحليل الذكاء الاصطناعي"
   },
   "landing": {
     "hero": {
@@ -223,7 +235,7 @@
     "support": "الدعم",
     "documentation": "التوثيق",
     "rightsReserved": "جميع الحقوق محفوظة.",
-    "copyright": "© {{year}} تندر بايلوت. جميع الحقوق محفوظة.",
+    "copyright": "© {{year}} سيرفيس هاب. جميع الحقوق محفوظة.",
     "help": "المساعدة"
   },
   "public": {
@@ -882,6 +894,7 @@
   },
   "bids": {
     "title": "عروضي",
+    "details": "تفاصيل العرض",
     "subtitle": "إدارة جميع عروضك ومقترحاتك",
     "sentBids": "العروض المرسلة",
     "receivedBids": "العروض المستلمة",
@@ -951,7 +964,8 @@
     "viewProfile": "عرض الملف الشخصي",
     "shortlist": "قائمة مختصرة",
     "accept": "قبول",
-    "reject": "رفض"
+    "reject": "رفض",
+    "submittedBy": "مقدَّم من"
   },
   "bookings": {
     "title": "الحجوزات",

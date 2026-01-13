@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import bidService from '../../services/bid.service';
-import { AIMatchScore } from '../../components/ai';
 import { Plus, RefreshCw } from 'lucide-react';
 import {
   Button,
@@ -84,6 +83,16 @@ const BidsList = ({ userRole }) => {
   const handleBidClick = (bidId) => navigate(`/app/bids/${bidId}`);
   const handleCreateBid = () => navigate('/app/bids/create');
 
+  const translateRecommendation = (text) => {
+    if (!text) return '';
+    const normalized = text.toLowerCase();
+    if (normalized.includes('strong')) return t('bids.strongMatch');
+    if (normalized.includes('good')) return t('bids.goodMatch');
+    if (normalized.includes('fair')) return t('bids.fairMatch');
+    if (normalized.includes('weak') || normalized.includes('poor')) return t('bids.weakMatch');
+    return text;
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 bg-[#101825] min-h-screen text-gray-300 text-sm">
       {/* Header */}
@@ -119,11 +128,11 @@ const BidsList = ({ userRole }) => {
 
       {/* Status Filter */}
       <div className="mb-6 flex items-center gap-3">
-        <label className="text-xs font-medium text-gray-400">{t('bids.filterByStatus')}:</label>
+        <label className="text-xs font-medium text-gray-400">{t('bids.filterByStatus')}</label>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-1 bg-gray-800 text-gray-300 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+          className="px-3 py-2 bg-gray-800 text-gray-300 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm min-w-[170px]"
         >
           <option value="all">{t('bids.allStatuses')}</option>
           <option value="pending">{t('status.pending')}</option>
@@ -218,15 +227,24 @@ const BidsList = ({ userRole }) => {
                       </div>
                     </div>
 
-                    {bid.ai_score && (
-                      <div className="mb-3 bg-gray-800 rounded-lg p-2 border border-gray-700">
-                        <AIMatchScore
-                          score={bid.ai_score}
-                          recommendation={bid.ai_feedback?.recommendation || bid.ai_recommendation}
-                          showDetails
-                          feedback={bid.ai_feedback}
-                          size="small"
-                        />
+                    {bid.ai_score !== undefined && bid.ai_score !== null && (
+                      <div className="mb-3 bg-gray-800/70 rounded-lg p-3 border border-gray-700/80">
+                        <div className="flex items-center justify-between text-xs text-gray-300 font-medium">
+                          <span>{t('bids.aiScore')}</span>
+                          <span className="text-white">{Math.round(bid.ai_score)}/100</span>
+                        </div>
+                        <div className="mt-2 h-2 rounded-full bg-gray-900 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-green-400"
+                            style={{ width: `${Math.min(Math.max(bid.ai_score, 0), 100)}%` }}
+                          />
+                        </div>
+                        {bid.ai_feedback?.recommendation && (
+                          <p className="text-[11px] text-gray-400 mt-2 line-clamp-1">
+                            <span className="text-gray-300 font-medium mr-1">{t('bids.recommendation')}:</span>
+                            {translateRecommendation(bid.ai_feedback.recommendation)}
+                          </p>
+                        )}
                       </div>
                     )}
 

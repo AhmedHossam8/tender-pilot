@@ -358,10 +358,10 @@ export default function ProjectDetail() {
         <CardContent className="space-y-3">
           <p className="text-muted-foreground">{project.description}</p>
           <div className="grid grid-cols-2 gap-4 text-sm">
-            <div><strong>{t("Budget")}:</strong> ${project.budget ?? "-"}</div>
-            <div><strong>{t("Status")}:</strong> {project.status}</div>
-            <div><strong>{t("Category")}:</strong> {project.category_name ?? "-"}</div>
-            <div><strong>{t("Created")}:</strong> {new Date(project.created_at).toLocaleDateString()}</div>
+            <div><strong>{t("projects.budget")}:</strong> ${project.budget ?? "-"}</div>
+            <div><strong>{t("projects.status")}:</strong> {project.status_display || t(`status.${project.status}`, project.status)}</div>
+            <div><strong>{t("projects.category")}:</strong> {project.category_name ?? "-"}</div>
+            <div><strong>{t("projects.createdAt")}:</strong> {new Date(project.created_at).toLocaleDateString()}</div>
           </div>
         </CardContent>
       </Card>
@@ -369,7 +369,7 @@ export default function ProjectDetail() {
       {/* Actions */}
       <Card>
         <CardHeader>
-          <CardTitle>{t("Actions")}</CardTitle>
+          <CardTitle>{t("projects.actions")}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-3">
           {flags.isProvider && flags.isOpen && !hasApplied && (

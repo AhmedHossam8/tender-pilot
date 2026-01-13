@@ -54,7 +54,11 @@ function SearchBar({
   return (
     <form onSubmit={handleSubmit} className={cn("relative w-full", className)}>
       {/* Search Icon */}
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-200 pointer-events-none filter-none" />
+      <Search
+        className="absolute left-3 top-2.5 h-4 w-4 text-white/90 pointer-events-none filter-none drop-shadow-none"
+        strokeWidth={2}
+        shapeRendering="crispEdges"
+      />
 
       {/* Input */}
       <Input

@@ -151,7 +151,11 @@ const SearchBar = ({ className = "" }) => {
     <div ref={searchRef} className={`relative ${className}`}>
       {/* Input */}
       <form onSubmit={handleSearch} className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-200 pointer-events-none filter-none" />
+        <Search
+          className="absolute left-3 top-3 h-5 w-5 text-white/90 pointer-events-none filter-none drop-shadow-none"
+          strokeWidth={2}
+          shapeRendering="crispEdges"
+        />
         <input
           type="text"
           value={query}

@@ -33,7 +33,8 @@ import { Eye, RefreshCw, MessageCircle, Loader2 } from "lucide-react"
 import { EmptyState } from "@/components/common"
 
 const BookingsList = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const isRtl = i18n.dir() === "rtl";
     const { user } = useAuthStore();
     const queryClient = useQueryClient();
     const navigate = useNavigate();
@@ -125,18 +126,19 @@ const BookingsList = () => {
 
     return (
         <div className="p-6 min-h-screen bg-[#101825] text-white">
-            <h1 className="text-2xl font-bold mb-6">{t("bookings.title")}</h1>
+            <div className="bg-gray-900/80 border border-gray-800 rounded-2xl shadow-lg p-4">
+                <h1 className="text-2xl font-bold mb-4">{t("bookings.title")}</h1>
 
-            <Table className="border border-gray-700">
+                <Table className={`border border-gray-700 rounded-xl overflow-hidden ${isRtl ? "text-right" : ""}`}>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>{isProvider ? t("bookings.client") : t("bookings.provider")}</TableHead>
-                        <TableHead>{t("bookings.service")}</TableHead>
-                        <TableHead>{t("bookings.package", "Package")}</TableHead>
-                        <TableHead>{t("bookings.amount")}</TableHead>
-                        <TableHead>{t("bookings.status")}</TableHead>
-                        <TableHead>{t("bookings.bookedAt")}</TableHead>
-                        <TableHead className="text-right">{t("bookings.actions")}</TableHead>
+                            <TableHead className={isRtl ? "text-right" : ""}>{isProvider ? t("bookings.client") : t("bookings.provider")}</TableHead>
+                            <TableHead className={isRtl ? "text-right" : ""}>{t("bookings.service")}</TableHead>
+                            <TableHead className={isRtl ? "text-right" : ""}>{t("bookings.package", "Package")}</TableHead>
+                            <TableHead className={isRtl ? "text-right" : ""}>{t("bookings.amount")}</TableHead>
+                            <TableHead className={isRtl ? "text-right" : ""}>{t("bookings.status")}</TableHead>
+                            <TableHead className={isRtl ? "text-right" : ""}>{t("bookings.bookedAt")}</TableHead>
+                            <TableHead className={isRtl ? "text-left" : "text-right"}>{t("bookings.actions")}</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -157,8 +159,8 @@ const BookingsList = () => {
                                 <TableCell>{packagePrice}</TableCell>
                                 <TableCell><StatusBadge status={booking.status} /></TableCell>
                                 <TableCell>{new Date(booking.scheduled_for).toLocaleString()}</TableCell>
-                                <TableCell className="text-right">
-                                    <div className="flex justify-end gap-2">
+                                <TableCell className={isRtl ? "text-left" : "text-right"}>
+                                    <div className={`flex gap-2 ${isRtl ? "justify-start" : "justify-end"}`}>
                                         <Button
                                             size="icon"
                                             variant="ghost"
@@ -200,6 +202,7 @@ const BookingsList = () => {
                     })}
                 </TableBody>
             </Table>
+            </div>
 
             {/* Status Change Dialog */}
             {isProvider && (
