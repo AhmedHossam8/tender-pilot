@@ -84,13 +84,19 @@ export default function ProjectDetail() {
   const acceptedBid = bids.find(bid => bid.status === "accepted");
   const assignedProviderId = acceptedBid?.service_provider;
 
+  const statusLabels = {
+    accepted: t("bids.statusAccepted", { defaultValue: "Accepted" }),
+    shortlisted: t("bids.statusShortlisted", { defaultValue: "Shortlisted" }),
+    rejected: t("bids.statusRejected", { defaultValue: "Rejected" }),
+  };
+
   /* =======================
    Create Bid
   ======================= */
   const { mutateAsync: createBidMutation, isLoading: creatingBid } = useMutation({
     mutationFn: (bidData) => createBid(bidData),
     onSuccess: () => {
-      toast.success(t("Bid submitted successfully"));
+      toast.success(t("projects.bidSubmitted"));
       refetchBids();
       refetch();
     },
@@ -99,14 +105,14 @@ export default function ProjectDetail() {
         error.response?.data?.error ||
         error.response?.data?.non_field_errors?.[0] ||
         error.response?.data?.message ||
-        t("Failed to submit bid");
+        t("projects.bidSubmitError");
       toast.error(errorMessage);
     },
   });
 
   const handleSubmitBid = () => {
     if (!auth.user) {
-      toast.error(t("You must be logged in"));
+      toast.error(t("projects.mustBeLoggedIn"));
       return;
     }
     // Navigate to the bid creation page with project pre-selected
@@ -178,7 +184,7 @@ export default function ProjectDetail() {
       toast.success(t('projects.optimizationSuggestions'));
     } catch (error) {
       console.error('Optimization error:', error);
-      toast.error(error?.response?.data?.error || "Failed to get optimization suggestions");
+      toast.error(error?.response?.data?.error || t("projects.optimizationError"));
     } finally {
       setOptimizationLoading(false);
     }
@@ -226,7 +232,7 @@ export default function ProjectDetail() {
 
       // Only show success toast and update cache if it's a new conversation
       if (!projectConversation) {
-        toast.success(t("Conversation started"));
+        toast.success(t("bids.conversationCreated"));
         queryClient.setQueryData(["project-conversation", id], data);
         queryClient.invalidateQueries(['conversations']);
         queryClient.invalidateQueries(['unread-count']);
@@ -238,7 +244,7 @@ export default function ProjectDetail() {
       }
     },
     onError: (err) => {
-      const msg = err.response?.data?.error || t("Failed to start conversation");
+      const msg = err.response?.data?.error || t("bids.conversationError");
       toast.error(msg);
     },
   });
@@ -252,10 +258,10 @@ export default function ProjectDetail() {
     try {
       setStatusLoading(true);
       await projectService.updateProjectStatus(id, newStatus);
-      toast.success(t("Project status updated"));
+      toast.success(t("projects.statusUpdated"));
       refetch();
     } catch {
-      toast.error(t("Failed to update project status"));
+      toast.error(t("projects.statusUpdateError"));
     } finally {
       setStatusLoading(false);
     }
@@ -268,7 +274,7 @@ export default function ProjectDetail() {
       toast.success(t("project.deleteSuccess"));
       navigate("/app/projects");
     } catch {
-      toast.error(t("Failed to delete project"));
+      toast.error(t("projects.deleteError"));
     } finally {
       setDeleting(false);
     }
@@ -294,10 +300,11 @@ export default function ProjectDetail() {
           }
         }
       }
-      toast.success(`${t("Bid")} ${status}`);
+      const statusLabel = statusLabels[status] || status;
+      toast.success(t("bids.statusUpdated", { status: statusLabel }));
     } catch (error) {
       console.error("Bid update error:", error.response?.data || error);
-      toast.error(t("Failed to update bid"));
+      toast.error(t("projects.bidError"));
     } finally {
       setBidDecisionLoading(false);
     }
@@ -307,12 +314,12 @@ export default function ProjectDetail() {
     try {
       setAiLoading(true);
       await projectService.triggerAIAnalysis(id);
-      toast.success(t("AI analysis completed"));
+      toast.success(t("projects.aiAnalysisCompleted"));
       // Refetch project data to get updated AI fields
       refetch();
     } catch (error) {
       console.error('AI analysis error:', error);
-      toast.error(error?.response?.data?.error || t("AI analysis failed"));
+      toast.error(error?.response?.data?.error || t("projects.aiAnalysisFailed"));
     } finally {
       setAiLoading(false);
     }
@@ -331,7 +338,7 @@ export default function ProjectDetail() {
   }
 
   if (isError) {
-    return <p className="text-center text-red-500">{t("Failed to load project")}</p>;
+    return <p className="text-center text-red-500">{t("projects.loadProjectError")}</p>;
   }
 
   /* =======================
@@ -374,13 +381,13 @@ export default function ProjectDetail() {
         <CardContent className="flex flex-wrap gap-3">
           {flags.isProvider && flags.isOpen && !hasApplied && (
             <Button onClick={handleSubmitBid} disabled={creatingBid}>
-              {creatingBid ? t("Submitting...") : t("Submit Bid")}
+              {creatingBid ? t("common.submitting") : t("bids.submitBid")}
             </Button>
           )}
 
           {flags.isOwner && flags.isOpen && (
             <Button onClick={() => setEditOpen(true)}>
-              {t("Edit")}
+              {t("projects.edit")}
             </Button>
           )}
 
@@ -389,7 +396,7 @@ export default function ProjectDetail() {
               variant="destructive"
               onClick={() => setShowDeleteConfirm(true)}
             >
-              {t("Delete")}
+              {t("projects.delete")}
             </Button>
           )}
 
@@ -398,7 +405,7 @@ export default function ProjectDetail() {
               disabled={statusLoading}
               onClick={() => updateProjectStatus("completed")}
             >
-              {t("Mark as Completed")}
+              {t("projects.markCompleted")}
             </Button>
           )}
 
@@ -422,17 +429,17 @@ export default function ProjectDetail() {
                         existingConversation: null
                       });
                     } else {
-                      toast.error(t("Unable to start conversation"));
+                      toast.error(t("bids.conversationError"));
                     }
                   }
                 }}
                 disabled={startConversationMutation.isPending}
               >
                 {startConversationMutation.isPending
-                  ? t("Starting Chat...")
+                  ? t("messages.startingChat")
                   : projectConversation?.id
-                    ? flags.isOwner ? t("Chat with Provider") : t("Chat with Client")
-                    : t("Start Chat")}
+                    ? flags.isOwner ? t("messages.chatWithProvider") : t("messages.chatWithClient")
+                    : t("messages.startChat")}
                 {unreadCount > 0 && (
                   <Badge variant="destructive" className="ml-2">
                     {unreadCount > 99 ? "99+" : unreadCount}
@@ -447,17 +454,17 @@ export default function ProjectDetail() {
       {flags.isOwner && flags.isOpen && (
         <Card>
           <CardHeader>
-            <CardTitle>{t("AI Assistance")}</CardTitle>
+            <CardTitle>{t("projects.aiAssistance")}</CardTitle>
           </CardHeader>
           <CardContent className="flex gap-3">
             <Button disabled={aiLoading} onClick={handleAIAnalysis}>
-              {aiLoading ? 'Analyzing...' : t("Analyze Project")}
+              {aiLoading ? t("projects.analyzing") : t("projects.analyzeProject")}
             </Button>
             <Button disabled={matchesLoading} onClick={handleMatchProviders}>
-              {matchesLoading ? 'Loading...' : t("Match Providers")}
+              {matchesLoading ? t("common.loading") : t("projects.matchProviders")}
             </Button>
             <Button disabled={optimizationLoading} onClick={handleOptimizationSuggestions}>
-              {optimizationLoading ? 'Loading...' : 'Get AI Suggestions'}
+              {optimizationLoading ? t("common.loading") : t("projects.getOptimization")}
             </Button>
           </CardContent>
         </Card>
@@ -467,7 +474,9 @@ export default function ProjectDetail() {
       {flags.isOwner && (
         <Card>
           <CardHeader>
-            <CardTitle>Matching Providers {matches.length > 0 && `(${matches.length})`}</CardTitle>
+            <CardTitle>
+              {t("projects.matchingProviders")} {matches.length > 0 && `(${matches.length})`}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {aiUnavailable ? (
@@ -497,7 +506,7 @@ export default function ProjectDetail() {
                         </div>
                         <div>
                           <h4 className="font-medium">{match.provider_name}</h4>
-                          <p className="text-sm text-gray-600">{match.provider_email || 'Email not available'}</p>
+                          <p className="text-sm text-gray-600">{match.provider_email || t("common.emailNotAvailable")}</p>
                           {Array.isArray(match.matching_skills) && match.matching_skills.length > 0 && (
                             <div className="flex gap-1 mt-1">
                               {match.matching_skills.slice(0, 3).map((skill, index) => (
@@ -506,7 +515,7 @@ export default function ProjectDetail() {
                                 </span>
                               ))}
                               {match.matching_skills.length > 3 && (
-                                <span className="text-xs text-gray-500">+{match.matching_skills.length - 3} more</span>
+                                <span className="text-xs text-gray-500">{t("common.moreCount", { count: match.matching_skills.length - 3 })}</span>
                               )}
                             </div>
                           )}
@@ -514,7 +523,7 @@ export default function ProjectDetail() {
                       </div>
                       <div className="text-right">
                         <div className="text-lg font-bold text-blue-600">
-                          {Math.round(match.match_score || 0)}% Match
+                          {t("projects.matchPercent", { score: Math.round(match.match_score || 0) })}
                         </div>
                         <a
                           href={`/app/profiles/${match.provider_id}`}
@@ -525,7 +534,7 @@ export default function ProjectDetail() {
                           }}
                         >
                           <User className="w-3 h-3" />
-                          View Profile
+                          {t("bids.viewProfile")}
                         </a>
                         {match.reasoning && (
                           <div className="text-sm text-gray-500 max-w-xs truncate">
@@ -541,19 +550,19 @@ export default function ProjectDetail() {
                     <Button
                       variant="outline"
                       onClick={() => {
-                        toast.info('Load more functionality coming soon');
+                        toast.info(t("projects.loadMoreSoon"));
                       }}
                       className="w-full sm:w-auto"
                     >
-                      Show 5 More Providers
+                      {t("projects.showMoreProviders", { count: 5 })}
                     </Button>
                   </div>
                 )}
               </>
             ) : (
               <div className="text-center py-8">
-                <p className="text-gray-500">No matching providers found for this project.</p>
-                <p className="text-sm text-gray-400 mt-1">Try clicking "Match Providers" to find suitable candidates.</p>
+                <p className="text-gray-500">{t("projects.noProvidersFound")}</p>
+                <p className="text-sm text-gray-400 mt-1">{t("projects.tryMatchProviders")}</p>
               </div>
             )}
           </CardContent>
@@ -562,20 +571,22 @@ export default function ProjectDetail() {
 
       {/* AI Optimization Suggestions */}
       {flags.isOwner && optimizationData && (
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 p-6 rounded-lg border border-blue-200 dark:border-blue-800">
-          <h3 className="text-lg font-bold mb-4 flex items-center text-blue-900 dark:text-blue-100">
-            <Lightbulb className="mr-2 h-5 w-5 text-yellow-500" />
-            AI Optimization Suggestions
-          </h3>
+        <Card className="bg-[#101825] border border-gray-700 text-white">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-white">
+              <Lightbulb className="h-5 w-5 text-yellow-400" />
+              {t("projects.optimizationSuggestions") || "AI Optimization Suggestions"}
+            </CardTitle>
+          </CardHeader>
 
-          <div className="space-y-4">
+          <CardContent className="space-y-4">
             {optimizationData.suggestions?.missing_details?.length > 0 && (
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
-                <h4 className="font-semibold text-sm mb-2 text-red-700 dark:text-red-400">Missing Details</h4>
-                <ul className="text-sm space-y-1">
+              <div className="rounded-lg border border-gray-700 bg-[#0b1220] p-4">
+                <h4 className="font-semibold text-sm mb-2 text-red-300">{t("projects.missingDetails") || "Missing Details"}</h4>
+                <ul className="text-sm space-y-1 text-slate-200">
                   {optimizationData.suggestions.missing_details.map((detail, idx) => (
                     <li key={idx} className="flex items-start">
-                      <span className="mr-2">•</span>
+                      <span className="mr-2 text-red-300">•</span>
                       <span>{detail}</span>
                     </li>
                   ))}
@@ -584,12 +595,12 @@ export default function ProjectDetail() {
             )}
 
             {optimizationData.suggestions?.improvements?.length > 0 && (
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
-                <h4 className="font-semibold text-sm mb-2 text-blue-700 dark:text-blue-400">Improvements</h4>
-                <ul className="text-sm space-y-1">
+              <div className="rounded-lg border border-gray-700 bg-[#0b1220] p-4">
+                <h4 className="font-semibold text-sm mb-2 text-blue-300">{t("projects.improvements") || "Improvements"}</h4>
+                <ul className="text-sm space-y-1 text-slate-200">
                   {optimizationData.suggestions.improvements.map((improvement, idx) => (
                     <li key={idx} className="flex items-start">
-                      <span className="mr-2">•</span>
+                      <span className="mr-2 text-blue-300">•</span>
                       <span>{improvement}</span>
                     </li>
                   ))}
@@ -598,12 +609,12 @@ export default function ProjectDetail() {
             )}
 
             {optimizationData.suggestions?.engagement_tips?.length > 0 && (
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
-                <h4 className="font-semibold text-sm mb-2 text-green-700 dark:text-green-400">Engagement Tips</h4>
-                <ul className="text-sm space-y-1">
+              <div className="rounded-lg border border-gray-700 bg-[#0b1220] p-4">
+                <h4 className="font-semibold text-sm mb-2 text-green-300">{t("projects.engagementTips") || "Engagement Tips"}</h4>
+                <ul className="text-sm space-y-1 text-slate-200">
                   {optimizationData.suggestions.engagement_tips.map((tip, idx) => (
                     <li key={idx} className="flex items-start">
-                      <span className="mr-2">•</span>
+                      <span className="mr-2 text-green-300">•</span>
                       <span>{tip}</span>
                     </li>
                   ))}
@@ -612,28 +623,30 @@ export default function ProjectDetail() {
             )}
 
             {optimizationData.suggestions?.optimization_score && (
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
-                <h4 className="font-semibold text-sm mb-2 text-purple-700 dark:text-purple-400">Optimization Score</h4>
-                <div className="flex items-center gap-2">
-                  <div className="text-2xl font-bold">{optimizationData.suggestions.optimization_score}/100</div>
-                  <div className="text-sm text-gray-600">Project completeness</div>
+              <div className="rounded-lg border border-gray-700 bg-[#0b1220] p-4 flex items-center justify-between">
+                <div>
+                  <h4 className="font-semibold text-sm mb-1 text-purple-300">{t("projects.optimizationScore") || "Optimization Score"}</h4>
+                  <p className="text-xs text-slate-300">{t("projects.completenessLabel") || "Project completeness"}</p>
+                </div>
+                <div className="text-2xl font-bold text-purple-200">
+                  {optimizationData.suggestions.optimization_score}/100
                 </div>
               </div>
             )}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Bids */}
       <Card>
         <CardHeader>
-          <CardTitle>{t("Bids")}</CardTitle>
+          <CardTitle>{t("projects.bidsSectionTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           {bidsLoading ? (
             <SkeletonList items={3} />
           ) : bids.length === 0 ? (
-            <p className="text-muted-foreground">{t("No bids yet.")}</p>
+            <p className="text-muted-foreground">{t("projects.noBidsYet")}</p>
           ) : (
             <div className="space-y-4">
               {bids.map((bid) => (
@@ -644,7 +657,7 @@ export default function ProjectDetail() {
                         <p className="font-semibold">{bid.service_provider_name}</p>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        ${bid.proposed_amount} • {bid.proposed_timeline} days
+                        ${bid.proposed_amount} • {bid.proposed_timeline} {t("bids.days")}
                       </p>
                     </div>
                     <StatusBadge status={bid.status} />
@@ -674,7 +687,7 @@ export default function ProjectDetail() {
                         }
                         disabled={bidDecisionLoading}
                       >
-                        {t("Accept")}
+                        {t("bids.accept")}
                       </Button>
                       <Button
                         size="sm"
@@ -684,7 +697,7 @@ export default function ProjectDetail() {
                         }
                         disabled={bidDecisionLoading}
                       >
-                        {t("Shortlist")}
+                        {t("bids.shortlist")}
                       </Button>
                       <Button
                         size="sm"
@@ -694,7 +707,7 @@ export default function ProjectDetail() {
                         }
                         disabled={bidDecisionLoading}
                       >
-                        {t("Reject")}
+                        {t("bids.reject")}
                       </Button>
                     </div>
                   )}
@@ -719,9 +732,9 @@ export default function ProjectDetail() {
       <ConfirmDialog
         open={showDeleteConfirm}
         onOpenChange={setShowDeleteConfirm}
-        title={t("Delete Project")}
-        description={t("Are you sure you want to delete this project?")}
-        confirmLabel={t("Delete")}
+        title={t("projects.confirmDeleteTitle")}
+        description={t("projects.confirmDeleteDescription")}
+        confirmLabel={t("projects.delete")}
         variant="destructive"
         loading={deleting}
         onConfirm={handleDelete}

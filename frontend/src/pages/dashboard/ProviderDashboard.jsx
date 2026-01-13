@@ -16,17 +16,56 @@ import { Button } from '@/components/ui';
 const ProviderDashboard = () => {
   const { t } = useTranslation();
   const { user, profile } = useAuthStore();
+  const isProvider = user?.user_type === 'provider' || user?.user_type === 'both';
 
   // Queries
   const { data: servicesData = [], isLoading: servicesLoading } = useQuery({
-    queryKey: ['my-services'],
-    queryFn: async () => (await serviceService.getAll()).data?.results || [],
+    queryKey: ['my-services', user?.id],
+    enabled: !!user?.id && isProvider,
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const response = await serviceService.getAll({ created_by: user.id });
+      const raw = response.data?.results ?? response.data ?? [];
+      const normalizeId = (val) => {
+        if (!val && val !== 0) return null;
+        if (typeof val === 'object') return val.id ?? val.user ?? val.owner ?? null;
+        return val;
+      };
+
+      return Array.isArray(raw)
+        ? raw.filter((svc) => {
+            const ownerId = normalizeId(svc.created_by) ?? normalizeId(svc.owner) ?? normalizeId(svc.user);
+            return String(ownerId) === String(user.id);
+          })
+        : [];
+    },
     onError: (err) => console.error(err),
   });
 
   const { data: bidsData = [], isLoading: bidsLoading } = useQuery({
-    queryKey: ['my-bids'],
-    queryFn: async () => (await bidService.getBids({ type: 'sent' })).data?.results || [],
+    queryKey: ['my-bids', user?.id],
+    enabled: !!user?.id && isProvider,
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const response = await bidService.getBids({ type: 'sent', provider: user.id });
+      const raw = Array.isArray(response.data)
+        ? response.data
+        : response.data?.results ?? response.data ?? [];
+      const normalizeId = (val) => {
+        if (!val && val !== 0) return null;
+        if (typeof val === 'object') return val.id ?? val.user ?? val.owner ?? null;
+        return val;
+      };
+
+      return raw.filter((bid) => {
+        const providerId = normalizeId(bid.provider)
+          ?? normalizeId(bid.service_provider)
+          ?? normalizeId(bid.created_by)
+          ?? normalizeId(bid.user)
+          ?? normalizeId(bid.owner);
+        return providerId ? String(providerId) === String(user.id) : false;
+      });
+    },
     onError: (err) => console.error(err),
   });
 
@@ -65,7 +104,7 @@ const ProviderDashboard = () => {
     toast.success('Trending opportunities updated');
   };
 
-  if (servicesLoading || bidsLoading) {
+  if ((servicesLoading || bidsLoading) && isProvider) {
     return (
       <div className="container mx-auto px-4 py-8 flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
