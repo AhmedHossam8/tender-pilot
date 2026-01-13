@@ -226,11 +226,11 @@ const BookServicePage = () => {
                                 </p>
                                 <div className="text-sm space-y-1 text-slate-400">
                                     <p>
-                                        <span className="font-medium">Package:</span>{" "}
+                                        <span className="font-medium">{t("bookings.package")}:</span>{" "}
                                         {selectedPackageObj.name} — ${selectedPackageObj.price}
                                     </p>
                                     <p>
-                                        <span className="font-medium">Scheduled For:</span>{" "}
+                                        <span className="font-medium">{t("bookings.scheduledFor")}:</span>{" "}
                                         {new Date(scheduledFor).toLocaleString()}
                                     </p>
                                 </div>
@@ -244,7 +244,7 @@ const BookServicePage = () => {
                         )}
                     </CardContent>
 
-                    <CardFooter className="flex flex-col gap-2 sm:flex-row sm:justify-between">
+                    <CardFooter className="flex flex-col gap-2 sm:flex-row sm:justify-end sm:items-center">
                         {isReviewing && (
                             <Button
                                 type="button"

@@ -378,11 +378,14 @@ Respond ONLY with valid JSON, no markdown or explanation."""
     
     def _serialize_project(self, project) -> Dict[str, Any]:
         """Serialize project for recommendations."""
+        description = project.description or ""
+        safe_budget = float(project.budget) if project.budget is not None else 0.0
+
         return {
             'id': str(project.id),
             'title': project.title,
-            'description': project.description[:200] + '...' if len(project.description) > 200 else project.description,
-            'budget': float(project.budget),
+            'description': description[:200] + '...' if len(description) > 200 else description,
+            'budget': safe_budget,
             'category': project.category.name if project.category else 'General',
             'skills': list(project.skills.values_list('name', flat=True)),
             'bid_count': project.bids.count(),

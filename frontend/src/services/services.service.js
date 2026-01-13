@@ -2,7 +2,7 @@ import api from "@/lib/api";
 
 export const serviceService = {
     // Services
-    getAll: () => api.get("/services/services/"),
+    getAll: (params = {}) => api.get("/services/services/", { params }),
     getById: (id) => api.get(`/services/services/${id}/`),
     create: (data) => api.post("/services/services/", data),
     update: (id, data) => api.patch(`/services/services/${id}/`, data),

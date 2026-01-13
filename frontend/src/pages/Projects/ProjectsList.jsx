@@ -32,9 +32,10 @@ import ProjectEditModal from "./ProjectEditModal";
 export default function ProjectsList() {
   const { t } = useTranslation();
   const auth = useAuthStore();
-  const canCreateProject = auth.isClient();
+  const isClient = auth.isClient();
+  const canCreateProject = isClient;
 
-  const { projects = [], isLoading, isError } = useProjects();
+  const { projects = [], isLoading, isError, deleteProject } = useProjects();
   const { data: categories, isLoading: categoriesLoading } = useCategories();
   const { data: skills, isLoading: skillsLoading } = useSkills();
 
@@ -79,6 +80,11 @@ export default function ProjectsList() {
   const filteredProjects = useMemo(() => {
     let data = [...projects];
 
+    // Clients should only see projects they own
+    if (isClient) {
+      data = data.filter((p) => p.is_owner);
+    }
+
     if (searchValue) {
       const lower = searchValue.toLowerCase();
       data = data.filter(
@@ -106,12 +112,19 @@ export default function ProjectsList() {
     if (activeFilters.budget_max) data = data.filter((p) => p.budget <= activeFilters.budget_max);
 
     return data;
-  }, [projects, searchValue, activeFilters]);
+  }, [projects, searchValue, activeFilters, isClient]);
 
-  const handleDelete = (project) => {
-    setDeleting(true);
-    toast.success(t("project.deleteSuccess"));
-    setDeleting(false);
+  const handleDelete = async (project) => {
+    try {
+      setDeleting(true);
+      await deleteProject.mutateAsync(project.id);
+      toast.success(t("project.deleteSuccess"));
+    } catch (err) {
+      console.error(err);
+      toast.error(t("project.deleteError"));
+    } finally {
+      setDeleting(false);
+    }
   };
 
   if (isAnyLoading) {
@@ -153,7 +166,7 @@ export default function ProjectsList() {
               trigger={
                 <Button
                   size="lg"
-                  className="bg-purple-600 hover:bg-blue-700 border-0 text-gray-400 hover:bg-gray-900/20"
+                  className="bg-blue-600 text-white hover:bg-blue-500 border border-gray-700 shadow-sm"
                 >
                   <Plus className="h-5 w-5 mr-2" />
                   {t("projects.create")}

@@ -30,15 +30,23 @@ const ClientDashboard = () => {
   });
 
   const { data: projectsData, isLoading: projectsLoading } = useQuery({
-    queryKey: ['projects'],
+    queryKey: ['projects', user?.id],
     queryFn: async () => {
       const res = await projectService.getProjects();
       return res.data.results ?? res.data;
     },
   });
 
+  const filterClientProjects = (list) => {
+    if (!Array.isArray(list)) return [];
+    // Client should only see projects they own/created
+    return list.filter((p) => p?.is_owner || p?.created_by === user?.id);
+  };
+
+  const clientProjects = filterClientProjects(projectsData);
+
   const recentBookings = bookingsData?.slice(0, 5) || [];
-  const recentProjects = projectsData?.slice(0, 5) || [];
+  const recentProjects = clientProjects.slice(0, 5);
 
   useEffect(() => {
     if (projectsData && bookingsData) {
@@ -50,8 +58,8 @@ const ClientDashboard = () => {
     try {
       setLoading(true);
 
-      const activeProjects = projectsData?.filter(p => p.status === 'open').length || 0;
-      const totalProjects = projectsData?.length || 0;
+      const activeProjects = clientProjects.filter(p => p.status === 'open').length || 0;
+      const totalProjects = clientProjects.length || 0;
       const activeBookings = bookingsData?.filter(b => b.status === 'confirmed' || b.status === 'pending').length || 0;
       const totalBookings = bookingsData?.length || 0;
       
@@ -59,7 +67,7 @@ const ClientDashboard = () => {
         ?.filter(b => b.status === 'completed')
         .reduce((sum, b) => sum + (b.package?.price || 0), 0) || 0;
 
-      const pendingBids = projectsData
+      const pendingBids = clientProjects
         ?.filter(p => p.status === 'open')
         .reduce((sum, p) => sum + (p.bids_count || 0), 0) || 0;
 

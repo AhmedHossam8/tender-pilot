@@ -89,9 +89,7 @@ const BookingDetails = () => {
         },
         onError: (err) => {
             console.error(err.response?.data);
-            toast.error(
-                "Failed to update status: " + JSON.stringify(err.response?.data)
-            );
+            toast.error(err?.response?.data?.error || t("bookings.statusUpdateError"));
         },
     });
 
