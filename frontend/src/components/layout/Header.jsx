@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Bell, Menu, User, LogOut, Settings, ChevronDown } from "lucide-react";
+import { Menu, User, LogOut, Settings, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/Button";
 import SearchBar from "@/components/search/SearchBar";
@@ -61,24 +61,14 @@ export function Header({ onMenuClick, className }) {
 
         {/* Search Bar */}
         <div className="hidden md:block flex-1 max-w-2xl">
-          <SearchBar className="bg-white/5 placeholder-slate-400 text-white border border-white/10 focus:ring-2 focus:ring-blue-500/30" />
+          <SearchBar />
         </div>
       </div>
 
-      {/* Right: language, notifications, user */}
+      {/* Right: language, user */}
       <div className="flex items-center gap-3">
         {/* Language */}
         <LanguageSwitcher className="hidden sm:flex" />
-
-        {/* Notifications */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative hover:bg-white/10 transition-colors rounded-md"
-        >
-          <Bell className="h-5 w-5 text-white" />
-          <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500 ring-1 ring-white" />
-        </Button>
 
         {/* User dropdown */}
         <div className="relative" ref={dropdownRef}>

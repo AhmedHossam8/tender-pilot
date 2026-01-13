@@ -151,7 +151,7 @@ const SearchBar = ({ className = "" }) => {
     <div ref={searchRef} className={`relative ${className}`}>
       {/* Input */}
       <form onSubmit={handleSearch} className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-white/70 pointer-events-none" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-200 pointer-events-none filter-none" />
         <input
           type="text"
           value={query}
@@ -159,7 +159,7 @@ const SearchBar = ({ className = "" }) => {
           onFocus={() => query.length >= 2 && setIsOpen(true)}
           onKeyDown={handleKeyDown}
           placeholder={t("search.placeholder", "Search projects, services, providers...")}
-          className="w-full pl-10 pr-10 py-2 rounded-xl bg-white/5 text-white placeholder:text-slate-400 backdrop-blur-sm border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-transparent"
+          className="w-full pl-10 pr-10 py-2.5 rounded-full bg-slate-900/70 text-white placeholder:text-slate-400 border border-white/10 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/30 shadow-[0_10px_40px_-20px_rgba(0,0,0,0.8)] backdrop-blur"
         />
         {loading ? (
           <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-white animate-spin" />

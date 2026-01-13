@@ -41,19 +41,35 @@ const ClientDashboard = () => {
   const recentProjects = projectsData?.slice(0, 5) || [];
 
   useEffect(() => {
-    loadDashboardData();
-  }, [user]);
+    if (projectsData && bookingsData) {
+      loadDashboardData();
+    }
+  }, [user, projectsData, bookingsData]);
 
   const loadDashboardData = async () => {
     try {
       setLoading(true);
+
+      const activeProjects = projectsData?.filter(p => p.status === 'open').length || 0;
+      const totalProjects = projectsData?.length || 0;
+      const activeBookings = bookingsData?.filter(b => b.status === 'confirmed' || b.status === 'pending').length || 0;
+      const totalBookings = bookingsData?.length || 0;
+      
+      const totalSpent = bookingsData
+        ?.filter(b => b.status === 'completed')
+        .reduce((sum, b) => sum + (b.package?.price || 0), 0) || 0;
+
+      const pendingBids = projectsData
+        ?.filter(p => p.status === 'open')
+        .reduce((sum, p) => sum + (p.bids_count || 0), 0) || 0;
+
       setStats({
-        activeProjects: projectsData?.filter(p => p.status === 'open').length || 0,
-        totalProjects: projectsData?.length || 0,
-        activeBookings: bookingsData?.filter(b => b.status === 'confirmed' || b.status === 'pending').length || 0,
-        totalBookings: bookingsData?.length || 0,
-        totalSpent: 0,
-        pendingBids: 0,
+        activeProjects,
+        totalProjects,
+        activeBookings,
+        totalBookings,
+        totalSpent,
+        pendingBids,
       });
     } catch (error) {
       console.error(error);
@@ -135,9 +151,9 @@ const ClientDashboard = () => {
         />
 
         <DashboardCard
-          title="Total Bookings"
+          title={t('dashboard.totalBookings')}
           value={stats.totalBookings}
-          subtitle="All time"
+          subtitle={t('dashboard.totalBookingsDesc')}
           color="purple"
           icon={
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -147,9 +163,9 @@ const ClientDashboard = () => {
         />
 
         <DashboardCard
-          title="Total Spent"
+          title={t('dashboard.totalSpent')}
           value={`$${stats.totalSpent.toLocaleString()}`}
-          subtitle="Lifetime spending"
+          subtitle={t('dashboard.totalSpentDesc')}
           color="red"
           icon={
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

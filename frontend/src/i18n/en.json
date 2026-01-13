@@ -70,8 +70,15 @@
   },
   "landing": {
     "hero": {
+      "badge": "AI-Powered Marketplace",
+      "title1": "Transform Your",
+      "title2": "Business Vision",
+      "subtitle": "Connect with top-tier professionals or showcase your expertise. Experience the future of work with intelligent matching and seamless collaboration.",
+      "cta_main": "Get Started Free",
+      "cta_secondary": "Browse Services",
+      "note1": "No credit card required",
+      "note2": "Free to join",
       "title": "Connect. Collaborate. Create.",
-      "subtitle": "ServiceHub is where talented professionals meet exciting projects. Whether you're a client seeking expertise or a provider showcasing your skills, we bring the right people together.",
       "getStarted": "Get Started Free",
       "browseServices": "Browse Services",
       "viewProjects": "View Projects",
@@ -83,6 +90,22 @@
       "postProjects": {
         "title": "Post Projects, Get Bids",
         "description": "Describe your project needs and receive competitive bids from qualified service providers within hours."
+      },
+      "browseTalent": {
+        "title": "Browse Talent",
+        "description": "Discover vetted experts across every discipline and invite them to your projects."
+      },
+      "realTimeChat": {
+        "title": "Real-Time Chat",
+        "description": "Keep conversations organized with secure messaging, file sharing, and notifications."
+      },
+      "securePayments": {
+        "title": "Secure Payments",
+        "description": "Protected transactions with clear milestones, escrow, and transparent fees."
+      },
+      "growthAnalytics": {
+        "title": "Growth Analytics",
+        "description": "Track performance with insights on win rates, response time, and earnings."
       },
       "browseServices": {
         "title": "Browse Services",
@@ -169,19 +192,22 @@
     "cta": {
       "title": "Ready to Get Started?",
       "subtitle": "Join thousands of professionals already collaborating on ServiceHub. Your next great project or opportunity is just a click away.",
-      "button": "Create Your Free Account"
+      "button": "Create Your Free Account",
+      "note": "No long-term contracts. Cancel anytime."
     }
   },
   "navigation": {
     "home": "Home",
     "browseServices": "Browse Services",
     "browseProjects": "Browse Projects",
+    "features": "Features",
     "about": "About",
     "dashboard": "Dashboard"
   },
   "footer": {
     "tagline": "Connecting talent with opportunity",
     "quickLinks": "Quick Links",
+    "platform": "Platform",
     "aboutUs": "About Us",
     "features": "Features",
     "howItWorks": "How It Works",
@@ -190,6 +216,11 @@
     "privacyPolicy": "Privacy Policy",
     "termsOfService": "Terms of Service",
     "cookiePolicy": "Cookie Policy",
+    "pricing": "Pricing",
+    "gdpr": "GDPR",
+    "status": "Status",
+    "support": "Support",
+    "documentation": "Documentation",
     "rightsReserved": "All rights reserved.",
     "copyright": "© {{year}} TenderPilot. All rights reserved.",
     "help": "Help"
@@ -199,6 +230,11 @@
       "title": "Browse Projects",
       "description": "Find exciting opportunities and submit your bids to win projects",
       "searchPlaceholder": "Search for projects...",
+      "badge": "Live Projects",
+      "projectsLabel": "Projects",
+      "highDemand": "High Demand",
+      "verifiedClients": "Verified Clients",
+      "signInPrompt": "Please sign in to view project details and submit bids.",
       "noProjects": "No projects found",
       "postFirst": "Post your first project",
       "bids": "bids",
