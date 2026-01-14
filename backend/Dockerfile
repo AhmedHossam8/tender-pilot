@@ -16,6 +16,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+# Collect static files during build
+RUN python manage.py collectstatic --noinput
+
 ENTRYPOINT ["sh", "docker/entrypoint.sh"]
 
 CMD ["sh", "docker/start-prod.sh"]

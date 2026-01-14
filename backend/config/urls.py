@@ -6,16 +6,26 @@ from rest_framework_simplejwt.views import (
 )
 from django.conf import settings
 from django.conf.urls.static import static
-
+from django.http import HttpResponse
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
+# Health check endpoint
+def health(request):
+    return HttpResponse("OK")
+
+# Root "/" endpoint
+def home(request):
+    return HttpResponse("TenderPilot Backend is running")  # <-- your message here
+
 urlpatterns = [
+    path('', home),  # <-- "/" route
     path('admin/', admin.site.urls),
     path('api/', include('config.api_urls')),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('api/schema/',SpectacularAPIView.as_view(),name='schema'),
-    path('api/docs/',SpectacularSwaggerView.as_view(),name='SwaggerUi')
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(), name='SwaggerUi'),
+    path('health/', health),
 ]
 
 if settings.DEBUG:

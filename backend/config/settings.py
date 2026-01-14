@@ -19,7 +19,7 @@ from datetime import timedelta
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-dotenv_path = BASE_DIR / ".env"
+dotenv_path = BASE_DIR / ".env.prod"
 load_dotenv(dotenv_path)
 
 STATIC_URL = "/static/"
@@ -37,7 +37,14 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG') == 'True'
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1").split(",")
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
+CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
+
+CORS_ALLOWED_ORIGINS = [
+    "https://serviceh.netlify.app",
+    "https://skkuzfyccvxo.eu-central-1.clawcloudrun.com",
+]
+CORS_ALLOW_CREDENTIALS = True
 
 # OpenAI API Key
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
