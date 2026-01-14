@@ -41,8 +41,7 @@ ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://localhost:5174",
+    "https://serviceh.netlify.app",
     "https://skkuzfyccvxo.eu-central-1.clawcloudrun.com",
 ]
 CORS_ALLOW_CREDENTIALS = True
