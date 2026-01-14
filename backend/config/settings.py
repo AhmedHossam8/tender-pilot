@@ -18,17 +18,30 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback-key')
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
-# Allowed Hosts
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
+# Allowed Hosts - ensure there's always a valid host
+allowed_hosts_str = os.getenv("ALLOWED_HOSTS", "*")
+ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_str.split(",") if h.strip()] or ["*"]
 
-# CORS & CSRF
-if DEBUG:
-    CORS_ALLOW_ALL_ORIGINS = True
-else:
-    cors_origins = os.getenv("CORS_ALLOWED_ORIGINS", "")
+# =============================================================================
+# CORS Configuration
+# =============================================================================
+# For production with ClawCloud and Netlify, allow all origins temporarily
+# to debug, then restrict once working
+CORS_ALLOW_ALL_ORIGINS = os.getenv("CORS_ALLOW_ALL_ORIGINS", "True").lower() == "true"
+
+# If you want to restrict origins, set CORS_ALLOW_ALL_ORIGINS=False and configure these:
+cors_origins = os.getenv("CORS_ALLOWED_ORIGINS", "")
+if cors_origins:
     CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins.split(",") if origin.strip()]
-    
+
+# Always allow credentials
 CORS_ALLOW_CREDENTIALS = True
+
+# Expose headers to the browser
+CORS_EXPOSE_HEADERS = [
+    "Content-Type",
+    "X-CSRFToken",
+]
 
 # Allow all common headers and methods for CORS
 CORS_ALLOW_HEADERS = [
@@ -52,8 +65,18 @@ CORS_ALLOW_METHODS = [
     "PUT",
 ]
 
+# Preflight cache duration (1 hour)
+CORS_PREFLIGHT_MAX_AGE = 3600
+
+# =============================================================================
+# CSRF Configuration
+# =============================================================================
 csrf_origins = os.getenv("CSRF_TRUSTED_ORIGINS", "")
 CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_origins.split(",") if origin.strip()]
+
+# For APIs, you might want to exempt CSRF for certain views
+CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_HTTPONLY = False
 
 # =============================================================================
 # Static and Media
